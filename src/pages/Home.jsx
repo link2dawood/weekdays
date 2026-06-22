@@ -1,0 +1,27 @@
+import React from "react";
+import "../App.css";
+import Weekcounter from "../components/Weekcounter";
+import WeeklySearch from "../components/WeeklySearch";
+import Information from "../components/Information";
+import FAQ from "../components/FAQ";
+import Footer from "../components/Footer";
+import WeeksOfMonth from "../components/WeeksOfMonth";
+import YearsWeek from "../components/YearsWeek";
+import QuickLinks from "../components/QuickLinks";
+
+const Home = () => {
+  return (
+    <div className="app">
+      <Weekcounter />
+      <WeeklySearch />
+      <WeeksOfMonth />
+      <YearsWeek />
+      <QuickLinks />
+      <Information />
+      <FAQ />
+      <Footer />
+    </div>
+  );
+};
+
+export default Home;
