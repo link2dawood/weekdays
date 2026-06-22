@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { isoWeek, isoYear } from "./dateUtils";
 
-function isoWeek(date) {
-  var t = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  var day = (t.getDay() + 6) % 7; // Mon=0 .. Sun=6
-  t.setDate(t.getDate() - day + 3); // Thursday of this week
-  var firstThu = t.valueOf();
-  t.setMonth(0, 1);
-  if (t.getDay() !== 4) {
-    t.setMonth(0, 1 + ((4 - t.getDay() + 7) % 7));
-  }
-  return 1 + Math.round((firstThu - t.valueOf()) / 604800000);
-}
+const NOW = new Date();
+const W_NOW = isoWeek(NOW);
+const Y_NOW = isoYear(NOW);
 
 const Navbar = () => {
   const [weekNow, setWeekNow] = useState();
-
+  const NOW = new Date();
+  const W_NOW = isoWeek(NOW);
+  const Y_NOW = isoYear(NOW);
   useEffect(() => {
     const now = new Date();
     var wkNow = isoWeek(now);
@@ -29,7 +24,7 @@ const Navbar = () => {
             <span className="dot"></span>Week Now
           </Link>
           <nav>
-            <Link id="navYear" to="/year/:current">
+            <Link id="navYear" to={`/year/${Y_NOW}`}>
               This year's weeks
             </Link>
             <Link id="navPrint" to="/">

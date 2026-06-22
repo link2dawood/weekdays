@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { isoWeek, isoYear } from "../components/dateUtils";
 const WhatWeek = () => {
+  const NOW = new Date();
+  const W_NOW = isoWeek(NOW);
+  const Y_NOW = isoYear(NOW);
   return (
     <section className="app">
       <div class="breadcrumb">
@@ -38,6 +42,11 @@ const WhatWeek = () => {
           because that week’s Thursday falls in January.
         </p>
       </div>
+      <p>
+        <Link className="btn" to={`/year/${Y_NOW}`}>
+          See the weeks of {Y_NOW}
+        </Link>
+      </p>
     </section>
   );
 };
