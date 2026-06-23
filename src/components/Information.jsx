@@ -2,9 +2,8 @@ import React from "react";
 
 const Information = () => {
   return (
-    <div>
+    <>
       <section>
-        <div className="sec-head">Information</div>
         <h2>Weekly issues in Finland</h2>
         <div className="prose">
           <p>
@@ -31,7 +30,7 @@ const Information = () => {
           </p>
         </div>
       </section>
-    </div>
+    </>
   );
 };
 

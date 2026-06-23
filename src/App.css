@@ -37,7 +37,7 @@ a {
 .wrap {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 0 22px;
+  padding: 0 0px;
 }
 .mono {
   font-family: "IBM Plex Mono", monospace;
@@ -517,9 +517,9 @@ details:last-of-type {
   border-bottom: 1px solid var(--line);
 }
 /* Sections */
-section {
+/* section {
   padding: 46px 0;
-}
+} */
 .sec-head {
   font-family: "IBM Plex Mono", monospace;
   font-size: 12.5px;
@@ -643,6 +643,9 @@ input[type="date"]:focus-visible {
   color: #fff;
   border-color: var(--accent-deep);
 }
+.active:hover {
+  color: #fff;
+}
 .quicklinks {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -709,6 +712,28 @@ input[type="date"]:focus-visible {
 }
 .wk.current .n {
   color: var(--accent-deep);
+}
+.ptable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 14px;
+}
+.ptable th,
+.ptable td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.ptable th {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ptable tr.now td {
+  background: rgba(224, 162, 59, 0.14);
 }
 
 /* Prose + FAQ */
@@ -783,6 +808,25 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .comb i {
     transition: none;
+  }
+}
+@media print {
+  .nav,
+  footer,
+  .breadcrumb,
+  .noprint {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .ptable th,
+  .ptable td {
+    border-color: #bbb;
+  }
+  a {
+    color: #000;
+    text-decoration: none;
   }
 }
 

@@ -2,10 +2,9 @@ import React from "react";
 
 const FAQ = () => {
   return (
-    <div>
-      <section className="app">
-        <div className="sec-head">Frequently asked questions</div>
-        <h2>Questions about weekly numbers</h2>
+    <>
+      <section>
+        <h2>Frequently asked questions</h2>
         <details open>
           <summary>What week is it now?</summary>
           <p>
@@ -37,7 +36,7 @@ const FAQ = () => {
           </p>
         </details>
       </section>
-    </div>
+    </>
   );
 };
 

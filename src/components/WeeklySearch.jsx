@@ -1,38 +1,6 @@
 import React, { useEffect, useState } from "react";
-
-function isoWeek(date) {
-  var t = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  var day = (t.getDay() + 6) % 7;
-  t.setDate(t.getDate() - day + 3);
-  var firstThu = t.valueOf();
-  t.setMonth(0, 1);
-  if (t.getDay() !== 4) {
-    t.setMonth(0, 1 + ((4 - t.getDay() + 7) % 7));
-  }
-  return 1 + Math.round((firstThu - t.valueOf()) / 604800000);
-}
-
-function isoYear(date) {
-  var t = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  var day = (t.getDay() + 6) % 7;
-  t.setDate(t.getDate() - day + 3);
-  return t.getFullYear();
-}
-
-function mondayOf(week, year) {
-  var simple = new Date(year, 0, 1 + (week - 1) * 7);
-  var dow = (simple.getDay() + 6) % 7;
-  simple.setDate(simple.getDate() - dow);
-  if (isoWeek(simple) !== week || isoYear(simple) !== year) {
-    var jan4 = new Date(year, 0, 4);
-    var j = (jan4.getDay() + 6) % 7;
-    var firstMon = new Date(year, 0, 4 - j);
-    simple = new Date(firstMon);
-    simple.setDate(firstMon.getDate() + (week - 1) * 7);
-  }
-  return simple;
-}
-
+import { isoWeek, isoYear, mondayOf } from "./dateUtils";
+import { Link } from "react-router-dom";
 // FORMATTING HELPERS
 function pad(n) {
   return n < 10 ? "0" + n : "" + n;
@@ -80,18 +48,27 @@ const WeeklySearch = () => {
       weekday: WEEKDAYS[d.getDay()],
       weekNum: wk,
       isoYearNum: yr,
-      startRange: m.toLocaleDateString("en-US", shortDateOptions) + ".",
-      endRange: s.toLocaleDateString("en-US", fullDateOptions),
+      rangeText:
+        m.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+        }) +
+        "–" +
+        s.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
     });
   }, [selectedDateStr]);
 
   return (
-    <div>
+    <>
       <section>
-        <div className="sec-head">Weekly search</div>
-        <h2>Check the week number of any day</h2>
+        {/* <div className="sec-head">Weekly search</div> */}
+        <h2>Check the week number of any date</h2>
         <div className="lookup">
-          <label htmlFor="dpick">Choose a day</label>
+          <label htmlFor="dpick">Pick a Date</label>
           <input
             type="date"
             id="dpick"
@@ -100,19 +77,28 @@ const WeeklySearch = () => {
           />
           {result && (
             <div className="result" id="lookupResult">
-              <span>
-                The Date <strong>{result.writtenDay}</strong> is{" "}
+              <div className="main-text">
+                <strong>{result.writtenDay}</strong> is in{" "}
                 <span className="num">week {result.weekNum}</span>.
-              </span>
+              </div>
+
               <div className="sub">
-                {result.weekday} · week {result.weekNum}/ {result.isoYearNum} ·{" "}
-                {result.startRange}–{result.endRange}
+                {result.weekday} · week {result.weekNum}/{result.isoYearNum} ·{" "}
+                {result.rangeText}.{" "}
+                <span>
+                  <Link
+                    className="open-link"
+                    to={`/week/${result.weekNum}/${result.isoYearNum}`}
+                  >
+                    open week {result.weekNum}
+                  </Link>
+                </span>
               </div>
             </div>
           )}
         </div>
       </section>
-    </div>
+    </>
   );
 };
 

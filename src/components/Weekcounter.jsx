@@ -1,73 +1,15 @@
 import React, { useEffect, useState } from "react";
-
-// ISO 8601 week number
-function isoWeek(date) {
-  var t = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  var day = (t.getDay() + 6) % 7; // Mon=0 .. Sun=6
-  t.setDate(t.getDate() - day + 3); // Thursday of this week
-  var firstThu = t.valueOf();
-  t.setMonth(0, 1);
-  if (t.getDay() !== 4) {
-    t.setMonth(0, 1 + ((4 - t.getDay() + 7) % 7));
-  }
-  // console.log(1 + Math.round((firstThu - t.valueOf()) / 604800000));
-  return 1 + Math.round((firstThu - t.valueOf()) / 604800000);
-}
-// ISO week-numbering year (can differ from calendar year at boundaries)
-function isoYear(date) {
-  var t = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  var day = (t.getDay() + 6) % 7;
-  t.setDate(t.getDate() - day + 3); // Thursday decides the year
-  return t.getFullYear();
-}
-function weeksInIsoYear(y) {
-  return isoWeek(new Date(y, 11, 28)); // Dec 28 is always in the last week
-}
-// Monday of a given ISO week/year
-function mondayOf(week, year) {
-  var simple = new Date(year, 0, 1 + (week - 1) * 7);
-  var dow = (simple.getDay() + 6) % 7;
-  simple.setDate(simple.getDate() - dow);
-  // adjust so that this week actually contains its Thursday in target year
-  if (isoWeek(simple) !== week || isoYear(simple) !== year) {
-    // fallback: walk from Jan 4
-    var jan4 = new Date(year, 0, 4);
-    var j = (jan4.getDay() + 6) % 7;
-    var firstMon = new Date(year, 0, 4 - j);
-    simple = new Date(firstMon);
-    simple.setDate(firstMon.getDate() + (week - 1) * 7);
-  }
-  return simple;
-}
-function formatShort(date) {
-  // console.log(date.getDate() + "." + (date.getMonth() + 1) + ".");
-  return date.getDate() + "." + (date.getMonth() + 1) + ".";
-}
-function formatLong(date) {
-  return (
-    date.getDate() +
-    ". " +
-    date.toLocaleString("default", { month: "long" }) +
-    ", " +
-    date.getFullYear()
-  );
-}
-const WEEKDAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-function getWeekdayName(date) {
-  return WEEKDAYS[date.getDay()];
-}
-function getDate(date) {
-  return formatLong(date);
-}
+import {
+  isoWeek,
+  isoYear,
+  weeksInIsoYear,
+  mondayOf,
+  formatLong,
+  formatShort,
+  WEEKDAYS,
+  getWeekdayName,
+  getDate,
+} from "./dateUtils";
 
 const Weekcounter = () => {
   const [dateInfo, setDateInfo] = useState({
@@ -126,7 +68,7 @@ const Weekcounter = () => {
   }, []);
 
   return (
-    <div>
+    <>
       <div className="wrap">
         <div>
           <div className="eyebrow">Week number tool</div>
@@ -135,7 +77,7 @@ const Weekcounter = () => {
           <h1>What week is it now?</h1>
           <div className="hero-card">
             <div>
-              <div className="now-label">Right now is</div>
+              <div className="now-label">Right now it is</div>
               <div className="week-big">
                 <span className="vk">Week</span>
                 <span id="weekNow">{dateInfo.weekNow}</span>
@@ -174,7 +116,7 @@ const Weekcounter = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

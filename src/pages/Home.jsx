@@ -2,7 +2,6 @@ import React from "react";
 import "../App.css";
 import Weekcounter from "../components/Weekcounter";
 import WeeklySearch from "../components/WeeklySearch";
-import Information from "../components/Information";
 import FAQ from "../components/FAQ";
 import Footer from "../components/Footer";
 import WeeksOfMonth from "../components/WeeksOfMonth";
@@ -17,7 +16,6 @@ const Home = () => {
       <WeeksOfMonth />
       <YearsWeek />
       <QuickLinks />
-      <Information />
       <FAQ />
       <Footer />
     </div>

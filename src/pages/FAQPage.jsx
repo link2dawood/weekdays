@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 
 const FAQPage = () => {
   return (
-    <div>
+    <>
       <section className="app">
         <div className="breadcrumb">
           <Link to="/">Home</Link> / FAQ
@@ -42,7 +42,7 @@ const FAQPage = () => {
         </details>
       </section>
       <Footer />
-    </div>
+    </>
   );
 };
 

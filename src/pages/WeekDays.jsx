@@ -50,20 +50,27 @@ const WeekDays = () => {
     "Saturday",
   ];
 
-  var monthLinks;
+  let monthLinks;
 
-  // if (mo.getMonth() === su.getMonth()) {
-  //   monthLinks =
-  //     '<a href="#/month/' +
-  //     (mo.getMonth() + 1) + // Convert 0-indexed month (0-11) to human month (1-12)
-  //     "/" +
-  //     mo.getFullYear() +
-  //     '">' +
-  //     M_FULL[mo.getMonth()] + // Grab full name from our array (e.g., "June")
-  //     " " +
-  //     mo.getFullYear() +
-  //     " weeks</a>";
-  // }
+  if (mo.getMonth() === su.getMonth()) {
+    monthLinks = (
+      <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
+        {M_FULL[mo.getMonth()]} {mo.getFullYear()} weeks
+      </Link>
+    );
+  } else {
+    monthLinks = (
+      <>
+        <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
+          {M_FULL[mo.getMonth()]}
+        </Link>{" "}
+        and{" "}
+        <Link to={`/month/${su.getMonth() + 1}/${su.getFullYear()}`}>
+          {M_FULL[su.getMonth()]}
+        </Link>
+      </>
+    );
+  }
 
   var prevW = w - 1,
     prevY = y;
@@ -90,7 +97,10 @@ const WeekDays = () => {
       <p className="lead">
         Week {week} starts on <strong>Monday {dWritten(mo)}</strong> and ends on{" "}
         <strong>Sunday{dWritten(su)}.</strong> It falls in {""}
-        {mo.getMonth() === su.getMonth() ? "the month of" : "the months of"}
+        {mo.getMonth() === su.getMonth()
+          ? "the month of"
+          : "the months of"}{" "}
+        {monthLinks}.
       </p>
 
       <div className="panel">

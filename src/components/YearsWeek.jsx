@@ -26,6 +26,7 @@ const YearsWeek = () => {
               key={year}
               to={`/year/${year}`}
               className={`pill ${year === Y_NOW ? "active" : ""}`}
+              onClick={() => window.scrollTo(0, 0)}
             >
               {year}
             </Link>

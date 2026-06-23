@@ -7,7 +7,7 @@ const WhatWeek = () => {
   const Y_NOW = isoYear(NOW);
   return (
     <section className="app">
-      <div class="breadcrumb">
+      <div className="breadcrumb">
         <Link to="/">Home</Link> / What is a week number
       </div>
       <h1>What is a week number?</h1>

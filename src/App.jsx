@@ -9,6 +9,8 @@ import WeeksInEachMonth from "./pages/WeeksInEachMonth";
 import WeekCard from "./components/WeekCard";
 import ThisYearWeek from "./pages/thisYearWeek";
 import WhatWeek from "./pages/WhatWeek";
+import PrintCalendar from "./pages/PrintCalendar";
+import WeeksInYear from "./pages/WeeksInYear";
 const App = () => {
   return (
     <BrowserRouter>
@@ -20,6 +22,8 @@ const App = () => {
         <Route path="/week/:week/:year" element={<WeekDays />} />
         <Route path="/month/:month/:year" element={<WeeksInEachMonth />} />
         <Route path="/what-is-a-week-number" element={<WhatWeek />} />
+        <Route path="/weeks-in-a-year" element={<WeeksInYear />} />
+        <Route path="/print/:year" element={<PrintCalendar />} />
         <Route path="/faq" element={<FAQPage />} />
       </Routes>
     </BrowserRouter>

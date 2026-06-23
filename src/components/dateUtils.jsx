@@ -94,3 +94,33 @@ export function dWritten(d) {
 export function dFull(d) {
   return d.getDate() + " " + M_SHORT[d.getMonth()] + " " + d.getFullYear();
 }
+
+export function formatShort(date) {
+  // console.log(date.getDate() + "." + (date.getMonth() + 1) + ".");
+  return date.getDate() + "." + (date.getMonth() + 1) + ".";
+}
+export function formatLong(date) {
+  return (
+    date.getDate() +
+    ". " +
+    date.toLocaleString("default", { month: "long" }) +
+    ", " +
+    date.getFullYear()
+  );
+}
+export const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+export function getWeekdayName(date) {
+  return WEEKDAYS[date.getDay()];
+}
+export function getDate(date) {
+  return formatLong(date);
+}
