@@ -28,7 +28,8 @@ const Navbar = () => {
               Printable
             </Link>
             <Link to="/what-is-a-week-number">About weeks</Link>
-            <Link to="/faq">FAQ</Link>
+            <Link to="/about-us">About us</Link>
+            <Link to="/contact-us">Contact us</Link>
           </nav>
           <Link className="badge" id="navBadge" to={`/year/${Y_NOW}`}>
             Wk {weekNow}

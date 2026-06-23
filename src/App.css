@@ -793,6 +793,284 @@ footer {
   color: var(--ink-soft);
 }
 
+/* Matches your standard layout container spacing */
+.contact-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+/* Reuses the exact layout parameters of your app's ".panel" block */
+.contact-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+/* Form Headings match your app's typography scale */
+.contact-card h2 {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+/* Matches your ".lead" class text parameters */
+.contact-subtitle {
+  color: #64748b;
+  font-size: 16px;
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Form group label style matching your ".fld" token */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Input Fields styled identically to your custom date fields */
+.form-group input,
+.form-group textarea {
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 15px;
+  color: #1e293b;
+  background-color: #f8fafc;
+  transition: all 0.15s ease-in-out;
+  outline: none;
+}
+
+/* Focus state matches your design system's highlighted active outline color */
+.form-group input:focus,
+.form-group textarea:focus {
+  background-color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+/* Standardizes your app's action button block (the clickable solid style) */
+.submit-btn {
+  background-color: var(
+    --accent
+  ); /* Sophisticated deep charcoal/navy dominant accent */
+  color: #ffffff;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start; /* Keeps button beautifully aligned without expanding fully */
+  transition: all 0.15s ease;
+}
+
+/* Hover matches your active element transitions */
+.submit-btn:hover {
+  background-color: var(--accent-deep);
+  transform: translateY(-1px);
+}
+
+.submit-btn:active {
+  background-color: #0f172a;
+  transform: translateY(0);
+}
+
+/* Native Success Alerts modeled directly off your active selection theme */
+.status-banner {
+  padding: 14px 16px;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.status-banner.success {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-banner.error {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+/* Footer */
+
+.site-footer {
+  /* Beautiful deep slate-emerald green background */
+  background-color: #062f27;
+  border-top: 1px solid #04231d;
+  padding: 56px 20px 28px 20px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  margin-top: auto;
+}
+
+/* Flexbox Grid mapping system */
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+/* Brand block controls */
+.footer-brand-col {
+  flex: 1 1 340px;
+}
+
+.footer-logo {
+  font-size: 18px;
+  font-weight: 700;
+  /* Light crisp mint-white for the main logo text */
+  color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.footer-desc {
+  /* Soft light sage green for the paragraph text (highly readable) */
+  color: #a7f3d0;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Nav columns layout logic */
+.footer-links-col {
+  flex: 1 1 180px;
+}
+
+.footer-links-col h3 {
+  /* Bright white-mint for the column headers */
+  color: #ecfdf5;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 16px 0;
+}
+
+.footer-links-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Links default states */
+.footer-links-col a {
+  /* Light sage link color */
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.15s ease-in-out;
+}
+
+/* Vibrant pastel green hover effect */
+.footer-links-col a:hover {
+  color: #34d399;
+}
+
+/* Subtle dark separator rule to split content neatly */
+.footer-divider {
+  border: 0;
+  border-top: 1px solid #04231d;
+  max-width: 1100px;
+  margin: 40px auto 24px auto;
+}
+
+/* Bottom copyright info text row */
+.footer-baseline {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  /* Soft muted baseline tracking info text */
+  color: #6ee7b7;
+  font-size: 13px;
+}
+
+.footer-baseline p {
+  margin: 0;
+}
+
+.footer-tz {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Mobile responsive breakpoints strategy */
+@media (max-width: 640px) {
+  .site-footer {
+    padding-top: 40px;
+  }
+  .footer-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .footer-baseline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Mobile responsive breakpoints strategy */
+@media (max-width: 640px) {
+  .site-footer {
+    padding-top: 40px;
+  }
+  .footer-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .footer-baseline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 @media (max-width: 720px) {
   .hero-card {
     grid-template-columns: 1fr;

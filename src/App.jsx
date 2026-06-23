@@ -11,6 +11,10 @@ import ThisYearWeek from "./pages/thisYearWeek";
 import WhatWeek from "./pages/WhatWeek";
 import PrintCalendar from "./pages/PrintCalendar";
 import WeeksInYear from "./pages/WeeksInYear";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 const App = () => {
   return (
     <BrowserRouter>
@@ -25,6 +29,10 @@ const App = () => {
         <Route path="/weeks-in-a-year" element={<WeeksInYear />} />
         <Route path="/print/:year" element={<PrintCalendar />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
       </Routes>
     </BrowserRouter>
   );

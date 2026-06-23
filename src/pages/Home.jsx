@@ -10,15 +10,17 @@ import QuickLinks from "../components/QuickLinks";
 
 const Home = () => {
   return (
-    <div className="app">
-      <Weekcounter />
-      <WeeklySearch />
-      <WeeksOfMonth />
-      <YearsWeek />
-      <QuickLinks />
-      <FAQ />
+    <>
+      <div className="app">
+        <Weekcounter />
+        <WeeklySearch />
+        <WeeksOfMonth />
+        <YearsWeek />
+        <QuickLinks />
+        <FAQ />
+      </div>
       <Footer />
-    </div>
+    </>
   );
 };
 
