@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   isoWeek,
   isoYear,
@@ -24,7 +24,7 @@ const Weekcounter = () => {
   // Array state to hold values for our dynamic list elements
   const [weeksArray, setWeeksArray] = useState([]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const now = new Date();
     var wkNow = isoWeek(now);
     var yrNow = isoYear(now);

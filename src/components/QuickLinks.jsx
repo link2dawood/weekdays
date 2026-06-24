@@ -8,7 +8,7 @@ const QuickLinks = () => {
   return (
     <>
       <section>
-        <h2>Quick links</h2>
+        <h2 className="mh">Quick links</h2>
         <div className="quicklinks">
           <Link
             className="ql"
@@ -18,15 +18,23 @@ const QuickLinks = () => {
             <b>Printable week calendar</b>
             <span>Print the whole year's weeks</span>
           </Link>
-          <Link className="ql" to="/what-is-a-week-number">
+          <Link
+            className="ql"
+            to="/what-is-a-week-number"
+            onClick={() => window.scrollTo(0, 0)}
+          >
             <b>What is a week number?</b>
             <span>How weeks are calculated</span>
           </Link>
-          <Link className="ql" to="/weeks-in-a-year">
+          <Link
+            className="ql"
+            to="/weeks-in-a-year"
+            onClick={() => window.scrollTo(0, 0)}
+          >
             <b>How many weeks in a year?</b>
             <span>52 or 53 weeks</span>
           </Link>
-          <Link className="ql" to="/faq">
+          <Link className="ql" to="/faq" onClick={() => window.scrollTo(0, 0)}>
             <b>FAQ</b>
             <span>Answers about weeks</span>
           </Link>

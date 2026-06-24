@@ -82,7 +82,12 @@ const ThisYearWeek = () => {
       <h2>Weeks by month {year} </h2>
       <div className="pills">
         {M_FULL.map((month, index) => (
-          <Link key={index} className="pill" to={`/month/${index + 1}/${year}`}>
+          <Link
+            key={index}
+            className="pill"
+            to={`/month/${index + 1}/${year}`}
+            onClick={() => window.scrollTo(0, 0)}
+          >
             {month}
           </Link>
         ))}

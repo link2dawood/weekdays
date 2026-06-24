@@ -4,7 +4,7 @@ const FAQ = () => {
   return (
     <>
       <section>
-        <h2>Frequently asked questions</h2>
+        <h2 className="mh">Frequently asked questions</h2>
         <details open>
           <summary>What week is it now?</summary>
           <p>

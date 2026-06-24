@@ -4,7 +4,7 @@ import { isoWeek, isoYear } from "./dateUtils";
 
 const Navbar = () => {
   const [weekNow, setWeekNow] = useState();
-  const [isOpen, setIsOpen] = useState(false); // Controls mobile menu visibility
+  const [isOpen, setIsOpen] = useState(false);
 
   const NOW = new Date();
   const Y_NOW = isoYear(NOW);
@@ -20,16 +20,18 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
-  // Closes the menu when a link is clicked on mobile
   const closeMenu = () => {
     setIsOpen(false);
+    window.scrollTo(0, 0);
   };
 
   return (
     <header className="nav">
       <div className="wrap row">
+        {/* Brand Text Block */}
         <Link className="brand" to="/" onClick={closeMenu}>
-          <span className="dot"></span>Week Now
+          {/* <span className="dot"></span>Week Now */}
+          <img src="./logo-horizontal-cropped.svg" alt="logo-horizontal" />
         </Link>
 
         {/* Hamburger Menu Toggle Button */}

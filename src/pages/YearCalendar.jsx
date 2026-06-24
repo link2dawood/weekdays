@@ -83,7 +83,7 @@ const YearCalendar = () => {
           <WeekCard key={w} w={w} y={selectedYear} />
         ))}
       </div>
-      <h2>Weeks by month {year} </h2>
+      <h2 id="mh">Weeks by month {year} </h2>
       <div className="pills">
         {M_FULL.map((month, index) => (
           <Link key={index} className="pill" to={`/month/${index + 1}/${year}`}>
@@ -100,7 +100,11 @@ const YearCalendar = () => {
         </Link>
       </div>
       <p>
-        <Link to={`/print/${year}`} className="btn">
+        <Link
+          to={`/print/${year}`}
+          className="btn"
+          onClick={() => window.scrollTo(0, 0)}
+        >
           Printable calendar {selectedYear}
         </Link>
       </p>

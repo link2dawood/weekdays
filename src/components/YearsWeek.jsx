@@ -16,7 +16,7 @@ const YearsWeek = () => {
   return (
     <>
       <section>
-        <h2>Browse the year's weeks</h2>
+        <h2 className="mh">Browse the year's weeks</h2>
         <p className="lead">
           All week numbers, year by year, with their dates.
         </p>

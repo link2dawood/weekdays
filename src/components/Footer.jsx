@@ -14,8 +14,11 @@ function Footer() {
       <div className="footer-container">
         {/* Brand/Description Column */}
         <div className="footer-brand-col">
-          <div className="footer-logo">
-            <span>📅</span> Week Now
+          <div className="brand-dark">
+            <img
+              src="/logo-horizontal-dark-cropped.svg"
+              alt="logo-horizontal-dark"
+            />
           </div>
           <p className="footer-desc">
             Your clean, precise digital companion for tracking ISO-8601 week

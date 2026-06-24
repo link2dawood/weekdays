@@ -56,9 +56,9 @@ const WeeksInEachMonth = () => {
         <Link to={"/"}>Home</Link> /{" "}
         <Link to={`/year/${year}`}>Weeks {year}</Link> / {M_FULL[mi]}
       </div>
-      <h1>
+      <h2 id="mh">
         Weeks in {M_FULL[mi]} {year}{" "}
-      </h1>
+      </h2>
       <p className="lead">
         These week numbers fall in {M_FULL[mi]} {year} . Some weeks may continue
         into the adjacent month.

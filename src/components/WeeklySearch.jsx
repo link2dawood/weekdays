@@ -66,7 +66,7 @@ const WeeklySearch = () => {
     <>
       <section>
         {/* <div className="sec-head">Weekly search</div> */}
-        <h2>Check the week number of any date</h2>
+        <h2 id="mh">Check the week number of any date</h2>
         <div className="lookup">
           <label htmlFor="dpick">Pick a Date</label>
           <input
