@@ -7,7 +7,6 @@ import {
   mondayOf,
   dFull,
 } from "../components/dateUtils";
-import Footer from "../components/Footer";
 
 const PrintCalendar = () => {
   const { year } = useParams();
@@ -88,7 +87,6 @@ const PrintCalendar = () => {
           })}
         </tbody>
       </table>
-      <Footer />
     </section>
   );
 };

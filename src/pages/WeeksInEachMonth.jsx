@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { M_FULL, isoWeek, isoYear } from "../components/dateUtils";
 import WeekCard from "../components/WeekCard";
-import Footer from "../components/Footer";
 
 const WeeksInEachMonth = () => {
   const { month, year } = useParams();
@@ -79,7 +78,6 @@ const WeeksInEachMonth = () => {
           {M_FULL[nextM - 1]} {nextY}
         </Link>
       </div>
-      <Footer />
     </section>
   );
 };

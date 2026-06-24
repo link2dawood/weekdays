@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { isoYear } from "../components/dateUtils";
-import Footer from "../components/Footer";
 
 const ThisYearWeek = () => {
   const { currentYear } = useParams();
@@ -101,7 +100,6 @@ const ThisYearWeek = () => {
           Printable calendar {selectedYear}
         </Link>
       </p>
-      <Footer />
     </section>
   );
 };

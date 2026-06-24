@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 function ContactUs() {
   //  One unified state object to hold all form fields
@@ -42,68 +43,75 @@ function ContactUs() {
   };
 
   return (
-    <div className="contact-container">
-      <div className="contact-card">
-        <h2>Get in Touch</h2>
-        <p className="contact-subtitle">
-          We would love to hear from you. Drop us a message!
-        </p>
-
-        {/* Status Notification Banner */}
-        {status.message && (
-          <div className={`status-banner ${status.type}`}>{status.message}</div>
-        )}
-
-        <form onSubmit={handleSubmit} className="contact-form">
-          {/* Name Field */}
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              placeholder="Enter Your Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Email Field */}
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="Enter Your Name"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Message Field */}
-          <div className="form-group">
-            <label htmlFor="message">Your Message</label>
-            <textarea
-              id="message"
-              name="message"
-              rows="5"
-              placeholder="Type your message here..."
-              value={formData.message}
-              onChange={handleChange}
-              required
-            ></textarea>
-          </div>
-
-          {/* Submit Button */}
-          <button type="submit" className="submit-btn">
-            Send Message
-          </button>
-        </form>
+    <section className="app">
+      <div className="breadcrumb">
+        <Link to="/">Home</Link> / Contact Us
       </div>
-    </div>
+      <div className="contact-container">
+        <div className="contact-card">
+          <h2>Get in Touch</h2>
+          <p className="contact-subtitle">
+            We would love to hear from you. Drop us a message!
+          </p>
+
+          {/* Status Notification Banner */}
+          {status.message && (
+            <div className={`status-banner ${status.type}`}>
+              {status.message}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="contact-form">
+            {/* Name Field */}
+            <div className="form-group">
+              <label htmlFor="name">Full Name</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Enter Your Name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="form-group">
+              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter Your Name"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* Message Field */}
+            <div className="form-group">
+              <label htmlFor="message">Your Message</label>
+              <textarea
+                id="message"
+                name="message"
+                rows="5"
+                placeholder="Type your message here..."
+                value={formData.message}
+                onChange={handleChange}
+                required
+              ></textarea>
+            </div>
+
+            {/* Submit Button */}
+            <button type="submit" className="submit-btn">
+              Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
   );
 }
 export default ContactUs;

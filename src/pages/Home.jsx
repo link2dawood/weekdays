@@ -3,7 +3,6 @@ import "../App.css";
 import Weekcounter from "../components/Weekcounter";
 import WeeklySearch from "../components/WeeklySearch";
 import FAQ from "../components/FAQ";
-import Footer from "../components/Footer";
 import WeeksOfMonth from "../components/WeeksOfMonth";
 import YearsWeek from "../components/YearsWeek";
 import QuickLinks from "../components/QuickLinks";
@@ -19,7 +18,6 @@ const Home = () => {
         <QuickLinks />
         <FAQ />
       </div>
-      <Footer />
     </>
   );
 };

@@ -1,8 +1,13 @@
 import React from "react";
+import { isoWeek, isoYear } from "./dateUtils";
+import { Link } from "react-router-dom";
 
 function Footer() {
   // Automatically outputs the correct year dynamically
-  const currentYear = new Date().getFullYear();
+  var NOW = new Date(),
+    W_NOW = isoWeek(NOW),
+    Y_NOW = isoYear(NOW);
+  const currentYear = Y_NOW;
 
   return (
     <footer className="site-footer">
@@ -24,16 +29,27 @@ function Footer() {
           <h3>Platform</h3>
           <ul>
             <li>
-              <a href="#/">Home Dashboard</a>
+              <Link to="/" onClick={() => window.scrollTo(0, 0)}>
+                Home{" "}
+              </Link>
             </li>
             <li>
-              <a href="#/weeks-in-a-year">Weeks in a Year</a>
+              <Link to="/weeks-in-a-year" onClick={() => window.scrollTo(0, 0)}>
+                Weeks in a Year
+              </Link>
             </li>
             <li>
-              <a href="#/what-is-a-week-number">What is a Week Number?</a>
+              <Link
+                to="/what-is-a-week-number"
+                onClick={() => window.scrollTo(0, 0)}
+              >
+                What is a Week Number?
+              </Link>
             </li>
             <li>
-              <a href="#/faq">Frequently Asked Questions</a>
+              <Link to="/faq" onClick={() => window.scrollTo(0, 0)}>
+                Frequently Asked Questions
+              </Link>
             </li>
           </ul>
         </div>
@@ -43,16 +59,27 @@ function Footer() {
           <h3>Company</h3>
           <ul>
             <li>
-              <a href="#/about">About Us</a>
+              <Link to="/about-us" onClick={() => window.scrollTo(0, 0)}>
+                About Us
+              </Link>
             </li>
             <li>
-              <a href="#/contact">Contact Support</a>
+              <Link to="/contact-us" onClick={() => window.scrollTo(0, 0)}>
+                Contact Support
+              </Link>
             </li>
             <li>
-              <a href="#/terms">Terms &amp; Conditions</a>
+              <Link
+                to="/terms-and-conditions"
+                onClick={() => window.scrollTo(0, 0)}
+              >
+                Terms &amp; Conditions
+              </Link>
             </li>
             <li>
-              <a href="#/privacy">Privacy Policy</a>
+              <Link to="/privacy-policy" onClick={() => window.scrollTo(0, 0)}>
+                Privacy Policy
+              </Link>
             </li>
           </ul>
         </div>
@@ -63,7 +90,7 @@ function Footer() {
 
       {/* Baseline Copyright and Info Row */}
       <div className="footer-baseline">
-        <p>&copy; {currentYear} WeekTracker. All rights reserved.</p>
+        <p>&copy; {currentYear} Week Now. All rights reserved.</p>
         <p className="footer-tz">Standard Universal ISO Timing Model</p>
       </div>
     </footer>

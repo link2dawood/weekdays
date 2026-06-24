@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear } from "../components/dateUtils";
-import Footer from "../components/Footer";
 
 const WeeksInYear = () => {
   const YEAR_MIN = 2020,
@@ -49,8 +48,6 @@ const WeeksInYear = () => {
             </Link>
           ))}
         </div>
-
-        <Footer />
       </section>
     </>
   );

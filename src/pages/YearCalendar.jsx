@@ -7,7 +7,6 @@ import {
   mondayOf,
   M_FULL,
 } from "../components/dateUtils";
-import Footer from "../components/Footer";
 
 const YearCalendar = () => {
   const { year } = useParams();
@@ -105,7 +104,6 @@ const YearCalendar = () => {
           Printable calendar {selectedYear}
         </Link>
       </p>
-      <Footer />
     </section>
   );
 };

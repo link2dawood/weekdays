@@ -8,7 +8,6 @@ import {
   dFull,
   weeksInIsoYear,
 } from "../components/dateUtils";
-import Footer from "../components/Footer";
 
 const WeekDays = () => {
   const { week, year } = useParams();
@@ -130,7 +129,6 @@ const WeekDays = () => {
           <span className="lbl">Next</span>Week {nextW}, {nextY}
         </Link>
       </div>
-      <Footer />
     </section>
   );
 };
