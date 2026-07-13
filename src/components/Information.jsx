@@ -4,29 +4,30 @@ const Information = () => {
   return (
     <>
       <section>
-        <h2>Weekly issues in Finland</h2>
+        <h2>Viikkonumerot Suomessa</h2>
         <div className="prose">
           <p>
-            In Finland, weeks are numbered according to the
-            <strong> ISO 8601 standard</strong>. The week always starts on
-            <strong> Monday</strong> and ends on Sunday, unlike in some
-            countries such as the United States, where the week often starts on
-            Sunday.
+            Suomessa viikot numeroidaan
+            <strong> ISO 8601 -standardin</strong> mukaan. Viikko alkaa aina
+            <strong> maanantaista</strong> ja päättyy sunnuntaihin, toisin kuin
+            joissakin maissa kuten Yhdysvalloissa, joissa viikko alkaa usein
+            sunnuntaista.
           </p>
 
           <p>
-            The first week of the year is the one that contains the first
-            Thursday of the year. In practice, Week 1 is always the week that
-            includes<strong> January 4th</strong>. Because of this, the first
-            week of the year may include the last days of December, or the first
-            days of January may belong to the last week of the previous year.
+            Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen
+            torstain. Käytännössä viikko 1 on aina se viikko, johon osuu
+            <strong> 4. tammikuuta</strong>. Tämän vuoksi vuoden ensimmäinen
+            viikko voi sisältää joulukuun viimeiset päivät, tai tammikuun
+            ensimmäiset päivät voivat kuulua edellisen vuoden viimeiseen
+            viikkoon.
           </p>
 
           <p>
-            A typical year has <strong>52 weeks</strong>. Approximately every
-            five to six years, there is a year with 53 weeks. This calculator
-            automatically handles these differences, so the week number you see
-            is always correct.
+            Tavallisessa vuodessa on <strong>52 viikkoa</strong>. Noin viiden
+            tai kuuden vuoden välein on vuosi, jossa on 53 viikkoa. Tämä
+            laskuri käsittelee nämä erot automaattisesti, joten näkemäsi
+            viikkonumero on aina oikein.
           </p>
         </div>
       </section>

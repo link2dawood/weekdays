@@ -31,13 +31,14 @@ const PrintCalendar = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to="/">Home</Link> / Printable {selectedYear}
+        <Link to="/">Etusivu</Link> / Tulostettava {selectedYear}
       </div>
 
-      <h1>Printable week calendar {selectedYear}</h1>
+      <h1>Tulostettava viikkokalenteri {selectedYear}</h1>
 
       <p className="lead">
-        All weeks and dates for {selectedYear}. Press print or save as PDF.
+        Kaikki vuoden {selectedYear} viikot ja päivämäärät. Tulosta tai tallenna
+        PDF-tiedostona.
       </p>
       <div className="noprint">
         <div className="pills">
@@ -53,16 +54,16 @@ const PrintCalendar = () => {
         </div>
         <p>
           <button className="btn" onClick={() => window.print()}>
-            Print / save as PDF
+            Tulosta / tallenna PDF
           </button>
         </p>
       </div>
       <table className="ptable">
         <thead>
           <tr>
-            <th>Week</th>
-            <th>Starts (Mon)</th>
-            <th>Ends (Sun)</th>
+            <th>Viikko</th>
+            <th>Alkaa (ma)</th>
+            <th>Päättyy (su)</th>
           </tr>
         </thead>
         <tbody>
@@ -76,7 +77,7 @@ const PrintCalendar = () => {
             return (
               <tr key={w} className={isCurrent ? "now" : ""}>
                 <td>
-                  <b>Week {w}</b>
+                  <b>Viikko {w}</b>
                 </td>
 
                 <td>{dFull(mo)}</td>

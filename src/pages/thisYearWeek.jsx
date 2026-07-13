@@ -41,7 +41,7 @@ const ThisYearWeek = () => {
         className={`wk ${isCurrent ? "current" : ""}`}
         to={`/week/${w}/${y}`}
       >
-        <div className="n">Week {w}</div>
+        <div className="n">Viikko {w}</div>
         <div className="r">
           {dShort(mo)} – {dShort(su)}
         </div>
@@ -52,14 +52,14 @@ const ThisYearWeek = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to="/">Home</Link> / Weeks {year}
+        <Link to="/">Etusivu</Link> / Viikot {year}
       </div>
 
-      <h1>Week numbers {year}</h1>
+      <h1>Viikkonumerot {year}</h1>
 
       <p className="lead">
-        The year {year} has <strong>{weeks.length} weeks</strong>. Click a week
-        to see its dates.
+        Vuodessa {year} on <strong>{weeks.length} viikkoa</strong>. Napsauta
+        viikkoa nähdäksesi sen päivämäärät.
       </p>
 
       <div className="pills">
@@ -79,7 +79,7 @@ const ThisYearWeek = () => {
           <WeekCard key={w} w={w} y={selectedYear} />
         ))}
       </div>
-      <h2>Weeks by month {year} </h2>
+      <h2>Viikot kuukausittain {year} </h2>
       <div className="pills">
         {M_FULL.map((month, index) => (
           <Link
@@ -94,15 +94,15 @@ const ThisYearWeek = () => {
       </div>
       <div className="prevnext">
         <Link to={`/year/${selectedYear - 1}`}>
-          <span className="lbl">Previous</span>Weeks {selectedYear - 1}
+          <span className="lbl">Edellinen</span>Viikot {selectedYear - 1}
         </Link>
         <Link className="nx" to={`/year/${selectedYear + 1}`}>
-          <span className="lbl">Next</span>Weeks {selectedYear + 1}
+          <span className="lbl">Seuraava</span>Viikot {selectedYear + 1}
         </Link>
       </div>
       <p>
         <Link to={`/print/${year}`} className="btn">
-          Printable calendar {selectedYear}
+          Tulostettava kalenteri {selectedYear}
         </Link>
       </p>
     </section>

@@ -26,27 +26,27 @@ const WeekDays = () => {
   // console.log(su);
   var total = weeksInIsoYear(y);
   var M_FULL = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "Tammikuu",
+    "Helmikuu",
+    "Maaliskuu",
+    "Huhtikuu",
+    "Toukokuu",
+    "Kesäkuu",
+    "Heinäkuu",
+    "Elokuu",
+    "Syyskuu",
+    "Lokakuu",
+    "Marraskuu",
+    "Joulukuu",
   ];
   var WD = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
+    "Sunnuntai",
+    "Maanantai",
+    "Tiistai",
+    "Keskiviikko",
+    "Torstai",
+    "Perjantai",
+    "Lauantai",
   ];
 
   let monthLinks;
@@ -54,7 +54,7 @@ const WeekDays = () => {
   if (mo.getMonth() === su.getMonth()) {
     monthLinks = (
       <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
-        {M_FULL[mo.getMonth()]} {mo.getFullYear()} weeks
+        {M_FULL[mo.getMonth()]} {mo.getFullYear()} viikot
       </Link>
     );
   } else {
@@ -63,7 +63,7 @@ const WeekDays = () => {
         <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
           {M_FULL[mo.getMonth()]}
         </Link>{" "}
-        and{" "}
+        ja{" "}
         <Link to={`/month/${su.getMonth() + 1}/${su.getFullYear()}`}>
           {M_FULL[su.getMonth()]}
         </Link>
@@ -87,23 +87,23 @@ const WeekDays = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to={"/"}>Home </Link> /{" "}
-        <Link to={`/year/${year}`}>Weeks {year}</Link> / Week {week}
+        <Link to={"/"}>Etusivu </Link> /{" "}
+        <Link to={`/year/${year}`}>Viikot {year}</Link> / Viikko {week}
       </div>
       <h1>
-        Week {week} in {year}
+        Viikko {week} vuonna {year}
       </h1>
       <p className="lead">
-        Week {week} starts on <strong>Monday {dWritten(mo)}</strong> and ends on{" "}
-        <strong>Sunday{dWritten(su)}.</strong> It falls in {""}
+        Viikko {week} alkaa <strong>maanantaina {dWritten(mo)}</strong> ja
+        päättyy <strong>sunnuntaina {dWritten(su)}.</strong> Se sijoittuu {""}
         {mo.getMonth() === su.getMonth()
-          ? "the month of"
-          : "the months of"}{" "}
+          ? "kuukauteen"
+          : "kuukausiin"}{" "}
         {monthLinks}.
       </p>
 
       <div className="panel">
-        <div className="now-label">Days of the week</div>
+        <div className="now-label">Viikonpäivät</div>
         <div className="days">
           {[...Array(7)].map((_, i) => {
             const d = new Date(mo);
@@ -123,10 +123,10 @@ const WeekDays = () => {
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>
         <Link to={`/week/${prevW}/${prevY}`}>
-          <span className="lbl">Previous</span>Week {prevW}, {prevY}
+          <span className="lbl">Edellinen</span>Viikko {prevW}, {prevY}
         </Link>
         <Link to={`/week/${nextW}/${nextY}`}>
-          <span className="lbl">Next</span>Week {nextW}, {nextY}
+          <span className="lbl">Seuraava</span>Viikko {nextW}, {nextY}
         </Link>
       </div>
     </section>

@@ -11,13 +11,13 @@ function getFormattedDateInputString(date) {
 }
 
 const WEEKDAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sunnuntai",
+  "Maanantai",
+  "Tiistai",
+  "Keskiviikko",
+  "Torstai",
+  "Perjantai",
+  "Lauantai",
 ];
 const WeeklySearch = () => {
   const [selectedDateStr, setSelectedDateStr] = useState(() =>
@@ -44,17 +44,17 @@ const WeeklySearch = () => {
     const shortDateOptions = { day: "numeric", month: "numeric" };
 
     setResult({
-      writtenDay: d.toLocaleDateString("en-US", fullDateOptions),
+      writtenDay: d.toLocaleDateString("fi-FI", fullDateOptions),
       weekday: WEEKDAYS[d.getDay()],
       weekNum: wk,
       isoYearNum: yr,
       rangeText:
-        m.toLocaleDateString("en-US", {
+        m.toLocaleDateString("fi-FI", {
           day: "2-digit",
           month: "short",
         }) +
         "–" +
-        s.toLocaleDateString("en-US", {
+        s.toLocaleDateString("fi-FI", {
           day: "2-digit",
           month: "short",
           year: "numeric",
@@ -66,9 +66,9 @@ const WeeklySearch = () => {
     <>
       <section>
         {/* <div className="sec-head">Weekly search</div> */}
-        <h2 id="mh">Check the week number of any date</h2>
+        <h2 id="mh">Tarkista minkä tahansa päivän viikkonumero</h2>
         <div className="lookup">
-          <label htmlFor="dpick">Pick a Date</label>
+          <label htmlFor="dpick">Valitse päivämäärä</label>
           <input
             type="date"
             id="dpick"
@@ -78,19 +78,19 @@ const WeeklySearch = () => {
           {result && (
             <div className="result" id="lookupResult">
               <div className="main-text">
-                <strong>{result.writtenDay}</strong> is in{" "}
-                <span className="num">week {result.weekNum}</span>.
+                <strong>{result.writtenDay}</strong> on{" "}
+                <span className="num">viikolla {result.weekNum}</span>.
               </div>
 
               <div className="sub">
-                {result.weekday} · week {result.weekNum}/{result.isoYearNum} ·{" "}
+                {result.weekday} · viikko {result.weekNum}/{result.isoYearNum} ·{" "}
                 {result.rangeText}.{" "}
                 <span>
                   <Link
                     className="open-link"
                     to={`/week/${result.weekNum}/${result.isoYearNum}`}
                   >
-                    open week {result.weekNum}
+                    avaa viikko {result.weekNum}
                   </Link>
                 </span>
               </div>

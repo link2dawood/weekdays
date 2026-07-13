@@ -28,14 +28,14 @@ function ContactUs() {
 
     // Simple validation guard
     if (!formData.name || !formData.email || !formData.message) {
-      setStatus({ type: "error", message: "Please fill out all fields." });
+      setStatus({ type: "error", message: "Täytä kaikki kentät." });
       return;
     }
 
     // Success Mock (This is where you would normally send data to an API/Backend)
     setStatus({
       type: "success",
-      message: "Thank you! Your message has been sent.",
+      message: "Kiitos! Viestisi on lähetetty.",
     });
 
     // Reset the form fields back to blank
@@ -45,13 +45,13 @@ function ContactUs() {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to="/">Home</Link> / Contact Us
+        <Link to="/">Etusivu</Link> / Ota yhteyttä
       </div>
       <div className="contact-container">
         <div className="contact-card">
-          <h2>Get in Touch</h2>
+          <h2>Ota yhteyttä</h2>
           <p className="contact-subtitle">
-            We would love to hear from you. Drop us a message!
+            Kuulemme mielellämme sinusta. Jätä meille viesti!
           </p>
 
           {/* Status Notification Banner */}
@@ -64,12 +64,12 @@ function ContactUs() {
           <form onSubmit={handleSubmit} className="contact-form">
             {/* Name Field */}
             <div className="form-group">
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name">Koko nimi</label>
               <input
                 type="text"
                 id="name"
                 name="name"
-                placeholder="Enter Your Name"
+                placeholder="Syötä nimesi"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -78,12 +78,12 @@ function ContactUs() {
 
             {/* Email Field */}
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Sähköpostiosoite</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="Enter Your Name"
+                placeholder="Syötä sähköpostiosoitteesi"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -92,12 +92,12 @@ function ContactUs() {
 
             {/* Message Field */}
             <div className="form-group">
-              <label htmlFor="message">Your Message</label>
+              <label htmlFor="message">Viestisi</label>
               <textarea
                 id="message"
                 name="message"
                 rows="5"
-                placeholder="Type your message here..."
+                placeholder="Kirjoita viestisi tähän..."
                 value={formData.message}
                 onChange={handleChange}
                 required
@@ -106,7 +106,7 @@ function ContactUs() {
 
             {/* Submit Button */}
             <button type="submit" className="submit-btn">
-              Send Message
+              Lähetä viesti
             </button>
           </form>
         </div>

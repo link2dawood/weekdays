@@ -5,56 +5,59 @@ const AboutUs = () => {
     <>
       <section className="app">
         <div className="breadcrumb">
-          <Link to="/">Home</Link> / About Us
+          <Link to="/">Etusivu</Link> / Tietoa meistä
         </div>
-        <h1>About Us</h1>
+        <h1>Tietoa meistä</h1>
         <div className="prose">
           <p>
-            Welcome to <strong>Week Now</strong>, your go-to digital tool for
-            tracking time, calendar systems, and planning your year with
-            precision.
+            Tervetuloa palveluun <strong>Viikko Nyt</strong> – digitaalinen
+            työkalusi ajan seurantaan, kalenterijärjestelmiin ja vuoden
+            suunnitteluun tarkasti.
           </p>
         </div>
-        <h2>Who We Are?</h2>
+        <h2>Keitä me olemme?</h2>
         <div className="prose">
           <p>
-            We are a team of passionate developers and productivity enthusiasts
-            dedicated to simplifying how people interact with calendars. We
-            believe that tracking time shouldn't be complicated, confusing, or
-            bogged down by legacy regional calendar rules. That is why we built
-            a streamlined, highly accurate platform based on global standards to
-            give you instant clarity on your schedule.
+            Olemme joukko intohimoisia kehittäjiä ja tuottavuuden ystäviä, jotka
+            ovat omistautuneet yksinkertaistamaan sitä, miten ihmiset käyttävät
+            kalentereita. Uskomme, ettei ajan seurannan tulisi olla
+            monimutkaista, sekavaa tai vanhentuneiden alueellisten
+            kalenterisääntöjen kuormittamaa. Siksi rakensimme selkeän ja erittäin
+            tarkan, maailmanlaajuisiin standardeihin perustuvan alustan, joka
+            antaa sinulle välittömän selkeyden aikatauluusi.
           </p>
         </div>
-        <h2>Our Mission</h2>
+        <h2>Tehtävämme</h2>
         <div className="prose">
           <p>
-            Our mission is simple: to provide clean, lightning-fast, and
-            accessible web tools that help individuals, project managers, and
-            businesses stay aligned. By utilizing standard universal tracking
-            systems like the ISO-8601 calendar system, we remove the guesswork
-            from scheduling, date calculations, and tracking elapsed time.
+            Tehtävämme on yksinkertainen: tarjota selkeitä, salamannopeita ja
+            helppokäyttöisiä verkkotyökaluja, jotka auttavat yksityishenkilöitä,
+            projektipäälliköitä ja yrityksiä pysymään ajan tasalla. Käyttämällä
+            yleismaailmallisia standardeja kuten ISO 8601 -kalenterijärjestelmää
+            poistamme arvailun aikatauluttamisesta, päivämäärälaskennasta ja
+            kuluneen ajan seurannasta.
           </p>
         </div>
-        <h2>Why Choose Us?</h2>
+        <h2>Miksi valita meidät?</h2>
         <ul>
           <li>
-            <strong>Simplicity First:</strong> No clutter, no complicated setups
-            just the exact date and time metrics you need, when you need them.
+            <strong>Yksinkertaisuus edellä:</strong> Ei sekavuutta eikä
+            monimutkaisia asetuksia – vain ne täsmälliset päivämäärä- ja
+            aikatiedot, joita tarvitset silloin kun tarvitset.
           </li>
           <li>
-            <strong>Technical Accuracy:</strong> Built using robust logic
-            parameters to ensure your data is perfectly synchronized with global
-            standards.
+            <strong>Tekninen tarkkuus:</strong> Rakennettu vankalla logiikalla
+            varmistaen, että tietosi ovat täydellisesti synkronoituja
+            maailmanlaajuisten standardien kanssa.
           </li>
           <li>
-            <strong>Accessible Anywhere:</strong> Fully optimized for mobile,
-            desktop, and tablet browsers so you can check your schedule on the
-            go.
+            <strong>Käytettävissä kaikkialla:</strong> Täysin optimoitu mobiili-,
+            työpöytä- ja tablettiselaimille, joten voit tarkistaa aikataulusi
+            missä tahansa.
           </li>
         </ul>
         <p>
-          Thank you for making us a part of your daily productivity routine!
+          Kiitos, että olemme osa päivittäistä tuottavuusrutiiniasi!
         </p>
       </section>
     </>

@@ -8,43 +8,45 @@ const WhatWeek = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to="/">Home</Link> / What is a week number
+        <Link to="/">Etusivu</Link> / Mikä on viikkonumero
       </div>
-      <h1>What is a week number?</h1>
+      <h1>Mikä on viikkonumero?</h1>
       <div className="prose">
         <p>
-          A week number tells you which week of the year is currently running.
-          Weeks are numbered using the <strong>ISO 8601 standard</strong>, which
-          is used widely across Europe and in business worldwide.
+          Viikkonumero kertoo, mikä vuoden viikko on parhaillaan menossa. Viikot
+          numeroidaan <strong>ISO 8601 -standardin</strong> mukaan, jota
+          käytetään laajasti kaikkialla Euroopassa ja liike-elämässä ympäri
+          maailmaa.
         </p>
 
-        <p>The rules are simple:</p>
+        <p>Säännöt ovat yksinkertaiset:</p>
 
         <ul>
           <li>
-            A week always starts on <strong>Monday</strong> and ends on Sunday.
+            Viikko alkaa aina <strong>maanantaista</strong> ja päättyy
+            sunnuntaihin.
           </li>
 
           <li>
-            The first week of the year is the one containing the year’s first{" "}
-            <strong>Thursday</strong>. In practice this is always the week that
-            includes <strong>4 January</strong>.
+            Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen{" "}
+            <strong>torstain</strong>. Käytännössä tämä on aina se viikko, johon
+            osuu <strong>4. tammikuuta</strong>.
           </li>
 
           <li>
-            Because of this, the last week of a year can include early January
-            days, and the first week can include late December days.
+            Tämän vuoksi vuoden viimeinen viikko voi sisältää tammikuun
+            alkupäiviä, ja ensimmäinen viikko voi sisältää joulukuun loppupäiviä.
           </li>
         </ul>
 
         <p>
-          For example, 29 December 2025 already belongs to week 1 of 2026,
-          because that week’s Thursday falls in January.
+          Esimerkiksi 29. joulukuuta 2025 kuuluu jo vuoden 2026 viikkoon 1,
+          koska kyseisen viikon torstai osuu tammikuulle.
         </p>
       </div>
       <p>
         <Link className="btn" to={`/year/${Y_NOW}`}>
-          See the weeks of {Y_NOW}
+          Katso vuoden {Y_NOW} viikot
         </Link>
       </p>
     </section>

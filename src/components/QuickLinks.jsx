@@ -8,35 +8,35 @@ const QuickLinks = () => {
   return (
     <>
       <section>
-        <h2 className="mh">Quick links</h2>
+        <h2 className="mh">Pikalinkit</h2>
         <div className="quicklinks">
           <Link
             className="ql"
             to={`/print/${Y_NOW}`}
             onClick={() => window.scrollTo(0, 0)}
           >
-            <b>Printable week calendar</b>
-            <span>Print the whole year's weeks</span>
+            <b>Tulostettava viikkokalenteri</b>
+            <span>Tulosta koko vuoden viikot</span>
           </Link>
           <Link
             className="ql"
             to="/what-is-a-week-number"
             onClick={() => window.scrollTo(0, 0)}
           >
-            <b>What is a week number?</b>
-            <span>How weeks are calculated</span>
+            <b>Mikä on viikkonumero?</b>
+            <span>Miten viikot lasketaan</span>
           </Link>
           <Link
             className="ql"
             to="/weeks-in-a-year"
             onClick={() => window.scrollTo(0, 0)}
           >
-            <b>How many weeks in a year?</b>
-            <span>52 or 53 weeks</span>
+            <b>Kuinka monta viikkoa vuodessa on?</b>
+            <span>52 tai 53 viikkoa</span>
           </Link>
           <Link className="ql" to="/faq" onClick={() => window.scrollTo(0, 0)}>
-            <b>FAQ</b>
-            <span>Answers about weeks</span>
+            <b>UKK</b>
+            <span>Vastauksia viikoista</span>
           </Link>
         </div>
       </section>

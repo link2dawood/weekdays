@@ -21,24 +21,24 @@ function Footer() {
             />
           </div>
           <p className="footer-desc">
-            Your clean, precise digital companion for tracking ISO-8601 week
-            numbers, calendar schedules, and annual metrics. Always calculated
-            with absolute technical accuracy.
+            Selkeä ja tarkka digitaalinen apuvälineesi ISO 8601 -viikkonumeroiden,
+            kalenteriaikataulujen ja vuosittaisten lukujen seurantaan. Aina
+            laskettu ehdottoman teknisellä tarkkuudella.
           </p>
         </div>
 
         {/* Navigation Links Column */}
         <div className="footer-links-col">
-          <h3>Platform</h3>
+          <h3>Palvelu</h3>
           <ul>
             <li>
               <Link to="/" onClick={() => window.scrollTo(0, 0)}>
-                Home{" "}
+                Etusivu{" "}
               </Link>
             </li>
             <li>
               <Link to="/weeks-in-a-year" onClick={() => window.scrollTo(0, 0)}>
-                Weeks in a Year
+                Viikkoja vuodessa
               </Link>
             </li>
             <li>
@@ -46,12 +46,12 @@ function Footer() {
                 to="/what-is-a-week-number"
                 onClick={() => window.scrollTo(0, 0)}
               >
-                What is a Week Number?
+                Mikä on viikkonumero?
               </Link>
             </li>
             <li>
               <Link to="/faq" onClick={() => window.scrollTo(0, 0)}>
-                Frequently Asked Questions
+                Usein kysytyt kysymykset
               </Link>
             </li>
           </ul>
@@ -59,16 +59,16 @@ function Footer() {
 
         {/* Core Documents Column */}
         <div className="footer-links-col">
-          <h3>Company</h3>
+          <h3>Yritys</h3>
           <ul>
             <li>
               <Link to="/about-us" onClick={() => window.scrollTo(0, 0)}>
-                About Us
+                Tietoa meistä
               </Link>
             </li>
             <li>
               <Link to="/contact-us" onClick={() => window.scrollTo(0, 0)}>
-                Contact Support
+                Asiakastuki
               </Link>
             </li>
             <li>
@@ -76,12 +76,12 @@ function Footer() {
                 to="/terms-and-conditions"
                 onClick={() => window.scrollTo(0, 0)}
               >
-                Terms &amp; Conditions
+                Käyttöehdot
               </Link>
             </li>
             <li>
               <Link to="/privacy-policy" onClick={() => window.scrollTo(0, 0)}>
-                Privacy Policy
+                Tietosuojaseloste
               </Link>
             </li>
           </ul>
@@ -93,8 +93,8 @@ function Footer() {
 
       {/* Baseline Copyright and Info Row */}
       <div className="footer-baseline">
-        <p>&copy; {currentYear} Week Now. All rights reserved.</p>
-        <p className="footer-tz">Standard Universal ISO Timing Model</p>
+        <p>&copy; {currentYear} Viikko Nyt. Kaikki oikeudet pidätetään.</p>
+        <p className="footer-tz">Yleismaailmallinen ISO-aikamalli</p>
       </div>
     </footer>
   );

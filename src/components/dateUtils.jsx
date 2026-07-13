@@ -36,57 +36,57 @@ export function mondayOf(week, year) {
 // Simple short date formatter helper
 export function dShort(d) {
   const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "tammi",
+    "helmi",
+    "maalis",
+    "huhti",
+    "touko",
+    "kesä",
+    "heinä",
+    "elo",
+    "syys",
+    "loka",
+    "marras",
+    "joulu",
   ];
   return d.getDate() + " " + months[d.getMonth()];
 }
 export var WD = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sunnuntai",
+  "Maanantai",
+  "Tiistai",
+  "Keskiviikko",
+  "Torstai",
+  "Perjantai",
+  "Lauantai",
 ];
 export var M_FULL = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "Tammikuu",
+  "Helmikuu",
+  "Maaliskuu",
+  "Huhtikuu",
+  "Toukokuu",
+  "Kesäkuu",
+  "Heinäkuu",
+  "Elokuu",
+  "Syyskuu",
+  "Lokakuu",
+  "Marraskuu",
+  "Joulukuu",
 ];
 export var M_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "tammi",
+  "helmi",
+  "maalis",
+  "huhti",
+  "touko",
+  "kesä",
+  "heinä",
+  "elo",
+  "syys",
+  "loka",
+  "marras",
+  "joulu",
 ];
 export function dWritten(d) {
   return d.getDate() + " " + M_FULL[d.getMonth()] + " " + d.getFullYear();
@@ -103,19 +103,19 @@ export function formatLong(date) {
   return (
     date.getDate() +
     ". " +
-    date.toLocaleString("default", { month: "long" }) +
-    ", " +
+    date.toLocaleString("fi-FI", { month: "long" }) +
+    "ta " +
     date.getFullYear()
   );
 }
 export const WEEKDAYS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Sunnuntai",
+  "Maanantai",
+  "Tiistai",
+  "Keskiviikko",
+  "Torstai",
+  "Perjantai",
+  "Lauantai",
 ];
 
 export function getWeekdayName(date) {

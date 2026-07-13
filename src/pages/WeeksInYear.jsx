@@ -19,22 +19,23 @@ const WeeksInYear = () => {
     <>
       <section className="app">
         <div className="breadcrumb">
-          <Link to="/">Home</Link> / Weeks in a year
+          <Link to="/">Etusivu</Link> / Viikkoja vuodessa
         </div>
-        <h1>How many weeks are in a year?</h1>
+        <h1>Kuinka monta viikkoa vuodessa on?</h1>
         <div className="prose">
           <p>
-            Most years have <strong>52 weeks</strong>. Roughly every five or six
-            years, however, a year has <strong>53 weeks</strong>.
+            Useimmissa vuosissa on <strong>52 viikkoa</strong>. Suunnilleen
+            joka viides tai kuudes vuosi on kuitenkin sellainen, jossa on{" "}
+            <strong>53 viikkoa</strong>.
           </p>
           <p>
-            A year has 53 weeks when it starts on a <strong>Thursday</strong>,
-            or when a <strong>leap year</strong> starts on a Wednesday. For
-            example, 2020 and 2026 both have 53 weeks.
+            Vuodessa on 53 viikkoa, kun se alkaa <strong>torstaista</strong>,
+            tai kun <strong>karkausvuosi</strong> alkaa keskiviikosta.
+            Esimerkiksi vuosissa 2020 ja 2026 on molemmissa 53 viikkoa.
           </p>
           <p>
-            This tool handles the difference automatically, so the week number
-            you see is always correct.
+            Tämä työkalu käsittelee eron automaattisesti, joten näkemäsi
+            viikkonumero on aina oikein.
           </p>
         </div>
         <div className="pills">

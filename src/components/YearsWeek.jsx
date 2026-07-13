@@ -16,9 +16,9 @@ const YearsWeek = () => {
   return (
     <>
       <section>
-        <h2 className="mh">Browse the year's weeks</h2>
+        <h2 className="mh">Selaa vuoden viikkoja</h2>
         <p className="lead">
-          All week numbers, year by year, with their dates.
+          Kaikki viikkonumerot vuosi kerrallaan päivämäärineen.
         </p>
         <div className="pills">
           {years.map((year) => (

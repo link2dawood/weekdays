@@ -53,15 +53,15 @@ const WeeksInEachMonth = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to={"/"}>Home</Link> /{" "}
-        <Link to={`/year/${year}`}>Weeks {year}</Link> / {M_FULL[mi]}
+        <Link to={"/"}>Etusivu</Link> /{" "}
+        <Link to={`/year/${year}`}>Viikot {year}</Link> / {M_FULL[mi]}
       </div>
       <h2 id="mh">
-        Weeks in {M_FULL[mi]} {year}{" "}
+        Viikot – {M_FULL[mi]} {year}{" "}
       </h2>
       <p className="lead">
-        These week numbers fall in {M_FULL[mi]} {year} . Some weeks may continue
-        into the adjacent month.
+        Nämä viikkonumerot osuvat kuukauteen {M_FULL[mi]} {year} . Osa viikoista
+        voi jatkua viereiseen kuukauteen.
       </p>
       <div className="grid">
         {weeks.map((w) => (
@@ -70,11 +70,11 @@ const WeeksInEachMonth = () => {
       </div>
       <div className="prevnext">
         <Link to={`/month/${prevM}/${prevY}`}>
-          <span className="lbl">Previous</span>
+          <span className="lbl">Edellinen</span>
           {M_FULL[prevM - 1]} {prevY}
         </Link>
         <Link className="nx" to={`/month/${nextM}/${nextY}`}>
-          <span className="lbl">Next</span>
+          <span className="lbl">Seuraava</span>
           {M_FULL[nextM - 1]} {nextY}
         </Link>
       </div>

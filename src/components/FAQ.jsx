@@ -4,35 +4,35 @@ const FAQ = () => {
   return (
     <>
       <section>
-        <h2 className="mh">Frequently asked questions</h2>
+        <h2 className="mh">Usein kysytyt kysymykset</h2>
         <details open>
-          <summary>What week is it now?</summary>
+          <summary>Mikä viikko nyt on?</summary>
           <p>
-            The current weekly issue is displayed at the top of this page as
-            soon as you open it. The issue is calculated based on the date on
-            your device, so it is always up-to-date.
+            Kuluva viikkonumero näkyy tämän sivun yläreunassa heti kun avaat
+            sen. Viikko lasketaan laitteesi päivämäärän perusteella, joten se on
+            aina ajan tasalla.
           </p>
         </details>
         <details>
-          <summary>Does the week start on Monday or Sunday?</summary>
+          <summary>Alkaako viikko maanantaista vai sunnuntaista?</summary>
           <p>
-            In Finland, the week starts on Monday and ends on Sunday according
-            to the ISO 8601 standard.
+            Suomessa viikko alkaa maanantaista ja päättyy sunnuntaihin ISO 8601
+            -standardin mukaisesti.
           </p>
         </details>
         <details>
-          <summary>How is the week number calculated?</summary>
+          <summary>Miten viikkonumero lasketaan?</summary>
           <p>
-            The first week of the year is the one that includes the first
-            Thursday of the year, January 4. From then on, each period starting
-            on a Monday increases the week number by one.
+            Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen
+            torstain, 4. tammikuuta. Siitä eteenpäin jokainen maanantaista
+            alkava jakso kasvattaa viikkonumeroa yhdellä.
           </p>
         </details>
         <details>
-          <summary>How many weeks are there in a year?</summary>
+          <summary>Kuinka monta viikkoa vuodessa on?</summary>
           <p>
-            Most years have 52 weeks. Some years have 53 weeks when the year
-            starts on a Thursday or a leap year starts on a Wednesday.
+            Useimmissa vuosissa on 52 viikkoa. Joissakin vuosissa on 53 viikkoa,
+            kun vuosi alkaa torstaista tai karkausvuosi alkaa keskiviikosta.
           </p>
         </details>
       </section>

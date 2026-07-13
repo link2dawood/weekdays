@@ -38,7 +38,7 @@ const Navbar = () => {
         <button
           className={`menu-toggle ${isOpen ? "is-open" : ""}`}
           onClick={toggleMenu}
-          aria-label="Toggle navigation menu"
+          aria-label="Avaa navigointivalikko"
         >
           <span className="bar"></span>
           <span className="bar"></span>
@@ -48,19 +48,19 @@ const Navbar = () => {
         {/* Navigation Links Grid Block */}
         <nav className={`nav-links ${isOpen ? "mobile-open" : ""}`}>
           <Link id="navYear" to={`/year/${Y_NOW}`} onClick={closeMenu}>
-            This year's weeks
+            Tämän vuoden viikot
           </Link>
           <Link id="navPrint" to={`/print/${year}`} onClick={closeMenu}>
-            Printable
+            Tulostettava
           </Link>
           <Link to="/what-is-a-week-number" onClick={closeMenu}>
-            About weeks
+            Tietoa viikoista
           </Link>
           <Link to="/about-us" onClick={closeMenu}>
-            About us
+            Tietoa meistä
           </Link>
           <Link to="/contact-us" onClick={closeMenu}>
-            Contact us
+            Ota yhteyttä
           </Link>
         </nav>
 
@@ -71,7 +71,7 @@ const Navbar = () => {
           to={`/year/${Y_NOW}`}
           onClick={closeMenu}
         >
-          Wk {weekNow}
+          Vk {weekNow}
         </Link>
       </div>
     </header>

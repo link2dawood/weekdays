@@ -6,55 +6,56 @@ const PrivacyPolicy = () => {
     <>
       <section className="app">
         <div className="breadcrumb">
-          <Link to="/">Home</Link> / Privacy Policy
+          <Link to="/">Etusivu</Link> / Tietosuojaseloste
         </div>
-        <h1>Privacy Policy</h1>
+        <h1>Tietosuojaseloste</h1>
         <div className="prose">
-          <p>Last Updated: June 23, 2026</p>
+          <p>Päivitetty viimeksi: 23. kesäkuuta 2026</p>
         </div>
-        <h2>1. Information We Collect</h2>
+        <h2>1. Keräämämme tiedot</h2>
         <div className="prose">
           <p>
-            <strong>Log Files:</strong> Like most standard web servers, we
-            follow a standard procedure of using log files. These files log
-            visitors when they visit websites. The information collected
-            includes internet protocol (IP) addresses, browser type, Internet
-            Service Provider (ISP), date and time stamp, and referring/exit
-            pages.
+            <strong>Lokitiedostot:</strong> Kuten useimmat tavanomaiset
+            verkkopalvelimet, noudatamme vakiokäytäntöä lokitiedostojen
+            käytössä. Nämä tiedostot kirjaavat kävijät heidän vieraillessaan
+            verkkosivustoilla. Kerätyt tiedot sisältävät IP-osoitteet,
+            selaintyypin, internetpalveluntarjoajan (ISP), päivämäärä- ja
+            aikaleiman sekä viittaavat/poistumissivut.
           </p>
           <p>
-            <strong>Cookies and Web Beacons:</strong> We use basic cookies to
-            store user preferences (such as your chosen theme or dark mode
-            preference) and to optimize your user experience.
+            <strong>Evästeet ja verkkojäljitteet:</strong> Käytämme
+            perusevästeitä käyttäjän asetusten (kuten valitseman teeman tai
+            tumman tilan) tallentamiseen ja käyttökokemuksesi optimoimiseen.
           </p>
         </div>
 
-        <h2>2. How We Use Your Information</h2>
+        <h2>2. Miten käytämme tietojasi</h2>
         <div className="prose">
-          <p>We use the information we collect to:</p>
+          <p>Käytämme keräämiämme tietoja seuraaviin tarkoituksiin:</p>
           <ul>
-            <li>Provide, operate, and maintain our website.</li>
-            <li>Improve, personalize, and expand our platform’s tools.</li>
-            <li>Understand and analyze how you use our website.</li>
-            <li>Monitor and prevent technical bugs or fraudulent activity.</li>
+            <li>Verkkosivustomme tarjoaminen, ylläpito ja huolto.</li>
+            <li>Alustamme työkalujen parantaminen, mukauttaminen ja laajentaminen.</li>
+            <li>Sen ymmärtäminen ja analysointi, miten käytät verkkosivustoamme.</li>
+            <li>Teknisten vikojen ja petollisen toiminnan seuranta ja estäminen.</li>
           </ul>
         </div>
 
-        <h2>3. Data Protection (GDPR & CCPA)</h2>
+        <h2>3. Tietosuoja (GDPR & CCPA)</h2>
         <div className="prose">
           <p>
-            We do not sell, rent, or share your personal data with third
-            parties. Your browser's data stays local to your machine wherever
-            possible. You have the right to request access to, correction of, or
-            deletion of any minimal logs associated with your IP address.
+            Emme myy, vuokraa tai jaa henkilötietojasi kolmansille osapuolille.
+            Selaimesi tiedot pysyvät laitteellasi paikallisina aina kun se on
+            mahdollista. Sinulla on oikeus pyytää pääsyä IP-osoitteeseesi
+            liittyviin vähäisiin lokitietoihin, niiden korjaamista tai
+            poistamista.
           </p>
         </div>
 
-        <h2>4. Consent</h2>
+        <h2>4. Suostumus</h2>
         <div className="prose">
           <p>
-            By using our website, you hereby consent to our Privacy Policy and
-            agree to its terms.
+            Käyttämällä verkkosivustoamme annat suostumuksesi
+            tietosuojaselosteellemme ja hyväksyt sen ehdot.
           </p>
         </div>
       </section>

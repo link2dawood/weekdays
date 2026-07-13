@@ -39,8 +39,8 @@ const Weekcounter = () => {
 
     //Generate dynamic custom Range string
     const options = { month: "long", day: "numeric" };
-    const startStr = monday.toLocaleDateString("en-US", options);
-    const endStr = sunday.toLocaleDateString("en-US", options);
+    const startStr = monday.toLocaleDateString("fi-FI", options);
+    const endStr = sunday.toLocaleDateString("fi-FI", options);
     const dynamicRangeText = `${startStr} – ${endStr}, ${yrNow}`;
 
     // Calculate percentage of year passed
@@ -71,15 +71,15 @@ const Weekcounter = () => {
     <>
       <div className="wrap">
         <div>
-          <div className="eyebrow">Week number tool</div>
+          <div className="eyebrow">Viikkonumerotyökalu</div>
         </div>
         <div className="hero">
-          <h1>What week is it now?</h1>
+          <h1>Mikä viikko nyt on?</h1>
           <div className="hero-card">
             <div>
-              <div className="now-label">Right now it is</div>
+              <div className="now-label">Juuri nyt on</div>
               <div className="week-big">
-                <span className="vk">Week</span>
+                <span className="vk">Viikko</span>
                 <span id="weekNow">{dateInfo.weekNow}</span>
               </div>
               <div className="meta">
@@ -94,11 +94,11 @@ const Weekcounter = () => {
             <div className="progress-block">
               <div className="progress-head">
                 <span>
-                  Year <b id="yearNow">{dateInfo.yearNow}</b>
+                  Vuosi <b id="yearNow">{dateInfo.yearNow}</b>
                 </span>
                 <span>
                   <b id="weekOf">
-                    Week {dateInfo.weekNow} / {dateInfo.totalWeeks}
+                    Viikko {dateInfo.weekNow} / {dateInfo.totalWeeks}
                   </b>
                 </span>
               </div>
@@ -109,8 +109,8 @@ const Weekcounter = () => {
               </div>
               <div className="comb" id="comb" aria-hidden="true"></div>
               <div className="comb-foot">
-                <span id="pct">{pct}% year-to-date</span>
-                <span>52/53 weeks</span>
+                <span id="pct">{pct}% vuodesta kulunut</span>
+                <span>52/53 viikkoa</span>
               </div>
             </div>
           </div>

@@ -16,8 +16,8 @@ const WeeksOfMonth = () => {
     const currentYrNow = isoYear(now);
 
     // Generate English Month Title Layout (e.g., "Weeks of June 2026")
-    const monthName = now.toLocaleString("en-US", { month: "long" });
-    setMonthTitle(`Weeks in ${monthName} ${now.getFullYear()}`);
+    const monthName = now.toLocaleString("fi-FI", { month: "long" });
+    setMonthTitle(`Kuukauden viikot – ${monthName} ${now.getFullYear()}`);
 
     // Get the last day of the current month (e.g., 28, 30, 31)
     const daysInMonth = new Date(
@@ -81,7 +81,7 @@ const WeeksOfMonth = () => {
                 key={wk.id}
                 className={`wk ${wk.isCurrent ? "current" : ""}`}
               >
-                <div className="n">Week {wk.weekNum}</div>
+                <div className="n">Viikko {wk.weekNum}</div>
                 <div className="r">{wk.rangeText}</div>
               </div>
             </Link>

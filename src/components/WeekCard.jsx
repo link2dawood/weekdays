@@ -12,7 +12,7 @@ const WeekCard = ({ w, y }) => {
 
   return (
     <Link className={`wk ${isCurrent ? "current" : ""}`} to={`/week/${w}/${y}`}>
-      <div className="n">Week {w}</div>
+      <div className="n">Viikko {w}</div>
 
       <div className="r">
         {dShort(mo)} – {dShort(su)}

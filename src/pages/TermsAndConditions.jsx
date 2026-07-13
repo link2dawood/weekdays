@@ -5,55 +5,55 @@ const TermsAndConditions = () => {
   return (
     <section className="app">
       <div className="breadcrumb">
-        <Link to="/">Home</Link> / Terms And Conditions
+        <Link to="/">Etusivu</Link> / Käyttöehdot
       </div>
-      <h1>Terms And Conditions</h1>
-      <p>Last Updated: June 23, 2026</p>
+      <h1>Käyttöehdot</h1>
+      <p>Päivitetty viimeksi: 23. kesäkuuta 2026</p>
       <div className="prose">
         <p>
-          Welcome to <strong>Week Now</strong> These terms and conditions
-          outline the rules and regulations for the use of our website and
-          services.
+          Tervetuloa palveluun <strong>Viikko Nyt</strong>. Nämä käyttöehdot
+          määrittelevät verkkosivustomme ja palveluidemme käyttöä koskevat
+          säännöt ja määräykset.
         </p>
       </div>
-      <h2>1. Acceptance of Terms</h2>
+      <h2>1. Ehtojen hyväksyminen</h2>
       <div className="prose">
         <p>
-          By accessing this website, we assume you accept these terms and
-          conditions in full. Do not continue to use <strong>Week Now</strong>{" "}
-          if you do not agree to take all of the terms and conditions stated on
-          this page.
+          Käyttämällä tätä verkkosivustoa oletamme, että hyväksyt nämä
+          käyttöehdot kokonaisuudessaan. Älä jatka palvelun{" "}
+          <strong>Viikko Nyt</strong> käyttöä, jos et hyväksy kaikkia tällä
+          sivulla mainittuja käyttöehtoja.
         </p>
       </div>
-      <h2>2. Intellectual Property</h2>
+      <h2>2. Immateriaalioikeudet</h2>
       <div className="prose">
         <p>
-          Unless otherwise stated, <strong>Week Now</strong> owns the
-          intellectual property rights for all material and code on this
-          website. All intellectual property rights are reserved. You may view
-          and print pages for your own personal use, subject to restrictions set
-          in these terms.
+          Ellei toisin mainita, <strong>Viikko Nyt</strong> omistaa
+          immateriaalioikeudet kaikkeen tämän verkkosivuston materiaaliin ja
+          koodiin. Kaikki immateriaalioikeudet pidätetään. Voit tarkastella ja
+          tulostaa sivuja omaan henkilökohtaiseen käyttöösi näissä ehdoissa
+          asetettujen rajoitusten mukaisesti.
         </p>
       </div>
-      <p>You must not:</p>
+      <p>Et saa:</p>
       <ul>
         <li>
-          Republish material or core source code from this website without
-          explicit credit.
+          Julkaista uudelleen tämän verkkosivuston materiaalia tai
+          lähdekoodia ilman nimenomaista lähdemainintaa.
         </li>
-        <li>Sell, rent, or sub-license material from the platform.</li>
-        <li>Reproduce, duplicate, or copy material for commercial clones.</li>
+        <li>Myydä, vuokrata tai alilisensoida alustan materiaalia.</li>
+        <li>Jäljentää, monistaa tai kopioida materiaalia kaupallisiin kopioihin.</li>
       </ul>
 
-      <h2>3. Disclaimer of Liability</h2>
+      <h2>3. Vastuuvapauslauseke</h2>
       <div className="prose">
         <p>
-          The tools and calculators on this website are provided on an "as-is"
-          basis. While we strive for absolute technical and mathematical
-          accuracy, we make no warranties that the calendar data or formulas are
-          completely free of edge-case errors. <strong>Week Now</strong> will
-          not be held liable for any scheduling disruptions, data discrepancies,
-          or damages arising out of the use of our web calculators.
+          Tämän verkkosivuston työkalut ja laskurit tarjotaan sellaisenaan
+          ("as-is"). Vaikka pyrimme ehdottomaan tekniseen ja matemaattiseen
+          tarkkuuteen, emme takaa, että kalenteritiedot tai kaavat ovat täysin
+          vapaita erikoistapausten virheistä. <strong>Viikko Nyt</strong> ei ole
+          vastuussa aikatauluhäiriöistä, tietojen epäjohdonmukaisuuksista tai
+          vahingoista, jotka aiheutuvat verkkolaskureidemme käytöstä.
         </p>
       </div>
     </section>
