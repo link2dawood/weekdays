@@ -6,7 +6,15 @@
   --line: rgba(21, 33, 31, 0.12);
   --accent: #1f7a5c;
   --accent-deep: #16573f;
+  --accent-soft: rgba(31, 122, 92, 0.12);
   --amber: #e0a23b;
+  /* Dark green surface (footer) with white text */
+  --footer-bg: #0f2a21;
+  --footer-heading: #ffffff;
+  --footer-text: #ffffff;
+  --footer-link: rgba(255, 255, 255, 0.85);
+  --footer-link-hover: #ffffff;
+  --footer-muted: #ffffff;
   --radius: 16px;
   --maxw: 1000px;
 }
@@ -310,6 +318,7 @@ section {
   font-size: 0.33em;
   font-weight: 700;
   color: var(--accent-deep);
+  letter-spacing: 0.02em;
 }
 .meta .date {
   font-family: "IBM Plex Mono", monospace;
@@ -916,7 +925,7 @@ details p {
 /* Reuses the exact layout parameters of your app's ".panel" block */
 .contact-card {
   background: var(--card);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 32px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
@@ -924,7 +933,7 @@ details p {
 
 /* Form Headings match your app's typography scale */
 .contact-card h2 {
-  color: #062f27;
+  color: var(--accent-deep);
   font-size: 24px;
   font-weight: 700;
   margin: 0 0 8px 0;
@@ -932,7 +941,7 @@ details p {
 
 /* Matches your ".lead" class text parameters */
 .contact-subtitle {
-  color: #648b71;
+  color: var(--ink-soft);
   font-size: 16px;
   margin: 0 0 28px 0;
   line-height: 1.5;
@@ -954,7 +963,7 @@ details p {
 .form-group label {
   font-size: 14px;
   font-weight: 600;
-  color: #062f27;
+  color: var(--accent-deep);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -963,11 +972,11 @@ details p {
 .form-group input,
 .form-group textarea {
   padding: 12px 14px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--line);
   border-radius: 6px;
   font-size: 15px;
-  color: #062f27;
-  background-color: #f8fafc;
+  color: var(--ink);
+  background-color: #ffffff;
   transition: all 0.15s ease-in-out;
   outline: none;
 }
@@ -976,8 +985,8 @@ details p {
 .form-group input:focus,
 .form-group textarea:focus {
   background-color: #ffffff;
-  border-color: #34d399;
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .form-group textarea {
@@ -1038,7 +1047,7 @@ footer {
 }
 
 .site-footer {
-  background-color: #062f27;
+  background-color: var(--footer-bg);
   border-top: 1px solid rgba(240, 253, 244, 0.15);
   margin-top: 80px;
   /* padding: 64px 24px 32px 24px;*/
@@ -1072,7 +1081,7 @@ footer {
   font-size: 20px; /* Slightly scaled up for professional hierarchy */
   font-weight: 700;
   /* Light crisp mint-white for the main logo text */
-  color: #f0fdf4;
+  color: var(--footer-heading);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1098,12 +1107,11 @@ footer {
 }
 
 .footer-desc {
-  /* Soft light sage green for the paragraph text (highly readable) */
-  color: #a7f3d0;
+  color: var(--footer-text);
   font-size: 14px;
   line-height: 1.6;
   margin: 0;
-  opacity: 0.85;
+  opacity: 1;
 }
 
 /* Nav columns layout logic */
@@ -1112,8 +1120,7 @@ footer {
 }
 
 .footer-links-col h3 {
-  /* Bright white-mint for the column headers */
-  color: #ecfdf5;
+  color: var(--footer-heading);
   font-size: 12px; /* Smaller, sharper uppercase header */
   font-weight: 600;
   text-transform: uppercase;
@@ -1132,8 +1139,7 @@ footer {
 
 /* Links default states */
 .footer-links-col a {
-  /* Beautifully balanced muted text color */
-  color: #cbd5e1;
+  color: var(--footer-link);
   text-decoration: none;
   font-size: 14px;
   transition:
@@ -1144,7 +1150,7 @@ footer {
 
 /* Vibrant pastel green hover effect */
 .footer-links-col a:hover {
-  color: #34d399; /* Uses your professional hover mint */
+  color: var(--footer-link-hover);
 }
 
 /* FIXED: Replaced harsh divider border with matching subtle translucent rule */
@@ -1165,7 +1171,7 @@ footer {
   flex-wrap: wrap;
   gap: 16px;
   /* Soft muted baseline tracking info text */
-  color: #6ee7b7;
+  color: var(--footer-muted);
   font-size: 13px;
   opacity: 0.8;
 }
