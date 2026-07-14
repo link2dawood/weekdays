@@ -17,7 +17,9 @@ function Footer() {
           <div className="brand-dark">
             <img
               src="/logo-horizontal-dark-cropped.svg"
-              alt="logo-horizontal-dark"
+              alt="Viikko Nro"
+              width="592"
+              height="122"
             />
           </div>
           <p className="footer-desc">

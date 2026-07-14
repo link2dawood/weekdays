@@ -31,7 +31,12 @@ const Navbar = () => {
         {/* Brand Text Block */}
         <Link className="brand" to="/" onClick={closeMenu}>
           {/* <span className="dot"></span>Week Now */}
-          <img src="./logo-horizontal-cropped.svg" alt="logo-horizontal" />
+          <img
+            src="./logo-horizontal-cropped.svg"
+            alt="Viikko Nro"
+            width="592"
+            height="122"
+          />
         </Link>
 
         {/* Hamburger Menu Toggle Button */}
