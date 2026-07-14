@@ -25,7 +25,6 @@ const WeeksOfMonth = () => {
       now.getMonth() + 1,
       0,
     ).getDate();
-    console.log(daysInMonth);
 
     const computedWeeks = [];
     const seen = {};

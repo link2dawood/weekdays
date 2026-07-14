@@ -14,7 +14,6 @@ const WeekDays = () => {
   // console.log(week, year);
   const w = Number(week);
   const y = Number(year);
-  console.log(w, y);
 
   const NOW = new Date();
   const W_NOW = isoWeek(NOW);
@@ -83,7 +82,6 @@ const WeekDays = () => {
     nextY = y + 1;
     nextW = 1;
   }
-  console.log(prevW, y, nextW, y);
   return (
     <section className="app">
       <div className="breadcrumb">

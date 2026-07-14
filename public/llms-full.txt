@@ -1,0 +1,75 @@
+# Viikko Nro – täysi sisältö
+
+> Viikko Nro (viikkonro.fi) on ilmainen suomalainen viikkolaskuri. Se näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon, viikonpäivät ja ajanjakson ISO 8601 -standardin mukaan. Tämä tiedosto sisältää palvelun keskeisen sisällön kokonaisuudessaan kielimalleja varten.
+
+## Tietoa viikkonumeroista
+
+Suomessa ja koko Euroopassa viikot numeroidaan ISO 8601 -standardin mukaan. Viikko alkaa aina maanantaista ja päättyy sunnuntaihin. Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen torstain, eli aina viikko, johon osuu 4. tammikuuta. Tämän vuoksi vuoden ensimmäinen viikko voi sisältää joulukuun viimeisiä päiviä, tai tammikuun ensimmäiset päivät voivat kuulua edellisen vuoden viimeiseen viikkoon. Tavallisessa vuodessa on 52 viikkoa; noin joka viides tai kuudes vuosi on 53 viikon vuosi.
+
+## Usein kysytyt kysymykset
+
+### Kuluva viikko
+
+Q: Mikä viikko nyt on?
+A: Kuluva viikkonumero näkyy heti etusivun yläreunassa. Se lasketaan automaattisesti laitteesi päivämäärän perusteella ISO 8601 -standardin mukaan, joten näet aina oikean ja ajantasaisen viikon.
+
+Q: Monesko viikko menee juuri nyt?
+A: Näet kuluvan viikon numeron etusivun laskurista. Suomessa viikot numeroidaan ISO 8601 -standardilla, ja vuoteen mahtuu 52 tai 53 viikkoa.
+
+Q: Miten tarkistan minkä tahansa päivän viikkonumeron?
+A: Valitse päivämäärä etusivun päivämäärähausta, niin näet kyseisen päivän viikkonumeron, vuoden ja viikon ajanjakson. Voit tarkistaa minkä tahansa menneen tai tulevan päivän viikon.
+
+### Viikon alkaminen ja ISO 8601
+
+Q: Alkaako viikko maanantaista vai sunnuntaista?
+A: Suomessa ja koko Euroopassa viikko alkaa maanantaista ja päättyy sunnuntaihin ISO 8601 -standardin mukaisesti. Esimerkiksi Yhdysvalloissa viikko alkaa usein sunnuntaista.
+
+Q: Mikä on ISO 8601 -standardi?
+A: ISO 8601 on kansainvälinen standardi päivämäärien ja viikkojen esittämiseen. Sen mukaan viikko alkaa maanantaista, ja vuoden ensimmäinen viikko on se, johon osuu vuoden ensimmäinen torstai.
+
+Q: Milloin viikko alkaa ja päättyy?
+A: Viikko alkaa maanantaina kello 00.00 ja päättyy sunnuntaina keskiyöllä. Jokainen viikko kestää tasan seitsemän vuorokautta.
+
+### Viikkonumeron laskenta
+
+Q: Miten viikkonumero lasketaan?
+A: Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen torstain (eli aina 4. tammikuuta). Tästä eteenpäin jokainen maanantaista alkava jakso kasvattaa viikkonumeroa yhdellä.
+
+Q: Mikä on vuoden ensimmäinen viikko?
+A: Viikko 1 on se viikko, johon osuu vuoden ensimmäinen torstai. Käytännössä se on aina viikko, joka sisältää 4. tammikuuta.
+
+Q: Mihin viikkoon 1. tammikuuta kuuluu?
+A: Se riippuu viikonpäivästä. Jos 1. tammikuuta on maanantain ja torstain välillä, se kuuluu uuden vuoden viikkoon 1. Jos se on perjantain ja sunnuntain välillä, se kuuluu edellisen vuoden viimeiseen viikkoon (52 tai 53).
+
+### Viikkojen määrä vuodessa
+
+Q: Kuinka monta viikkoa vuodessa on?
+A: Useimmissa vuosissa on 52 viikkoa. Noin joka viides tai kuudes vuosi on 53 viikon vuosi.
+
+Q: Milloin vuodessa on 53 viikkoa?
+A: Vuodessa on 53 viikkoa, kun vuosi alkaa torstaista tai kun karkausvuosi alkaa keskiviikosta. Esimerkiksi vuosissa 2020 ja 2026 on 53 viikkoa, ja seuraava tällainen vuosi on 2032.
+
+Q: Voiko vuodessa olla 54 viikkoa?
+A: Ei. ISO 8601 -viikkonumerointi tuottaa aina joko 52 tai 53 viikkoa vuodessa, ei koskaan enempää eikä vähempää.
+
+### Erikoistapaukset
+
+Q: Miksi tammikuun alkupäivät voivat kuulua edellisen vuoden viikkoon?
+A: Koska viikko lasketaan kokonaisena maanantaista sunnuntaihin, vuoden ensimmäiset päivät voivat kuulua edellisen vuoden viikkoon 52 tai 53, jos kyseisen viikon torstai osuu vielä vanhalle vuodelle.
+
+Q: Mihin viikkoon joulukuun loppupäivät kuuluvat?
+A: Joulukuun viimeiset päivät voivat kuulua jo seuraavan vuoden viikkoon 1, jos kyseisen viikon torstai osuu tammikuulle. Esimerkiksi 29. joulukuuta 2025 kuuluu jo vuoden 2026 viikkoon 1.
+
+Q: Mikä on viikko 53?
+A: Viikko 53 on ylimääräinen viikko, joka esiintyy vain 53 viikon vuosina. Se on tällaisen vuoden viimeinen viikko ennen seuraavan vuoden viikkoa 1.
+
+### Palvelun käyttö
+
+Q: Onko viikkolaskuri ilmainen?
+A: Kyllä. Viikko Nro on täysin ilmainen eikä sisällä mainoksia. Voit tarkistaa viikkonumerot ilman rekisteröitymistä.
+
+Q: Toimiiko palvelu mobiililla?
+A: Kyllä. Sivusto on optimoitu mobiili-, tabletti- ja työpöytäselaimille, joten voit tarkistaa viikkonumeron millä tahansa laitteella.
+
+Q: Mihin viikkonumeroita käytetään?
+A: Viikkonumeroita käytetään laajasti työelämässä, kouluissa, projektien aikataulutuksessa ja logistiikassa esimerkiksi toimitusten ja tapaamisten ajoittamiseen.

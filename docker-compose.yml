@@ -1,0 +1,21 @@
+# Local build & run: `docker compose up --build`
+# Serves the site at http://localhost:3005
+#
+# On the server, deployment is handled by GitHub Actions (it pulls the prebuilt
+# image and runs it) — this compose file is mainly for local testing, but you
+# can also use it on the server by swapping `build:` for `image:` (see comment).
+services:
+  web:
+    build:
+      context: .
+      args:
+        # Optional: put your key in a local .env file or your shell.
+        VITE_WEB3FORMS_ACCESS_KEY: ${VITE_WEB3FORMS_ACCESS_KEY:-}
+    # To run the prebuilt CI image instead of building locally, comment out the
+    # `build:` block above and uncomment the line below (replace OWNER/REPO):
+    # image: ghcr.io/OWNER/REPO:latest
+    image: viikkonro:local
+    container_name: viikkonro
+    ports:
+      - "3005:3005"
+    restart: unless-stopped

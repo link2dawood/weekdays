@@ -1,0 +1,26 @@
+node_modules
+dist
+dist-ssr
+dist-server
+.git
+.github
+.gitignore
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Never bake local secrets into the image — the real key is supplied via
+# the VITE_WEB3FORMS_ACCESS_KEY build arg in CI.
+.env
+.env.*
+*.local
+
+.vscode
+.idea
+.DS_Store
+README.md
+Dockerfile
+.dockerignore
+docker-compose.yml

@@ -11,7 +11,7 @@ const TermsAndConditions = () => {
       <p>Päivitetty viimeksi: 23. kesäkuuta 2026</p>
       <div className="prose">
         <p>
-          Tervetuloa palveluun <strong>Viikko Nyt</strong>. Nämä käyttöehdot
+          Tervetuloa palveluun <strong>Viikko Nro</strong>. Nämä käyttöehdot
           määrittelevät verkkosivustomme ja palveluidemme käyttöä koskevat
           säännöt ja määräykset.
         </p>
@@ -21,14 +21,14 @@ const TermsAndConditions = () => {
         <p>
           Käyttämällä tätä verkkosivustoa oletamme, että hyväksyt nämä
           käyttöehdot kokonaisuudessaan. Älä jatka palvelun{" "}
-          <strong>Viikko Nyt</strong> käyttöä, jos et hyväksy kaikkia tällä
+          <strong>Viikko Nro</strong> käyttöä, jos et hyväksy kaikkia tällä
           sivulla mainittuja käyttöehtoja.
         </p>
       </div>
       <h2>2. Immateriaalioikeudet</h2>
       <div className="prose">
         <p>
-          Ellei toisin mainita, <strong>Viikko Nyt</strong> omistaa
+          Ellei toisin mainita, <strong>Viikko Nro</strong> omistaa
           immateriaalioikeudet kaikkeen tämän verkkosivuston materiaaliin ja
           koodiin. Kaikki immateriaalioikeudet pidätetään. Voit tarkastella ja
           tulostaa sivuja omaan henkilökohtaiseen käyttöösi näissä ehdoissa
@@ -51,7 +51,7 @@ const TermsAndConditions = () => {
           Tämän verkkosivuston työkalut ja laskurit tarjotaan sellaisenaan
           ("as-is"). Vaikka pyrimme ehdottomaan tekniseen ja matemaattiseen
           tarkkuuteen, emme takaa, että kalenteritiedot tai kaavat ovat täysin
-          vapaita erikoistapausten virheistä. <strong>Viikko Nyt</strong> ei ole
+          vapaita erikoistapausten virheistä. <strong>Viikko Nro</strong> ei ole
           vastuussa aikatauluhäiriöistä, tietojen epäjohdonmukaisuuksista tai
           vahingoista, jotka aiheutuvat verkkolaskureidemme käytöstä.
         </p>

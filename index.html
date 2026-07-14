@@ -9,7 +9,7 @@
       name="description"
       content="Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan."
     />
-    <link rel="canonical" href="https://viikkonyt.fi/" />
+    <link rel="canonical" href="https://viikkonro.fi/" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fi_FI" />
     <meta
@@ -20,8 +20,215 @@
       property="og:description"
       content="Katso heti kuluva viikkonumero ja laske minkä tahansa päivän viikko. Ilmainen, nopea ja ilman mainoksia."
     />
-    <meta property="og:url" content="https://viikkonyt.fi/" />
+    <meta property="og:url" content="https://viikkonro.fi/" />
+    <meta property="og:site_name" content="Viikko Nro" />
+    <meta property="og:image" content="https://viikkonro.fi/logo-horizontal.svg" />
     <meta name="theme-color" content="#15211F" />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Mikä viikko nyt? · Viikkonumero ja viikkolaskuri"
+    />
+    <meta
+      name="twitter:description"
+      content="Katso heti kuluva viikkonumero ja laske minkä tahansa päivän viikko. Ilmainen, nopea ja ilman mainoksia."
+    />
+
+    <!-- GEO / structured data (schema.org). AI + search crawlers read this even
+         without running JavaScript. Keep the FAQ entries in sync with
+         src/data/faqs.js. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://viikkonro.fi/#website",
+            "url": "https://viikkonro.fi/",
+            "name": "Viikko Nro",
+            "description": "Ilmainen viikkolaskuri, joka näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
+            "inLanguage": "fi-FI",
+            "publisher": { "@id": "https://viikkonro.fi/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://viikkonro.fi/#organization",
+            "name": "Viikko Nro",
+            "url": "https://viikkonro.fi/",
+            "logo": "https://viikkonro.fi/logo-horizontal.svg"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://viikkonro.fi/#app",
+            "name": "Viikko Nro – viikkolaskuri",
+            "url": "https://viikkonro.fi/",
+            "applicationCategory": "UtilitiesApplication",
+            "operatingSystem": "All",
+            "inLanguage": "fi-FI",
+            "browserRequirements": "Requires JavaScript",
+            "description": "Näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon, viikonpäivät ja ajanjakson ISO 8601 -standardin mukaan.",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://viikkonro.fi/#faq",
+            "inLanguage": "fi-FI",
+            "dateModified": "2026-07-14",
+            "isPartOf": { "@id": "https://viikkonro.fi/#website" },
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Mikä viikko nyt on?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Kuluva viikkonumero näkyy heti etusivun yläreunassa. Se lasketaan automaattisesti laitteesi päivämäärän perusteella ISO 8601 -standardin mukaan, joten näet aina oikean ja ajantasaisen viikon."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Monesko viikko menee juuri nyt?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Näet kuluvan viikon numeron etusivun laskurista. Suomessa viikot numeroidaan ISO 8601 -standardilla, ja vuoteen mahtuu 52 tai 53 viikkoa."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Miten tarkistan minkä tahansa päivän viikkonumeron?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Valitse päivämäärä etusivun päivämäärähausta, niin näet kyseisen päivän viikkonumeron, vuoden ja viikon ajanjakson. Voit tarkistaa minkä tahansa menneen tai tulevan päivän viikon."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Alkaako viikko maanantaista vai sunnuntaista?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Suomessa ja koko Euroopassa viikko alkaa maanantaista ja päättyy sunnuntaihin ISO 8601 -standardin mukaisesti. Esimerkiksi Yhdysvalloissa viikko alkaa usein sunnuntaista."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mikä on ISO 8601 -standardi?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "ISO 8601 on kansainvälinen standardi päivämäärien ja viikkojen esittämiseen. Sen mukaan viikko alkaa maanantaista, ja vuoden ensimmäinen viikko on se, johon osuu vuoden ensimmäinen torstai."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Milloin viikko alkaa ja päättyy?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Viikko alkaa maanantaina kello 00.00 ja päättyy sunnuntaina keskiyöllä. Jokainen viikko kestää tasan seitsemän vuorokautta."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Miten viikkonumero lasketaan?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen torstain (eli aina 4. tammikuuta). Tästä eteenpäin jokainen maanantaista alkava jakso kasvattaa viikkonumeroa yhdellä."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mikä on vuoden ensimmäinen viikko?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Viikko 1 on se viikko, johon osuu vuoden ensimmäinen torstai. Käytännössä se on aina viikko, joka sisältää 4. tammikuuta."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mihin viikkoon 1. tammikuuta kuuluu?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Se riippuu viikonpäivästä. Jos 1. tammikuuta on maanantain ja torstain välillä, se kuuluu uuden vuoden viikkoon 1. Jos se on perjantain ja sunnuntain välillä, se kuuluu edellisen vuoden viimeiseen viikkoon (52 tai 53)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Kuinka monta viikkoa vuodessa on?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Useimmissa vuosissa on 52 viikkoa. Noin joka viides tai kuudes vuosi on 53 viikon vuosi."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Milloin vuodessa on 53 viikkoa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Vuodessa on 53 viikkoa, kun vuosi alkaa torstaista tai kun karkausvuosi alkaa keskiviikosta. Esimerkiksi vuosissa 2020 ja 2026 on 53 viikkoa, ja seuraava tällainen vuosi on 2032."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Voiko vuodessa olla 54 viikkoa?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ei. ISO 8601 -viikkonumerointi tuottaa aina joko 52 tai 53 viikkoa vuodessa, ei koskaan enempää eikä vähempää."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Miksi tammikuun alkupäivät voivat kuulua edellisen vuoden viikkoon?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Koska viikko lasketaan kokonaisena maanantaista sunnuntaihin, vuoden ensimmäiset päivät voivat kuulua edellisen vuoden viikkoon 52 tai 53, jos kyseisen viikon torstai osuu vielä vanhalle vuodelle."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mihin viikkoon joulukuun loppupäivät kuuluvat?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Joulukuun viimeiset päivät voivat kuulua jo seuraavan vuoden viikkoon 1, jos kyseisen viikon torstai osuu tammikuulle. Esimerkiksi 29. joulukuuta 2025 kuuluu jo vuoden 2026 viikkoon 1."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mikä on viikko 53?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Viikko 53 on ylimääräinen viikko, joka esiintyy vain 53 viikon vuosina. Se on tällaisen vuoden viimeinen viikko ennen seuraavan vuoden viikkoa 1."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Onko viikkolaskuri ilmainen?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Kyllä. Viikko Nro on täysin ilmainen eikä sisällä mainoksia. Voit tarkistaa viikkonumerot ilman rekisteröitymistä."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Toimiiko palvelu mobiililla?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Kyllä. Sivusto on optimoitu mobiili-, tabletti- ja työpöytäselaimille, joten voit tarkistaa viikkonumeron millä tahansa laitteella."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mihin viikkonumeroita käytetään?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Viikkonumeroita käytetään laajasti työelämässä, kouluissa, projektien aikataulutuksessa ja logistiikassa esimerkiksi toimitusten ja tapaamisten ajoittamiseen."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

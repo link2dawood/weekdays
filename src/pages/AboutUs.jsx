@@ -10,7 +10,7 @@ const AboutUs = () => {
         <h1>Tietoa meistä</h1>
         <div className="prose">
           <p>
-            Tervetuloa palveluun <strong>Viikko Nyt</strong> – digitaalinen
+            Tervetuloa palveluun <strong>Viikko Nro</strong> – digitaalinen
             työkalusi ajan seurantaan, kalenterijärjestelmiin ja vuoden
             suunnitteluun tarkasti.
           </p>

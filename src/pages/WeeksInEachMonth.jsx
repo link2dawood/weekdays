@@ -6,7 +6,6 @@ import WeekCard from "../components/WeekCard";
 const WeeksInEachMonth = () => {
   const { month, year } = useParams();
 
-  console.log(month, year);
   const y = Number(year);
   const m = Number(month);
   var mi = m - 1;

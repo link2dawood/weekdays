@@ -910,6 +910,16 @@ details p {
   color: #243430;
   max-width: 640px;
 }
+.faq-group {
+  margin-top: 34px;
+}
+.faq-group:first-of-type {
+  margin-top: 12px;
+}
+.faq-more {
+  margin-top: 26px;
+  font-weight: 600;
+}
 
 /* Matches your standard layout container spacing */
 .contact-container {
@@ -1018,6 +1028,12 @@ details p {
 .submit-btn:active {
   background-color: #0f2a21;
   transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Native Success Alerts modeled directly off your active selection theme */

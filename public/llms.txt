@@ -1,0 +1,27 @@
+# Viikko Nro
+
+> Viikko Nro (viikkonro.fi) on ilmainen suomalainen viikkolaskuri, joka näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan. Palvelu on nopea, mainokseton eikä vaadi rekisteröitymistä.
+
+Keskeiset faktat viikkonumeroista Suomessa:
+
+- Viikko alkaa maanantaista ja päättyy sunnuntaihin ISO 8601 -standardin mukaan.
+- Vuoden ensimmäinen viikko on se, johon osuu vuoden ensimmäinen torstai — käytännössä aina viikko, joka sisältää 4. tammikuuta.
+- Vuodessa on 52 tai 53 viikkoa. 53 viikon vuosia ovat esimerkiksi 2020, 2026 ja 2032.
+- Viikkonumero lasketaan laitteen päivämäärän perusteella, joten se on aina ajan tasalla.
+
+## Sivut
+
+- [Etusivu – Mikä viikko nyt on?](https://viikkonro.fi/): kuluva viikkonumero ja minkä tahansa päivän viikkohaku
+- [Mikä on viikkonumero?](https://viikkonro.fi/what-is-a-week-number): viikkonumeron ja ISO 8601 -standardin selitys
+- [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/weeks-in-a-year): 52 vai 53 viikkoa ja miksi
+- [Usein kysytyt kysymykset](https://viikkonro.fi/faq): kattavat vastaukset viikkonumeroista
+- [Tulostettava viikkokalenteri](https://viikkonro.fi/print/2026): koko vuoden viikot ja päivämäärät
+- [Tietoa meistä](https://viikkonro.fi/about-us): palvelun esittely
+- [Ota yhteyttä](https://viikkonro.fi/contact-us): yhteydenottolomake
+
+## Optional
+
+- [Täysi sisältö LLM:ille](https://viikkonro.fi/llms-full.txt): kaikki usein kysytyt kysymykset vastauksineen
+- [Käyttöehdot](https://viikkonro.fi/terms-and-conditions)
+- [Tietosuojaseloste](https://viikkonro.fi/privacy-policy)
+- [Sivukartta (XML)](https://viikkonro.fi/sitemap.xml)

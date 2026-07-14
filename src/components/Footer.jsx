@@ -93,7 +93,7 @@ function Footer() {
 
       {/* Baseline Copyright and Info Row */}
       <div className="footer-baseline">
-        <p>&copy; {currentYear} Viikko Nyt. Kaikki oikeudet pidätetään.</p>
+        <p>&copy; {currentYear} Viikko Nro. Kaikki oikeudet pidätetään.</p>
         <p className="footer-tz">Yleismaailmallinen ISO-aikamalli</p>
       </div>
     </footer>
