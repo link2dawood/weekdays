@@ -44,6 +44,18 @@ const WhatWeek = () => {
           koska kyseisen viikon torstai osuu tammikuulle.
         </p>
       </div>
+
+      <h2>Esimerkkejä</h2>
+      <div className="prose">
+        <ul>
+          <li>4. tammikuuta kuuluu aina viikkoon 1, vuodesta riippumatta.</li>
+          <li>
+            1. tammikuuta 2026 kuuluu viikkoon 1, koska se on torstai.
+          </li>
+          <li>30. joulukuuta 2024 kuuluu jo vuoden 2025 viikkoon 1.</li>
+          <li>31. joulukuuta 2023 kuuluu vuoden 2023 viikkoon 52.</li>
+        </ul>
+      </div>
       <p>
         <Link className="btn" to={`/year/${Y_NOW}`}>
           Katso vuoden {Y_NOW} viikot
