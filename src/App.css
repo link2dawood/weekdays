@@ -38,9 +38,13 @@ body {
   font-family: "Inter", system-ui, sans-serif;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 a {
   color: inherit;
+}
+img {
+  max-width: 100%;
 }
 .wrap {
   max-width: var(--maxw);
@@ -71,7 +75,7 @@ a {
   justify-content: space-between;
   gap: 9px;
   height: 62px;
-  position: relative;
+  padding: 0 20px;
 }
 
 /* .brand {
@@ -1205,17 +1209,32 @@ footer {
 /* Mobile responsive breakpoints strategy */
 @media (max-width: 768px) {
   .site-footer {
-    margin-top: 48px; /* Slightly tighter but healthy spacing on mobile screens */
-    padding-top: 48px;
+    margin-top: 56px;
+    padding: 40px 20px 32px;
   }
   .footer-container {
     flex-direction: column;
-    gap: 36px;
+    gap: 30px;
+  }
+  /* In a column flex layout the 340px/160px basis would become a vertical
+     height and stretch the columns — reset it so they size to their content. */
+  .footer-brand-col,
+  .footer-links-col {
+    flex: initial;
+  }
+  .footer-links-col h3 {
+    margin-bottom: 14px;
+  }
+  .footer-links-col ul {
+    gap: 10px;
+  }
+  .footer-divider {
+    margin: 30px auto 20px;
   }
   .footer-baseline {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 8px;
   }
 }
 
@@ -1229,6 +1248,32 @@ footer {
     border-top: 1px solid var(--line);
     padding-left: 0;
     padding-top: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 0 18px;
+  }
+  /* Stack the previous/next cards so they don't get cramped side by side. */
+  .prevnext {
+    flex-direction: column;
+    margin: 22px 0;
+  }
+  .prevnext .nx {
+    text-align: left;
+  }
+  /* Keep the printable table readable and inside the viewport. */
+  .ptable th,
+  .ptable td {
+    padding: 8px 8px;
+    font-size: 12.5px;
+  }
+  .contact-card {
+    padding: 22px 18px;
+  }
+  .lead {
+    font-size: 16px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
