@@ -74,17 +74,20 @@ jobs:
           script: |
             set -e
             IMAGE="${{ needs.build-and-push.outputs.image }}:latest"
+            CONTAINER="${{ env.CONTAINER_NAME }}"
 
-            # Authenticate to GHCR so the server can pull the image.
-            # (Only needed if the GHCR package is private.)
-            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            # Authenticate to GHCR only if a token is provided. A PRIVATE package
+            # (the default) needs this; a PUBLIC package pulls without login.
+            if [ -n "${{ secrets.GHCR_PAT }}" ]; then
+              echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            fi
 
             docker pull "$IMAGE"
-            docker rm -f ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm -f "$CONTAINER" 2>/dev/null || true
             docker run -d \
-              --name ${{ env.CONTAINER_NAME }} \
+              --name "$CONTAINER" \
               --restart unless-stopped \
-              -p ${{ env.APP_PORT }}:${{ env.APP_PORT }} \
+              -p 3005:3005 \
               "$IMAGE"
 
             # Clean up old dangling images to save disk.
