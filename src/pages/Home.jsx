@@ -1,7 +1,7 @@
 import React from "react";
 import "../App.css";
 import SEO from "../components/SEO";
-import { routeMeta } from "../data/seo";
+import { routeMeta, homeDescription } from "../data/seo";
 import Weekcounter from "../components/Weekcounter";
 import WeeklySearch from "../components/WeeklySearch";
 import FAQ from "../components/FAQ";
@@ -12,7 +12,9 @@ import QuickLinks from "../components/QuickLinks";
 const Home = () => {
   return (
     <>
-      <SEO title={routeMeta["/"].title} description={routeMeta["/"].description} />
+      {/* homeDescription() is computed live, so the week number in the meta
+          description is always current for JS-rendering crawlers and users. */}
+      <SEO title={routeMeta["/"].title} description={homeDescription()} />
       <div className="app">
         <Weekcounter />
         <WeeklySearch />

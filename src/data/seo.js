@@ -4,11 +4,25 @@
 // would share the homepage's title + canonical, which tells search engines the
 // subpages are duplicates of the homepage and suppresses their indexing.
 
+import { isoWeek, isoYear, mondayOf, formatLong } from "../components/dateUtils.js";
+
 export const SITE_URL = "https://viikkonro.fi";
+
+// The home description names the CURRENT week and the Monday it starts on, e.g.
+// "Viikko 29 alkaa maanantaina 13. heinäkuuta 2026. …". It is computed at build
+// time by prerender.js, and the deploy workflow rebuilds every Monday so the
+// week stays correct. An ISO week always starts on Monday, hence "maanantaina".
+export function homeDescription(now = new Date()) {
+  const week = isoWeek(now);
+  const year = isoYear(now);
+  const monday = mondayOf(week, year);
+  return `Viikko ${week} alkaa maanantaina ${formatLong(monday)}. Tarkista kuluvan viikon numero ja etsi päivämäärien tai viikkojen mukaan osoitteessa Viikkonro.fi.`;
+}
 
 export const routeMeta = {
   "/": {
-    title: "Mikä viikko nyt on? · Viikkonumero ja viikkolaskuri",
+    title: "viikkonro.fi | Mikä viikko nyt on?",
+    // Replaced at build time with homeDescription(); kept as a safe fallback.
     description:
       "Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
   },

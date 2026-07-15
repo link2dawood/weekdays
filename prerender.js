@@ -17,6 +17,7 @@ import {
   canonicalFor,
   SITE_URL,
   sitemapEntries,
+  homeDescription,
 } from "./src/data/seo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -94,17 +95,31 @@ function breadcrumbScript(url, meta, canonical) {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+// The <SEO> component renders <title>/<meta> via Helmet, and React emits those
+// inline in the SSR output — which would leave a duplicate <title> inside
+// <body>. The authoritative tags are written into <head> by applyMeta() above,
+// and the client re-hoists them into <head> itself on render, so drop the
+// inline copies from the static markup. (Image <link rel="preload"> tags are
+// valid in <body> and genuinely help LCP, so they stay.)
+function stripInlineMeta(appHtml) {
+  return appHtml
+    .replace(/<title>[\s\S]*?<\/title>/g, "")
+    .replace(/<meta\s+name="(?:description|robots)"[^>]*>/g, "");
+}
+
 let failures = 0;
 
 for (const url of routes) {
   try {
-    const appHtml = render(url);
+    const appHtml = stripInlineMeta(render(url));
     const meta = routeMeta[url];
     const canonical = canonicalFor(url);
+    // The home page advertises the current week number + its Monday.
+    const description = url === "/" ? homeDescription() : meta.description;
 
     let html = applyMeta(template, {
       title: meta.title,
-      description: meta.description,
+      description,
       url: canonical,
     });
 
