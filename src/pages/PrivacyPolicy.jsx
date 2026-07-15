@@ -1,10 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 
 const PrivacyPolicy = () => {
+  const meta = routeMeta["/privacy-policy"];
   return (
     <>
       <section className="app">
+        <SEO title={meta.title} description={meta.description} />
         <div className="breadcrumb">
           <Link to="/">Etusivu</Link> / Tietosuojaseloste
         </div>

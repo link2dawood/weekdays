@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear, weeksInIsoYear } from "../components/dateUtils";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 
 const WeeksInYear = () => {
+  const meta = routeMeta["/weeks-in-a-year"];
   const YEAR_MIN = 2020,
     YEAR_MAX = 2035;
 
@@ -24,6 +27,7 @@ const WeeksInYear = () => {
   return (
     <>
       <section className="app">
+        <SEO title={meta.title} description={meta.description} />
         <div className="breadcrumb">
           <Link to="/">Etusivu</Link> / Viikkoja vuodessa
         </div>

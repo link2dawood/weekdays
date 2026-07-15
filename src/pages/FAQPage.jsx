@@ -1,11 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { faqCategories } from "../data/faqs";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 
 const FAQPage = () => {
+  const meta = routeMeta["/faq"];
   return (
     <>
       <section className="app">
+        <SEO title={meta.title} description={meta.description} />
         <div className="breadcrumb">
           <Link to="/">Etusivu</Link> / UKK
         </div>

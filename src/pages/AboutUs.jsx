@@ -1,9 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 const AboutUs = () => {
+  const meta = routeMeta["/about-us"];
   return (
     <>
       <section className="app">
+        <SEO title={meta.title} description={meta.description} />
         <div className="breadcrumb">
           <Link to="/">Etusivu</Link> / Tietoa meistä
         </div>

@@ -1,12 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear } from "../components/dateUtils";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 const WhatWeek = () => {
   const NOW = new Date();
   const W_NOW = isoWeek(NOW);
   const Y_NOW = isoYear(NOW);
+  const meta = routeMeta["/what-is-a-week-number"];
   return (
     <section className="app">
+      <SEO title={meta.title} description={meta.description} />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Mikä on viikkonumero
       </div>

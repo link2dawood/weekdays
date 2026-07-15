@@ -7,6 +7,7 @@ import {
   mondayOf,
   dFull,
 } from "../components/dateUtils";
+import SEO from "../components/SEO";
 
 const PrintCalendar = () => {
   const { year } = useParams();
@@ -30,6 +31,10 @@ const PrintCalendar = () => {
 
   return (
     <section className="app">
+      <SEO
+        title={`Tulostettava viikkokalenteri ${selectedYear} – kaikki viikot | Viikko Nro`}
+        description={`Tulosta vuoden ${selectedYear} viikkokalenteri: kaikki viikot ja niiden alkamis- ja päättymispäivät yhdellä sivulla.`}
+      />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Tulostettava {selectedYear}
       </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import { M_FULL, isoWeek, isoYear } from "../components/dateUtils";
 import WeekCard from "../components/WeekCard";
+import SEO from "../components/SEO";
 
 const WeeksInEachMonth = () => {
   const { month, year } = useParams();
@@ -51,6 +52,10 @@ const WeeksInEachMonth = () => {
 
   return (
     <section className="app">
+      <SEO
+        title={`${M_FULL[mi]} ${year} – viikkonumerot ja päivämäärät | Viikko Nro`}
+        description={`Kaikki viikkonumerot, jotka osuvat kuukauteen ${M_FULL[mi]} ${year}, ISO 8601 -standardin mukaan.`}
+      />
       <div className="breadcrumb">
         <Link to={"/"}>Etusivu</Link> /{" "}
         <Link to={`/year/${year}`}>Viikot {year}</Link> / {M_FULL[mi]}

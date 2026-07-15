@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
+import { routeMeta } from "../data/seo";
 
 // ── Web3Forms setup ─────────────────────────────────────────────────────────
 // 1. Go to https://web3forms.com and enter your email: dawood.dixeam@gmail.com
@@ -185,8 +187,11 @@ function ContactUs() {
     }
   };
 
+  const meta = routeMeta["/contact-us"];
+
   return (
     <section className="app">
+      <SEO title={meta.title} description={meta.description} />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Ota yhteyttä
       </div>

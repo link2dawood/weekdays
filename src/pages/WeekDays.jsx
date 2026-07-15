@@ -8,6 +8,7 @@ import {
   dFull,
   weeksInIsoYear,
 } from "../components/dateUtils";
+import SEO from "../components/SEO";
 
 const WeekDays = () => {
   const { week, year } = useParams();
@@ -84,6 +85,10 @@ const WeekDays = () => {
   }
   return (
     <section className="app">
+      <SEO
+        title={`Viikko ${week}, ${year} – päivämäärät ja viikonpäivät | Viikko Nro`}
+        description={`Viikko ${week} vuonna ${year} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}.`}
+      />
       <div className="breadcrumb">
         <Link to={"/"}>Etusivu </Link> /{" "}
         <Link to={`/year/${year}`}>Viikot {year}</Link> / Viikko {week}

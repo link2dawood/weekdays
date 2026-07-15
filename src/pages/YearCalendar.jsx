@@ -7,6 +7,7 @@ import {
   mondayOf,
   M_FULL,
 } from "../components/dateUtils";
+import SEO from "../components/SEO";
 
 const YearCalendar = () => {
   const { year } = useParams();
@@ -55,6 +56,10 @@ const YearCalendar = () => {
 
   return (
     <section className="app">
+      <SEO
+        title={`Viikkonumerot ${year} – kaikki viikot ja päivämäärät | Viikko Nro`}
+        description={`Kaikki vuoden ${year} viikkonumerot ja niiden alkamis- ja päättymispäivät ISO 8601 -standardin mukaan.`}
+      />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Viikot {year}
       </div>
