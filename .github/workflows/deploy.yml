@@ -93,7 +93,12 @@ jobs:
             docker run -d \
               --name "$CONTAINER" \
               --restart unless-stopped \
-              -p 3005:3005 \
+              --network introexpert \
+              --label "traefik.enable=true" \
+              --label "traefik.docker.network=introexpert" \
+              --label 'traefik.http.routers.viikkonro.rule=Host(`viikkonro.fi`) || Host(`www.viikkonro.fi`)' \
+              --label "traefik.http.routers.viikkonro.tls=true" \
+              --label "traefik.http.services.viikkonro.loadbalancer.server.port=3005" \
               "$IMAGE"
 
             # Clean up old dangling images to save disk.
