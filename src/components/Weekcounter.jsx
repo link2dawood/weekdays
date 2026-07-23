@@ -1,71 +1,43 @@
-import React, { useLayoutEffect, useState } from "react";
+import React from "react";
 import {
   isoWeek,
   isoYear,
   weeksInIsoYear,
   mondayOf,
-  formatLong,
-  formatShort,
-  WEEKDAYS,
   getWeekdayName,
   getDate,
 } from "./dateUtils";
 
+// Computed directly in the render body, not an effect: an effect never runs
+// during SSR/prerendering, so the static/no-JS HTML (what F-04's title fix
+// and F-06's correctness monitor both depend on) would otherwise always show
+// "Viikko 0" until the client hydrates.
 const Weekcounter = () => {
-  const [dateInfo, setDateInfo] = useState({
-    weekNow: 0,
-    yearNow: 0,
-    totalWeeks: 0,
-    formattedDate: "",
-    dateRange: "",
-  });
-  const [pct, setPct] = useState(0);
-  const [comb, setComb] = useState(0);
-  // Array state to hold values for our dynamic list elements
-  const [weeksArray, setWeeksArray] = useState([]);
+  const now = new Date();
+  const weekNow = isoWeek(now);
+  const yearNow = isoYear(now);
+  const totalWeeks = weeksInIsoYear(yearNow);
 
-  useLayoutEffect(() => {
-    const now = new Date();
-    var wkNow = isoWeek(now);
-    var yrNow = isoYear(now);
-    var totalWeeks = weeksInIsoYear(yrNow);
+  const monday = mondayOf(weekNow, yearNow);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
 
-    const monday = mondayOf(wkNow, yrNow);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
+  const formattedDate = getWeekdayName(now) + " " + getDate(now);
 
-    // Compute the full custom text output string
-    const dateString = getWeekdayName(now) + " " + getDate(now);
+  const options = { month: "long", day: "numeric" };
+  const startStr = monday.toLocaleDateString("fi-FI", options);
+  const endStr = sunday.toLocaleDateString("fi-FI", options);
+  const dateRange = `${startStr} – ${endStr}, ${yearNow}`;
 
-    //Generate dynamic custom Range string
-    const options = { month: "long", day: "numeric" };
-    const startStr = monday.toLocaleDateString("fi-FI", options);
-    const endStr = sunday.toLocaleDateString("fi-FI", options);
-    const dynamicRangeText = `${startStr} – ${endStr}, ${yrNow}`;
+  const pct = Math.round((weekNow / totalWeeks) * 100);
 
-    // Calculate percentage of year passed
-    const computedPct = Math.round((wkNow / totalWeeks) * 100);
-    setPct(computedPct);
-    setDateInfo({
-      weekNow: wkNow,
-      yearNow: yrNow,
-      totalWeeks: totalWeeks,
-      formattedDate: dateString,
-      dateRange: dynamicRangeText,
-    });
-    // Generate the array for rendering weeks
-    const tempWeeks = [];
-    for (let w = 1; w <= totalWeeks; w++) {
-      let statusClass = "";
-      if (w < wkNow) statusClass = "past";
-      else if (w === wkNow) statusClass = "now";
-      tempWeeks.push({
-        weekNum: w,
-        className: statusClass,
-      });
-    }
-    setWeeksArray(tempWeeks);
-  }, []);
+  const weeksArray = [];
+  for (let w = 1; w <= totalWeeks; w++) {
+    let statusClass = "";
+    if (w < weekNow) statusClass = "past";
+    else if (w === weekNow) statusClass = "now";
+    weeksArray.push({ weekNum: w, className: statusClass });
+  }
 
   return (
     <>
@@ -80,25 +52,25 @@ const Weekcounter = () => {
               <div className="now-label">Juuri nyt on</div>
               <div className="week-big">
                 <span className="vk">Viikko</span>
-                <span id="weekNow">{dateInfo.weekNow}</span>
+                <span id="weekNow">{weekNow}</span>
               </div>
               <div className="meta">
                 <div className="date" id="dateNow">
-                  {dateInfo.formattedDate}
+                  {formattedDate}
                 </div>
                 <div className="range" id="rangeNow">
-                  {dateInfo.dateRange}
+                  {dateRange}
                 </div>
               </div>
             </div>
             <div className="progress-block">
               <div className="progress-head">
                 <span>
-                  Vuosi <b id="yearNow">{dateInfo.yearNow}</b>
+                  Vuosi <b id="yearNow">{yearNow}</b>
                 </span>
                 <span>
                   <b id="weekOf">
-                    Viikko {dateInfo.weekNow} / {dateInfo.totalWeeks}
+                    Viikko {weekNow} / {totalWeeks}
                   </b>
                 </span>
               </div>
