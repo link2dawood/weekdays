@@ -8,11 +8,20 @@ on:
   push:
     branches: [main]
   schedule:
-    # Every Monday at 00:05 UTC. The home page's meta description names the
-    # current week ("Viikko 29 alkaa maanantaina …"), which is baked in at build
-    # time — this weekly rebuild keeps it (and sitemap <lastmod>) accurate as the
-    # ISO week rolls over.
-    - cron: "5 0 * * 1"
+    # Daily rebuild so date-dependent content (current week number, sitemap
+    # <lastmod>, etc.) never goes stale between code pushes — the single
+    # highest-impact, slowest-noticed failure mode for a site whose entire
+    # content is "what week is it". Runs the same build+deploy jobs as a push
+    # to main, just on a timer instead of a commit.
+    #
+    # GitHub Actions cron is UTC-only with no IANA timezone support, so a
+    # fixed cron line can't literally say "00:05 Europe/Helsinki" year-round.
+    # 22:05 UTC is chosen because it's always AFTER local midnight in
+    # Helsinki regardless of DST: 00:05 EET in winter (UTC+2), 01:05 EEST in
+    # summer (UTC+3). That's what actually matters here — a rebuild landing
+    # an hour later than nominal in summer is harmless, but one firing before
+    # local midnight would ship yesterday's week number.
+    - cron: "5 22 * * *"
   workflow_dispatch: # allow manual runs from the Actions tab
 
 concurrency:
@@ -59,6 +68,7 @@ jobs:
             ${{ steps.img.outputs.name }}:${{ github.sha }}
           build-args: |
             VITE_WEB3FORMS_ACCESS_KEY=${{ secrets.VITE_WEB3FORMS_ACCESS_KEY }}
+            SITE_ORIGIN=${{ vars.SITE_ORIGIN || 'https://viikkonro.fi' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -103,3 +113,34 @@ jobs:
 
             # Clean up old dangling images to save disk.
             docker image prune -f
+
+      # ── 3. Tell Search Console the sitemap is fresh (F-08) ─────────────────
+      # Best-effort only: this must never fail the deploy. The site is already
+      # live at this point regardless of whether Google gets pinged, and
+      # Google re-crawls known sitemaps on its own schedule anyway — a missed
+      # submission here is low-stakes, unlike a failed deploy.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Submit sitemap to Search Console
+        continue-on-error: true
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+            echo "::warning::GCP_SA_KEY secret not set — skipping Search Console sitemap submission (see F-07)."
+            exit 0
+          fi
+          # Submits sitemap.xml itself, not a sitemap index: this site has no
+          # index-of-child-sitemaps structure (one flat file, well under the
+          # 50,000-URL sitemap limit), so there's nothing else to submit.
+          node src/cli.js submit-sitemap

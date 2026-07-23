@@ -18,4 +18,20 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  {
+    // Build-tooling config files run under Node, not the browser.
+    files: ['vite.config.js', 'prerender.js', 'src/cli.js', 'scripts/*.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    // Runs in both the browser bundle (client/SSR, via Vite's `define`) and
+    // plain Node (prerender.js reads process.env directly) — needs both
+    // global sets, not just browser.
+    files: ['src/data/seo.js'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
 ])

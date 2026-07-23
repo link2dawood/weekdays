@@ -19,6 +19,12 @@ RUN --mount=type=cache,target=/root/.npm \
 ARG VITE_WEB3FORMS_ACCESS_KEY=""
 ENV VITE_WEB3FORMS_ACCESS_KEY=$VITE_WEB3FORMS_ACCESS_KEY
 
+# Canonical/sitemap/OG URLs (src/data/seo.js) are generated from this instead
+# of a hardcoded domain. Defaults to production so local `docker build`/`npm
+# run build` still work without any extra setup.
+ARG SITE_ORIGIN="https://viikkonro.fi"
+ENV SITE_ORIGIN=$SITE_ORIGIN
+
 COPY . .
 # Client build + SSR build + static prerendering (see package.json "build").
 RUN npm run build

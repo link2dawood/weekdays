@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear } from "./dateUtils";
 
 const Navbar = () => {
-  const [weekNow, setWeekNow] = useState();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Computed directly in the render body, not an effect: an effect never
+  // runs during SSR/prerendering, so the badge would show blank ("Vk ") on
+  // every prerendered page (Navbar is rendered on all of them) until the
+  // client hydrates.
   const NOW = new Date();
   const Y_NOW = isoYear(NOW);
   const year = Y_NOW;
-
-  useEffect(() => {
-    const now = new Date();
-    const wkNow = isoWeek(now);
-    setWeekNow(wkNow);
-  }, []);
+  const weekNow = isoWeek(NOW);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -32,7 +30,7 @@ const Navbar = () => {
         <Link className="brand" to="/" onClick={closeMenu}>
           {/* <span className="dot"></span>Week Now */}
           <img
-            src="./logo-horizontal-cropped.svg"
+            src="/logo-horizontal-cropped.svg"
             alt="Viikko Nro"
             width="592"
             height="122"

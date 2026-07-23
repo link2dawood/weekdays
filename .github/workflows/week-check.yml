@@ -1,0 +1,87 @@
+name: Week correctness monitor
+
+# F-06: an external check of the LIVE site — deliberately a separate workflow
+# from deploy.yml, run on GitHub's infrastructure rather than the deploy
+# target, so a broken build or a wedged server can't also silently disable
+# its own alarm. Confirms the deployed page actually shows the right ISO
+# week (not just that the build succeeded) and that it's been rebuilt
+# recently.
+
+on:
+  schedule:
+    # A couple hours after deploy.yml's daily rebuild (22:05 UTC), so this
+    # checks that rebuild's result instead of racing it.
+    - cron: "5 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch / and verify week number + freshness
+        env:
+          SITE_URL: ${{ vars.SITE_ORIGIN || 'https://viikkonro.fi' }}
+        run: |
+          set -e
+
+          curl -fsS -D headers.txt "$SITE_URL/" -o page.html
+
+          # 1. Parse the week number actually displayed on the page.
+          displayed=$(grep -oE 'id="weekNow">[0-9]+' page.html | grep -oE '[0-9]+' || true)
+          if [ -z "$displayed" ]; then
+            echo "::error::Could not find a displayed week number on $SITE_URL/ — page markup may have changed, or the site is broken."
+            exit 1
+          fi
+
+          # 2. Independently compute today's ISO week — not by re-running the
+          # site's own JS, but via GNU date's own ISO-8601 week support, in
+          # Europe/Helsinki (not the runner's UTC clock, which can disagree
+          # with Helsinki right around local midnight).
+          expected=$(TZ="Europe/Helsinki" date +%V)
+          expected=$((10#$expected))
+
+          echo "Displayed week:  $displayed"
+          echo "Expected week:   $expected"
+
+          mismatch=0
+          if [ "$displayed" != "$expected" ]; then
+            echo "::error::Week mismatch on $SITE_URL/ — page shows week $displayed, independently computed ISO week (Europe/Helsinki) is $expected."
+            mismatch=1
+          fi
+
+          # 3. Staleness: has / actually been rebuilt recently?
+          last_modified=$(grep -i '^Last-Modified:' headers.txt | sed 's/^[Ll]ast-[Mm]odified: *//' | tr -d '\r')
+          stale=0
+          if [ -z "$last_modified" ]; then
+            echo "::warning::$SITE_URL/ returned no Last-Modified header — can't verify build freshness."
+          else
+            last_epoch=$(date -d "$last_modified" +%s)
+            age_days=$(( ( $(date +%s) - last_epoch ) / 86400 ))
+            echo "Last-Modified:   $last_modified ($age_days day(s) ago)"
+            if [ "$age_days" -gt 8 ]; then
+              echo "::error::$SITE_URL/ was last modified $age_days days ago (>8) — the scheduled rebuild (deploy.yml) may be failing."
+              stale=1
+            fi
+          fi
+
+          if [ "$mismatch" -eq 1 ] || [ "$stale" -eq 1 ]; then
+            exit 1
+          fi
+          echo "OK — week $displayed is correct and the build is fresh."
+
+      # GitHub already emails repo watchers on a failed scheduled run by
+      # default (zero setup). Slack is opt-in: add a SLACK_WEBHOOK_URL repo
+      # secret and this starts firing with no further code changes.
+      - name: Notify Slack on failure
+        if: failure()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "No SLACK_WEBHOOK_URL secret configured — skipping Slack notification (GitHub's failed-run email still applies)."
+            exit 0
+          fi
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -fsS -X POST -H "Content-Type: application/json" \
+            --data "{\"text\":\":rotating_light: viikkonro.fi week-correctness check failed — $run_url\"}" \
+            "$SLACK_WEBHOOK_URL"

@@ -24,6 +24,23 @@ export function weeksInIsoYear(y) {
   return isoWeek(new Date(y, 11, 28));
 }
 
+export function isLeapYear(y) {
+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+}
+export function daysInYear(y) {
+  return isLeapYear(y) ? 366 : 365;
+}
+export function dayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 1);
+  return Math.round((date - start) / 86400000) + 1;
+}
+export function daysRemainingInYear(date) {
+  return daysInYear(date.getFullYear()) - dayOfYear(date);
+}
+export function quarterOf(date) {
+  return Math.floor(date.getMonth() / 3) + 1;
+}
+
 export function mondayOf(week, year) {
   var jan4 = new Date(year, 0, 4);
   var j = (jan4.getDay() + 6) % 7;

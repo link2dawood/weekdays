@@ -11,13 +11,13 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   routeMeta,
   canonicalFor,
   SITE_URL,
   sitemapEntries,
-  homeDescription,
+  homeMeta,
 } from "./src/data/seo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -28,7 +28,11 @@ const serverDir = path.resolve(__dirname, "dist-server");
 const routes = Object.keys(routeMeta);
 
 const template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
-const { render } = await import(path.join(serverDir, "entry-server.js"));
+// pathToFileURL is required on Windows: a bare "C:\..." path passed to
+// import() is misparsed as a URL with scheme "c", not a filesystem path.
+const { render } = await import(
+  pathToFileURL(path.join(serverDir, "entry-server.js")).href
+);
 
 const escapeAttr = (s) =>
   s
@@ -108,14 +112,27 @@ function stripInlineMeta(appHtml) {
 }
 
 let failures = 0;
+const titleSeen = new Map();
 
 for (const url of routes) {
   try {
+    // Keep stripInlineMeta: the <SEO>/Helmet component emits <title>/<meta>
+    // inline in the SSR output, which would otherwise duplicate the tags
+    // applyMeta() writes into <head>.
     const appHtml = stripInlineMeta(render(url));
-    const meta = routeMeta[url];
+    // Home carries the real current week/date range in its title+description
+    // (F-04), computed fresh at build time rather than the static copy used
+    // for breadcrumb/canonical purposes.
+    const meta = url === "/" ? { ...routeMeta[url], ...homeMeta(new Date()) } : routeMeta[url];
     const canonical = canonicalFor(url);
-    // The home page advertises the current week number + its Monday.
-    const description = url === "/" ? homeDescription() : meta.description;
+    const description = meta.description;
+
+    const dupeOf = titleSeen.get(meta.title);
+    if (dupeOf) {
+      failures += 1;
+      console.error(`duplicate <title> "${meta.title}" on both ${dupeOf} and ${url}`);
+    }
+    titleSeen.set(meta.title, url);
 
     let html = applyMeta(template, {
       title: meta.title,
@@ -131,10 +148,13 @@ for (const url of routes) {
       `<div id="root">${appHtml}</div>`,
     );
 
+    // Flat files (dist/faq.html), not dist/faq/index.html: a real directory
+    // on disk makes nginx auto-redirect the slash-less URL to a trailing-
+    // slash one (its own directory-index convention), which fights the
+    // opposite (no-trailing-slash) convention canonicalFor() declares and
+    // causes a redirect loop against nginx.conf's trailing-slash rule.
     const outPath =
-      url === "/"
-        ? path.join(distDir, "index.html")
-        : path.join(distDir, url, "index.html");
+      url === "/" ? path.join(distDir, "index.html") : path.join(distDir, `${url}.html`);
 
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, html);
@@ -166,6 +186,18 @@ fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log(
   `generated sitemap.xml (${sitemapEntries(currentYear).length} urls, lastmod ${today})`,
 );
+
+// public/robots.txt is copied verbatim by Vite and can't read env itself, so
+// its Sitemap: line is rewritten here to stay in sync with SITE_URL instead
+// of drifting from a hardcoded domain.
+const robotsPath = path.join(distDir, "robots.txt");
+const robotsTxt = fs.readFileSync(robotsPath, "utf-8");
+const patchedRobots = robotsTxt.replace(
+  /^Sitemap:.*$/m,
+  `Sitemap: ${SITE_URL}/sitemap.xml`,
+);
+fs.writeFileSync(robotsPath, patchedRobots);
+console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
 
 // Remove the temporary SSR bundle so it never ships in the image.
 fs.rmSync(serverDir, { recursive: true, force: true });

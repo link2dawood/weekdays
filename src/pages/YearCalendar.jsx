@@ -8,6 +8,7 @@ import {
   M_FULL,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
+import { canonicalFor } from "../data/seo";
 
 const YearCalendar = () => {
   const { year } = useParams();
@@ -57,8 +58,9 @@ const YearCalendar = () => {
   return (
     <section className="app">
       <SEO
-        title={`Viikkonumerot ${year} – kaikki viikot ja päivämäärät | Viikko Nro`}
+        title={`Viikkonumerot ${year} – kaikki ${weeks.length} viikkoa | Viikko Nro`}
         description={`Kaikki vuoden ${year} viikkonumerot ja niiden alkamis- ja päättymispäivät ISO 8601 -standardin mukaan.`}
+        canonical={canonicalFor(`/year/${year}`)}
       />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Viikot {year}
