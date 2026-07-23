@@ -8,7 +8,7 @@ import {
   dFull,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { canonicalFor } from "../data/seo";
+import { canonicalFor, printMeta } from "../data/seo";
 
 const PrintCalendar = () => {
   const { year } = useParams();
@@ -33,8 +33,7 @@ const PrintCalendar = () => {
   return (
     <section className="app">
       <SEO
-        title={`Tulostettava viikkokalenteri ${selectedYear} – kaikki viikot | Viikko Nro`}
-        description={`Tulosta vuoden ${selectedYear} viikkokalenteri: kaikki viikot ja niiden alkamis- ja päättymispäivät yhdellä sivulla.`}
+        {...printMeta(selectedYear)}
         canonical={canonicalFor(`/print/${selectedYear}`)}
       />
       <div className="breadcrumb">

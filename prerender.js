@@ -13,19 +13,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
-  routeMeta,
+  metaFor,
   canonicalFor,
   SITE_URL,
   sitemapEntries,
-  homeMeta,
 } from "./src/data/seo.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "dist");
 const serverDir = path.resolve(__dirname, "dist-server");
 
-// Static, content-rich routes worth prerendering for SEO/GEO.
-const routes = Object.keys(routeMeta);
+// Prerender EVERY URL in the sitemap, not just the static pages. The
+// week/month/year pages are content-rich (holidays, name days, sun times,
+// per-day details) — they just weren't prerendered, so crawlers saw the SPA
+// home shell and treated ~200 URLs as duplicates of the homepage. Rendering
+// them gives each unique, indexable HTML that matches its sitemap entry.
+const currentYear = new Date().getFullYear();
+const routes = sitemapEntries(currentYear).map((e) => e.path);
 
 const template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
 // pathToFileURL is required on Windows: a bare "C:\..." path passed to
@@ -108,7 +112,11 @@ function breadcrumbScript(url, meta, canonical) {
 function stripInlineMeta(appHtml) {
   return appHtml
     .replace(/<title>[\s\S]*?<\/title>/g, "")
-    .replace(/<meta\s+name="(?:description|robots)"[^>]*>/g, "");
+    .replace(/<meta\s+name="(?:description|robots)"[^>]*>/g, "")
+    // <SEO> also renders a <link rel="canonical"> via Helmet, which lands
+    // inline in the SSR body; the authoritative one is written into <head> by
+    // applyMeta(), so drop the body copy to avoid two canonicals per page.
+    .replace(/<link\s+rel="canonical"[^>]*>/g, "");
 }
 
 let failures = 0;
@@ -120,10 +128,14 @@ for (const url of routes) {
     // inline in the SSR output, which would otherwise duplicate the tags
     // applyMeta() writes into <head>.
     const appHtml = stripInlineMeta(render(url));
-    // Home carries the real current week/date range in its title+description
-    // (F-04), computed fresh at build time rather than the static copy used
-    // for breadcrumb/canonical purposes.
-    const meta = url === "/" ? { ...routeMeta[url], ...homeMeta(new Date()) } : routeMeta[url];
+    // Static pages come from routeMeta; the homepage carries the live current
+    // week; week/month/year/print pages are generated — all via metaFor().
+    const meta = metaFor(url);
+    if (!meta) {
+      failures += 1;
+      console.error(`no meta for ${url} — skipping`);
+      continue;
+    }
     const canonical = canonicalFor(url);
     const description = meta.description;
 
@@ -166,8 +178,8 @@ for (const url of routes) {
 }
 
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
+// (currentYear is defined above, alongside the prerender route list.)
 const today = new Date().toISOString().slice(0, 10);
-const currentYear = new Date().getFullYear();
 const urlset = sitemapEntries(currentYear)
   .map((e) => {
     const loc = e.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${e.path}`;

@@ -7,13 +7,12 @@ import {
   mondayOf,
   dFull,
   weeksInIsoYear,
-  formatShort,
   dayOfYear,
   daysRemainingInYear,
   quarterOf,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { canonicalFor } from "../data/seo";
+import { canonicalFor, weekMeta } from "../data/seo";
 import { holidaysInWeek } from "../data/holidays";
 import { nameDaysForWeek } from "../data/nameDays";
 import { schoolHolidaysInWeek } from "../data/schoolHolidays";
@@ -158,8 +157,7 @@ const WeekDays = () => {
   return (
     <section className="app">
       <SEO
-        title={`Viikko ${week}, ${year} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`}
-        description={`Viikko ${week} vuonna ${year} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}.`}
+        {...weekMeta(w, y)}
         canonical={canonicalFor(`/week/${week}/${year}`)}
       />
       <div className="breadcrumb">

@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { M_FULL, isoWeek, isoYear } from "../components/dateUtils";
 import WeekCard from "../components/WeekCard";
 import SEO from "../components/SEO";
-import { canonicalFor } from "../data/seo";
+import { canonicalFor, monthMeta } from "../data/seo";
 
 const WeeksInEachMonth = () => {
   const { month, year } = useParams();
@@ -54,9 +54,8 @@ const WeeksInEachMonth = () => {
   return (
     <section className="app">
       <SEO
-        title={`${M_FULL[mi]} ${year} – viikkonumerot ja päivämäärät | Viikko Nro`}
+        {...monthMeta(m, y)}
         canonical={canonicalFor(`/month/${month}/${year}`)}
-        description={`Kaikki viikkonumerot, jotka osuvat kuukauteen ${M_FULL[mi]} ${year}, ISO 8601 -standardin mukaan.`}
       />
       <div className="breadcrumb">
         <Link to={"/"}>Etusivu</Link> /{" "}

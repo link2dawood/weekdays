@@ -44,6 +44,58 @@ function mondayOf(week, year) {
 function formatShort(d) {
   return `${d.getDate()}.${d.getMonth() + 1}.`;
 }
+const M_FULL = [
+  "Tammikuu",
+  "Helmikuu",
+  "Maaliskuu",
+  "Huhtikuu",
+  "Toukokuu",
+  "Kesäkuu",
+  "Heinäkuu",
+  "Elokuu",
+  "Syyskuu",
+  "Lokakuu",
+  "Marraskuu",
+  "Joulukuu",
+];
+function dWritten(d) {
+  return `${d.getDate()} ${M_FULL[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Per-route <title>/<description> for the DYNAMIC pages. These are the single
+// source of truth used by BOTH the page components (their <SEO> tag) and
+// prerender.js (the static <head> it writes), so the crawlable HTML and the
+// client-hydrated title never diverge. Each output is unique per route, which
+// is what turns the ~200 week/month/year URLs from homepage-duplicates into
+// real, individually indexable pages.
+export function weekMeta(w, y) {
+  const mo = mondayOf(w, y);
+  const su = new Date(mo);
+  su.setDate(mo.getDate() + 6);
+  return {
+    title: `Viikko ${w}, ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
+    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}.`,
+  };
+}
+export function monthMeta(m, y) {
+  return {
+    title: `${M_FULL[m - 1]} ${y} – viikkonumerot ja päivämäärät | Viikko Nro`,
+    description: `Kaikki viikkonumerot, jotka osuvat kuukauteen ${M_FULL[m - 1]} ${y}, ISO 8601 -standardin mukaan.`,
+  };
+}
+export function yearMeta(y) {
+  const total = weeksInIsoYear(y);
+  return {
+    title: `Viikkonumerot ${y} – kaikki ${total} viikkoa | Viikko Nro`,
+    description: `Kaikki vuoden ${y} viikkonumerot ja niiden alkamis- ja päättymispäivät ISO 8601 -standardin mukaan.`,
+  };
+}
+export function printMeta(y) {
+  return {
+    title: `Tulostettava viikkokalenteri ${y} – kaikki viikot | Viikko Nro`,
+    description: `Tulosta vuoden ${y} viikkokalenteri: kaikki viikot ja niiden alkamis- ja päättymispäivät yhdellä sivulla.`,
+  };
+}
 
 // Home page title/description carry the actual current week and date range
 // (what F-04 calls "distinguishing data"), computed the same way at build
@@ -158,4 +210,18 @@ export function sitemapEntries(year) {
   }
   entries.push({ path: `/print/${year}`, changefreq: "yearly", priority: "0.5" });
   return entries;
+}
+
+// Resolve any route to its meta for prerendering: static pages from routeMeta,
+// the homepage with the live current-week title/description, or a generated
+// dynamic page (week/month/year/print). Returns null for routes not prerendered.
+export function metaFor(url) {
+  if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
+  if (routeMeta[url]) return routeMeta[url];
+  let m;
+  if ((m = url.match(/^\/week\/(\d+)\/(\d+)$/))) return weekMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/month\/(\d+)\/(\d+)$/))) return monthMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/year\/(\d+)$/))) return yearMeta(+m[1]);
+  if ((m = url.match(/^\/print\/(\d+)$/))) return printMeta(+m[1]);
+  return null;
 }
