@@ -182,6 +182,25 @@ for (const url of routes) {
       url: canonical,
     });
 
+    // Per-week pages get an OG card showing THAT specific week (via the
+    // ?w&y params of the /api/og edge function); every other page keeps the
+    // live current-week image already baked into the template.
+    const wk = url.match(/^\/week\/(\d+)\/(\d+)$/);
+    if (wk) {
+      // &amp; (not raw &) so the meta tag is valid HTML; crawlers decode it
+      // back to & when they fetch the image.
+      const og = `${SITE_URL}/api/og?w=${wk[1]}&amp;y=${wk[2]}`;
+      html = html
+        .replace(
+          /(<meta\s+property="og:image"\s+content=")[^"]*(")/,
+          `$1${og}$2`,
+        )
+        .replace(
+          /(<meta\s+name="twitter:image"\s+content=")[^"]*(")/,
+          `$1${og}$2`,
+        );
+    }
+
     const crumb = breadcrumbScript(url);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
