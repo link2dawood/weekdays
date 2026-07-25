@@ -73,27 +73,27 @@ export function weekMeta(w, y) {
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
   return {
-    title: `Viikko ${w}, ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
-    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}.`,
+    title: `Viikko ${w} vuonna ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
+    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}. Katso viikon ${w} päivämäärät, juhlapäivät ja nimipäivät sekä tulostettava kalenteri.`,
   };
 }
 export function monthMeta(m, y) {
   return {
-    title: `${M_FULL[m - 1]} ${y} – viikkonumerot ja päivämäärät | Viikko Nro`,
-    description: `Kaikki viikkonumerot, jotka osuvat kuukauteen ${M_FULL[m - 1]} ${y}, ISO 8601 -standardin mukaan.`,
+    title: `${M_FULL[m - 1]} ${y} – viikkonumerot ja kalenteri | Viikko Nro`,
+    description: `Kuukauden ${M_FULL[m - 1]} ${y} viikkonumerot, päivämäärät, juhlapäivät ja nimipäivät. Tulostettava kuukausikalenteri viikkonumeroilla ISO 8601 -standardin mukaan.`,
   };
 }
 export function yearMeta(y) {
   const total = weeksInIsoYear(y);
   return {
     title: `Viikkonumerot ${y} – kaikki ${total} viikkoa | Viikko Nro`,
-    description: `Kaikki vuoden ${y} viikkonumerot ja niiden alkamis- ja päättymispäivät ISO 8601 -standardin mukaan.`,
+    description: `Vuoden ${y} kaikki ${total} viikkonumeroa alkamis- ja päättymispäivineen, juhlapäivät sekä tulostettava viikkokalenteri (PDF) ISO 8601 -standardin mukaan.`,
   };
 }
 export function printMeta(y) {
   return {
-    title: `Tulostettava viikkokalenteri ${y} – kaikki viikot | Viikko Nro`,
-    description: `Tulosta vuoden ${y} viikkokalenteri: kaikki viikot ja niiden alkamis- ja päättymispäivät yhdellä sivulla.`,
+    title: `Tulostettava viikkokalenteri ${y} (PDF) | Viikko Nro`,
+    description: `Tulosta tai tallenna vuoden ${y} viikkokalenteri PDF-muodossa: kaikki viikkonumerot, päivämäärät ja juhlapäivät yhdellä A4-sivulla. Ilmainen.`,
   };
 }
 
