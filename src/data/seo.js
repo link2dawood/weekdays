@@ -186,7 +186,11 @@ export function sitemapEntries(year) {
     { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
     { path: "/terms-and-conditions", changefreq: "yearly", priority: "0.3" },
   ];
-  for (let y = year - 1; y <= year + 1; y++) {
+  // Rolling window: last year through +9 years (≈2035 today). Week/month/year
+  // pages stay prerendered and indexable well into the future, and the horizon
+  // auto-advances on every rebuild — no hardcoded end year to maintain.
+  const FUTURE_HORIZON = 9;
+  for (let y = year - 1; y <= year + FUTURE_HORIZON; y++) {
     const current = y === year;
     entries.push({
       path: `/year/${y}`,

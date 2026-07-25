@@ -12,6 +12,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import React from "react";
+import { ImageResponse } from "@vercel/og";
 import {
   metaFor,
   canonicalFor,
@@ -182,25 +184,6 @@ for (const url of routes) {
       url: canonical,
     });
 
-    // Per-week pages get an OG card showing THAT specific week (via the
-    // ?w&y params of the /api/og edge function); every other page keeps the
-    // live current-week image already baked into the template.
-    const wk = url.match(/^\/week\/(\d+)\/(\d+)$/);
-    if (wk) {
-      // &amp; (not raw &) so the meta tag is valid HTML; crawlers decode it
-      // back to & when they fetch the image.
-      const og = `${SITE_URL}/api/og?w=${wk[1]}&amp;y=${wk[2]}`;
-      html = html
-        .replace(
-          /(<meta\s+property="og:image"\s+content=")[^"]*(")/,
-          `$1${og}$2`,
-        )
-        .replace(
-          /(<meta\s+name="twitter:image"\s+content=")[^"]*(")/,
-          `$1${og}$2`,
-        );
-    }
-
     const crumb = breadcrumbScript(url);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
@@ -282,6 +265,72 @@ const patchedRobots = robotsTxt.replace(
 );
 fs.writeFileSync(robotsPath, patchedRobots);
 console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
+
+// Generate the static Open Graph image (dist/og.png, 1200×630) showing the
+// current ISO week. Built on every deploy, so the daily rebuild keeps it
+// current. A plain static file — not an edge function — so it can never 404
+// and needs no serverless runtime. @vercel/og renders it in Node here.
+{
+  const now = new Date();
+  const d = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+  );
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3); // Thursday
+  const ogYear = d.getUTCFullYear();
+  const firstThu = new Date(Date.UTC(ogYear, 0, 4));
+  firstThu.setUTCDate(firstThu.getUTCDate() - ((firstThu.getUTCDay() + 6) % 7) + 3);
+  const ogWeek = 1 + Math.round((d - firstThu) / 604800000);
+
+  const h = React.createElement;
+  const card = h(
+    "div",
+    {
+      style: {
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "90px 96px",
+        background:
+          "linear-gradient(135deg, #15211f 0%, #0f2a21 55%, #16130f 100%)",
+        color: "#ffffff",
+      },
+    },
+    h(
+      "div",
+      { style: { display: "flex", fontSize: 34, letterSpacing: 6, color: "#bbf7d0" } },
+      "VIIKKONRO.FI",
+    ),
+    h(
+      "div",
+      { style: { display: "flex", alignItems: "flex-end", marginTop: 26 } },
+      h("span", { style: { fontSize: 156, fontWeight: 800, lineHeight: 1 } }, `Viikko ${ogWeek}`),
+      h(
+        "span",
+        { style: { fontSize: 56, color: "#e0a23b", marginLeft: 28, marginBottom: 22 } },
+        `/ ${ogYear}`,
+      ),
+    ),
+    h("div", {
+      style: { display: "flex", width: 240, height: 12, marginTop: 36, background: "#8900ff", borderRadius: 8 },
+    }),
+    h(
+      "div",
+      { style: { display: "flex", marginTop: 42, fontSize: 54, color: "#e7eceb" } },
+      "Mikä viikko nyt on?",
+    ),
+    h(
+      "div",
+      { style: { display: "flex", marginTop: 18, fontSize: 30, color: "#8aa39b" } },
+      "Ilmainen viikkonumerolaskuri · ISO 8601",
+    ),
+  );
+  const res = new ImageResponse(card, { width: 1200, height: 630 });
+  const ogBuf = Buffer.from(await res.arrayBuffer());
+  fs.writeFileSync(path.join(distDir, "og.png"), ogBuf);
+  console.log(`generated og.png (Viikko ${ogWeek}/${ogYear}, ${ogBuf.length} bytes)`);
+}
 
 // Remove the temporary SSR bundle so it never ships in the image.
 fs.rmSync(serverDir, { recursive: true, force: true });
