@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { isoWeek, isoYear, mondayOf } from "./dateUtils";
 import { Link } from "react-router-dom";
 // FORMATTING HELPERS
@@ -59,9 +59,14 @@ function computeResult(selectedDateStr) {
 }
 
 const WeeklySearch = () => {
-  const [selectedDateStr, setSelectedDateStr] = useState(() =>
-    getFormattedDateInputString(new Date()),
-  );
+  // Start empty so the server-rendered HTML and the first client render match
+  // exactly (hydration-safe). Defaulting to today's date here would differ
+  // from the build-time date on any day after the build and break hydration.
+  // The real "today" is filled in after mount, client-side only.
+  const [selectedDateStr, setSelectedDateStr] = useState("");
+  useEffect(() => {
+    setSelectedDateStr(getFormattedDateInputString(new Date()));
+  }, []);
   const result = computeResult(selectedDateStr);
 
   return (

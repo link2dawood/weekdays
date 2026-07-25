@@ -32,7 +32,20 @@ const serverDir = path.resolve(__dirname, "dist-server");
 const currentYear = new Date().getFullYear();
 const routes = sitemapEntries(currentYear).map((e) => e.path);
 
-const template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
+let template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
+
+// Inline the render-blocking stylesheet into <head> so the first paint doesn't
+// wait on a separate CSS request — every prerendered page ships its styles
+// inline. The client SPA doesn't re-fetch CSS on route changes, so the tradeoff
+// (styles not shared-cached across pages) only costs the first page load.
+template = template.replace(
+  /<link\b[^>]*\bhref="(\/assets\/[^"]+\.css)"[^>]*>/g,
+  (_m, href) => {
+    const css = fs.readFileSync(path.join(distDir, href.slice(1)), "utf-8");
+    return `<style>${css}</style>`;
+  },
+);
+
 // pathToFileURL is required on Windows: a bare "C:\..." path passed to
 // import() is misparsed as a URL with scheme "c", not a filesystem path.
 const { render } = await import(
