@@ -17,6 +17,7 @@ import {
   canonicalFor,
   SITE_URL,
   sitemapEntries,
+  breadcrumbTrail,
 } from "./src/data/seo.js";
 import { faqs, faqCategories } from "./src/data/faqs.js";
 
@@ -99,20 +100,18 @@ function applyMeta(html, { title, description, url }) {
 
 // BreadcrumbList structured data mirroring the visible "Etusivu / …" trail.
 // Skipped for the homepage (a breadcrumb to itself adds nothing).
-function breadcrumbScript(url, meta, canonical) {
-  if (url === "/" || !meta.breadcrumb) return "";
+function breadcrumbScript(url) {
+  const trail = breadcrumbTrail(url);
+  if (!trail || trail.length < 2) return "";
   const data = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Etusivu",
-        item: canonicalFor("/"),
-      },
-      { "@type": "ListItem", position: 2, name: meta.breadcrumb, item: canonical },
-    ],
+    itemListElement: trail.map((t, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: t.name,
+      item: canonicalFor(t.path),
+    })),
   };
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
@@ -183,7 +182,7 @@ for (const url of routes) {
       url: canonical,
     });
 
-    const crumb = breadcrumbScript(url, meta, canonical);
+    const crumb = breadcrumbScript(url);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
     if (url === "/faq") {

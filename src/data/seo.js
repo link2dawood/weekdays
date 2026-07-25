@@ -225,3 +225,35 @@ export function metaFor(url) {
   if ((m = url.match(/^\/print\/(\d+)$/))) return printMeta(+m[1]);
   return null;
 }
+
+// Ordered breadcrumb trail for a route (home is position 1). Powers the
+// BreadcrumbList JSON-LD and mirrors the visible "Etusivu / …" breadcrumb on
+// each page, including the 3-level trails on week/month pages.
+export function breadcrumbTrail(url) {
+  const home = { name: "Etusivu", path: "/" };
+  if (routeMeta[url] && routeMeta[url].breadcrumb) {
+    return [home, { name: routeMeta[url].breadcrumb, path: url }];
+  }
+  let m;
+  if ((m = url.match(/^\/year\/(\d+)$/))) {
+    return [home, { name: `Viikot ${m[1]}`, path: url }];
+  }
+  if ((m = url.match(/^\/week\/(\d+)\/(\d+)$/))) {
+    return [
+      home,
+      { name: `Viikot ${m[2]}`, path: `/year/${m[2]}` },
+      { name: `Viikko ${m[1]}`, path: url },
+    ];
+  }
+  if ((m = url.match(/^\/month\/(\d+)\/(\d+)$/))) {
+    return [
+      home,
+      { name: `Viikot ${m[2]}`, path: `/year/${m[2]}` },
+      { name: M_FULL[+m[1] - 1], path: url },
+    ];
+  }
+  if ((m = url.match(/^\/print\/(\d+)$/))) {
+    return [home, { name: `Tulostettava ${m[1]}`, path: url }];
+  }
+  return null;
+}
