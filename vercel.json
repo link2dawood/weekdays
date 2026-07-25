@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+
+  "// routing": "cleanUrls serves the prerendered flat files at extension-less URLs (/faq -> faq.html, /week/30/2026 -> week/30/2026.html) and matches the no-trailing-slash canonical convention. The catch-all rewrite is the SPA fallback: any path without a matching static file gets index.html so React Router can render it (e.g. NotFound, or an invalid week).",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+
+  "// caching": "Fingerprinted build assets are immutable for a year. HTML is left to Vercel's revalidating default so the daily rebuild's fresh week number is picked up.",
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(sitemap.xml|robots.txt|llms.txt|llms-full.txt)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+    }
+  ]
+}
