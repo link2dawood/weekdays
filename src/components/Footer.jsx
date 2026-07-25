@@ -27,6 +27,35 @@ function Footer() {
             kalenteriaikataulujen ja vuosittaisten lukujen seurantaan. Aina
             laskettu ehdottoman teknisellä tarkkuudella.
           </p>
+          <ul className="footer-social" aria-label="Seuraa meitä">
+            <li>
+              <a
+                href="https://www.linkedin.com/company/viikkonro"
+                target="_blank"
+                rel="me noopener"
+              >
+                LinkedIn
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.instagram.com/viikkonro/"
+                target="_blank"
+                rel="me noopener"
+              >
+                Instagram
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.pinterest.com/viikkonro/"
+                target="_blank"
+                rel="me noopener"
+              >
+                Pinterest
+              </a>
+            </li>
+          </ul>
         </div>
 
         {/* Navigation Links Column */}

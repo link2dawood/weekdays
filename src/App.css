@@ -1134,6 +1134,24 @@ footer {
   opacity: 1;
 }
 
+.footer-social {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.footer-social a {
+  color: var(--footer-link);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+.footer-social a:hover {
+  color: var(--footer-link-hover);
+}
+
 /* Nav columns layout logic */
 .footer-links-col {
   flex: 1 1 160px;
