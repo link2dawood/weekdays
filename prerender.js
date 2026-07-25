@@ -18,6 +18,7 @@ import {
   SITE_URL,
   sitemapEntries,
 } from "./src/data/seo.js";
+import { faqs, faqCategories } from "./src/data/faqs.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "dist");
@@ -103,6 +104,23 @@ function breadcrumbScript(url, meta, canonical) {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+// FAQPage structured data generated from src/data/faqs.js. Injected only on
+// /faq, whose visible list matches it exactly (Google requires the two agree).
+function faqScript() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/faq#faq`,
+    inLanguage: "fi-FI",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
 // The <SEO> component renders <title>/<meta> via Helmet, and React emits those
 // inline in the SSR output — which would leave a duplicate <title> inside
 // <body>. The authoritative tags are written into <head> by applyMeta() above,
@@ -155,6 +173,10 @@ for (const url of routes) {
     const crumb = breadcrumbScript(url, meta, canonical);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
+    if (url === "/faq") {
+      html = html.replace("</head>", `${faqScript()}</head>`);
+    }
+
     html = html.replace(
       '<div id="root"></div>',
       `<div id="root">${appHtml}</div>`,
@@ -198,6 +220,25 @@ fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log(
   `generated sitemap.xml (${sitemapEntries(currentYear).length} urls, lastmod ${today})`,
 );
+
+// Generate llms-full.txt from the FAQ single-source so AI ingestion always
+// matches the visible /faq page and the FAQPage JSON-LD.
+const llmsFull =
+  "# Viikko Nro – täysi sisältö\n\n" +
+  "> Viikko Nro (viikkonro.fi) on ilmainen suomalainen viikkolaskuri. Se näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan. Alla kaikki usein kysytyt kysymykset vastauksineen.\n\n" +
+  "## Tietoa viikkonumeroista\n\n" +
+  "Suomessa ja koko Euroopassa viikot numeroidaan ISO 8601 -standardin mukaan. Viikko alkaa aina maanantaista ja päättyy sunnuntaihin. Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen torstain (aina 4. tammikuuta). Tavallisessa vuodessa on 52 viikkoa; noin joka viides tai kuudes vuosi on 53 viikon vuosi.\n\n" +
+  "## Usein kysytyt kysymykset\n\n" +
+  faqCategories
+    .map(
+      (cat) =>
+        `### ${cat.title}\n\n` +
+        cat.items.map((it) => `Q: ${it.q}\nA: ${it.a}`).join("\n\n"),
+    )
+    .join("\n\n") +
+  "\n";
+fs.writeFileSync(path.join(distDir, "llms-full.txt"), llmsFull);
+console.log(`generated llms-full.txt (${faqs.length} Q&A)`);
 
 // public/robots.txt is copied verbatim by Vite and can't read env itself, so
 // its Sitemap: line is rewritten here to stay in sync with SITE_URL instead
