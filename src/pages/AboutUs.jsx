@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
+import SocialLinks from "../components/SocialLinks";
 import { routeMeta } from "../data/seo";
 const AboutUs = () => {
   const meta = routeMeta["/about-us"];
@@ -63,6 +64,11 @@ const AboutUs = () => {
         <p>
           Kiitos, että olemme osa päivittäistä tuottavuusrutiiniasi!
         </p>
+        <h2>Seuraa meitä</h2>
+        <div className="prose">
+          <p>Löydät Viikko Nron myös sosiaalisessa mediassa:</p>
+        </div>
+        <SocialLinks />
       </section>
     </>
   );

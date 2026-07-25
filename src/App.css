@@ -1142,6 +1142,34 @@ footer {
   flex-wrap: wrap;
   gap: 8px 18px;
 }
+
+/* Social links on light-background pages (About, Contact). */
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.social-links a {
+  color: var(--accent-deep);
+  text-decoration: none;
+  font-weight: 600;
+}
+.social-links a:hover {
+  text-decoration: underline;
+}
+.contact-social {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.contact-social p {
+  margin: 0 0 8px;
+}
 .footer-social a {
   color: var(--footer-link);
   text-decoration: none;

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
+import SocialLinks from "../components/SocialLinks";
 import { routeMeta } from "../data/seo";
 
 // ── Web3Forms setup ─────────────────────────────────────────────────────────
@@ -275,6 +276,11 @@ function ContactUs() {
               {isSubmitting ? "Lähetetään…" : "Lähetä viesti"}
             </button>
           </form>
+
+          <div className="contact-social">
+            <p>Löydät meidät myös sosiaalisessa mediassa:</p>
+            <SocialLinks />
+          </div>
         </div>
       </div>
     </section>
