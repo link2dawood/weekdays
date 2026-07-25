@@ -22,7 +22,10 @@ const AppRoutes = () => {
   return (
     <>
       <Navbar />
-      <Routes>
+      {/* Single <main> landmark wraps the routed page content (a11y: screen
+          readers use it to jump to the primary content). */}
+      <main id="main">
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/year/:year" element={<YearCalendar />} />
         <Route path="/week/:week/:year" element={<WeekDays />} />
@@ -36,7 +39,8 @@ const AppRoutes = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route path="*" element={<NotFound />} />
-      </Routes>
+        </Routes>
+      </main>
       <Footer />
     </>
   );
