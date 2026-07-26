@@ -196,8 +196,10 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
         <div className="days">
           {days.map((day, i) => (
             <div key={i} className={`day ${day.isWeekend ? "weekend" : ""}`}>
-              <span className="wd">{WD[day.date.getDay()]}</span>
-              <span className="dt">{dFull(day.date)}</span>
+              <div className="day-head">
+                <span className="wd">{WD[day.date.getDay()]}</span>
+                <span className="dt">{dFull(day.date)}</span>
+              </div>
               <div className="day-extra">
                 <div>
                   Vuoden {day.dayOfYear}. päivä · {day.daysRemaining} päivää vuoden

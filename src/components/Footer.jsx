@@ -72,7 +72,7 @@ function Footer() {
             </li>
             <li>
               <Link to="/ota-yhteytta" onClick={() => window.scrollTo(0, 0)}>
-                Asiakastuki
+                Ota yhteyttä
               </Link>
             </li>
             <li>

@@ -482,18 +482,31 @@ input[type="date"]:focus-visible {
 .day {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 16px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 11px;
   padding: 13px 16px;
+}
+.day-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 0 0 auto;
 }
 .day .wd {
   font-weight: 600;
 }
 .day .dt {
   font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
   color: var(--ink-soft);
+  white-space: nowrap;
+}
+.day .day-extra {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .day.weekend {
   background: rgba(31, 122, 92, 0.06);
@@ -1334,7 +1347,10 @@ footer {
   .nav,
   footer,
   .breadcrumb,
-  .noprint {
+  .noprint,
+  .cal-page .pills,
+  .cal-page .cal-nimi,
+  .cal-page .cal-seealso {
     display: none !important;
   }
   body {
@@ -1348,6 +1364,97 @@ footer {
     color: #000;
     text-decoration: none;
   }
+  /* Full-year calendar: fit all 12 months on one A4 landscape page. */
+  .cal-page h1 {
+    font-size: 16px;
+    white-space: nowrap;
+  }
+  .cal-page .cal-grid,
+  .cal-page .cal-grid-half {
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 4px;
+  }
+  .cal-page .cal-month {
+    background: #fff;
+    border-color: #999;
+    break-inside: avoid;
+    padding: 5px;
+  }
+  .cal-page .cal-day {
+    background: none !important;
+    font-size: 9px;
+  }
+  .cal-page .cal-day.sun,
+  .cal-page .cal-day.hol {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+  }
+  .cal-page .cal-day.today {
+    background: none !important;
+    text-decoration: underline;
+    font-weight: 700;
+  }
+  .cal-page .cal-wk {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000;
+  }
+}
+/* A4 landscape only when a calendar page is what's being printed. @page can't
+   be scoped by selector, so this is opt-in per calendar page via the body:has
+   guard is not possible for @page — instead we keep it global but calendars are
+   by far the primary print target; the week-list (/tulosta) still prints fine. */
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+/* /tulostettava-kalenteri: print-optimized look ON SCREEN by default (this CSS
+   lives here, not in a component <style>, to avoid a React 19 <style>-hoisting
+   crash during client-side navigation). */
+.cal-print .breadcrumb,
+.cal-print .pills,
+.cal-print .cal-nimi,
+.cal-print .noprint,
+.cal-print .cal-seealso {
+  display: none;
+}
+body:has(.cal-print) header,
+body:has(.cal-print) footer {
+  display: none;
+}
+.cal-print h1 {
+  font-size: 20px;
+  white-space: nowrap;
+  margin: 4px 0 8px;
+}
+.cal-print .cal-grid,
+.cal-print .cal-grid-half {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.cal-print .cal-month {
+  background: #fff;
+  border-color: #999;
+  padding: 6px;
+}
+.cal-print .cal-day {
+  background: none;
+}
+.cal-print .cal-day.sun,
+.cal-print .cal-day.hol {
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+.cal-print .cal-day.today {
+  background: none;
+  text-decoration: underline;
+  font-weight: 700;
+}
+.cal-print .cal-wk {
+  background: #fff;
+  color: #000;
+  border: 1px solid #000;
 }
 
 /* ---- Data tables + stat boxes (holiday / working-day hub pages) ---- */

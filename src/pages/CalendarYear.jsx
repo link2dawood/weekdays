@@ -18,31 +18,6 @@ function pad(n) {
   return n < 10 ? "0" + n : "" + n;
 }
 
-// Print + print-preview CSS, scoped to calendar pages by living in a <style>
-// this component renders — so @page / @media print here never affect
-// /tulosta-{y} or any other route. Screen base styles are global (App.css).
-const CAL_PRINT_CSS = `
-.cal-print .breadcrumb,.cal-print .pills,.cal-print .cal-nimi,.cal-print .noprint,.cal-print .cal-seealso{display:none!important}
-body:has(.cal-print) header,body:has(.cal-print) footer{display:none!important}
-.cal-print h1{font-size:20px;white-space:nowrap;margin:4px 0 8px}
-.cal-print .cal-grid,.cal-print .cal-grid-half{grid-template-columns:repeat(6,1fr);gap:6px}
-.cal-print .cal-month{background:#fff;border-color:#999;padding:6px}
-.cal-print .cal-day{background:none!important}
-.cal-print .cal-day.sun,.cal-print .cal-day.hol{border-top:1px solid #000;border-bottom:1px solid #000}
-.cal-print .cal-day.today{background:none!important;text-decoration:underline;font-weight:700}
-.cal-print .cal-wk{background:#fff;color:#000;border:1px solid #000}
-@page{size:A4 landscape;margin:8mm}
-@media print{
-  header,footer,.breadcrumb,.pills,.cal-nimi,.noprint,.cal-seealso{display:none!important}
-  h1{font-size:16px;white-space:nowrap}
-  .cal-grid,.cal-grid-half{grid-template-columns:repeat(6,1fr)!important;gap:4px}
-  .cal-month{background:#fff;border-color:#999;break-inside:avoid;padding:5px}
-  .cal-day{background:none!important;font-size:9px}
-  .cal-day.sun,.cal-day.hol{border-top:1px solid #000;border-bottom:1px solid #000}
-  .cal-day.today{background:none!important;text-decoration:underline;font-weight:700}
-  .cal-wk{background:#fff!important;color:#000!important;border:1px solid #000}
-}`;
-
 const CalendarYear = ({ year, half = null, print = false } = {}) => {
   const y = Number(year);
   const juhla = getJuhlapaivat(y);
@@ -135,7 +110,6 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
   return (
     <section className={`app cal-page${print ? " cal-print" : ""}`}>
       <SEO {...calendarMeta(y, half, print)} canonical={canonicalFor(canonicalPath)} />
-      <style dangerouslySetInnerHTML={{ __html: CAL_PRINT_CSS }} />
 
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> /{" "}
