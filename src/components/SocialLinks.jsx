@@ -7,6 +7,7 @@ export const SOCIAL_PROFILES = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/viikkonro" },
   { name: "Instagram", url: "https://www.instagram.com/viikkonro/" },
   { name: "Pinterest", url: "https://www.pinterest.com/viikkonro/" },
+  { name: "Bluesky", url: "https://bsky.app/profile/viikkonro.bsky.social" },
 ];
 
 // rel="me" is an identity signal (this site vouches these profiles are "me");
