@@ -56,6 +56,9 @@ const Navbar = () => {
           <Link id="navPrint" to={`/tulosta-${year}`} onClick={closeMenu}>
             Tulostettava
           </Link>
+          <Link to={`/kalenteri-${Y_NOW}`} onClick={closeMenu}>
+            Kalenteri
+          </Link>
           <Link to="/laskurit" onClick={closeMenu}>
             Laskurit
           </Link>

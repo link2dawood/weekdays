@@ -12,6 +12,14 @@ const QuickLinks = () => {
         <div className="quicklinks">
           <Link
             className="ql"
+            to={`/kalenteri-${Y_NOW}`}
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Vuoden {Y_NOW} kalenteri</b>
+            <span>Kaikki viikot ja juhlapäivät yhdellä sivulla</span>
+          </Link>
+          <Link
+            className="ql"
             to={`/tulosta-${Y_NOW}`}
             onClick={() => window.scrollTo(0, 0)}
           >

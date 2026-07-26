@@ -1475,3 +1475,84 @@ footer {
   font-size: 14px;
   color: var(--ink-soft);
 }
+
+/* ─── Full-year calendar view (/kalenteri-*) ──────────────────────────── */
+.cal-page { max-width: min(1500px, 96vw); }
+.cal-halves { margin-top: 8px; margin-bottom: 18px; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+@media (max-width: 430px) {
+  .cal-grid { grid-template-columns: 1fr; gap: 8px; }
+}
+
+.cal-month {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  min-width: 160px;
+}
+.cal-month-h {
+  display: block;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+.cal-month-h:hover { color: var(--accent-deep); }
+.cal-days { display: flex; flex-direction: column; }
+
+.cal-day {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  min-height: 20px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.cal-wi { width: 1.1em; text-align: center; color: var(--ink); opacity: 0.4; flex: none; }
+.cal-dn { min-width: 2ch; text-align: right; font-weight: 700; color: var(--ink); flex: none; }
+.cal-wk {
+  background: var(--accent);
+  color: #fff;
+  font: 500 11px "IBM Plex Mono", ui-monospace, monospace;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-decoration: none;
+  flex: none;
+}
+.cal-wk:hover { background: var(--accent-deep); }
+.cal-hol {
+  font-family: "Inter", system-ui, sans-serif;
+  color: var(--accent-deep);
+  font-weight: 500;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-flag { font-size: 11px; flex: none; line-height: 1; }
+
+.cal-day.sun { background: rgba(224, 162, 59, 0.08); }
+.cal-day.sat { background: rgba(21, 33, 31, 0.03); }
+.cal-day.hol { background: rgba(224, 162, 59, 0.08); }
+.cal-day.hol .cal-dn { font-weight: 700; }
+.cal-day.today {
+  background: rgba(224, 162, 59, 0.3);
+  background: color-mix(in srgb, var(--amber) 30%, transparent);
+  font-weight: 700;
+}
+.cal-nimi { margin: 16px 0; font-size: 15px; }
+.cal-seealso { margin-top: 26px; }

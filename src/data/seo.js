@@ -111,6 +111,33 @@ export function workingDaysMeta(y) {
   };
 }
 
+// Full-year calendar pages. `half` = null | 1 | 2; `print` = print-optimized.
+export function calendarMeta(y, half, print) {
+  if (print) {
+    return {
+      title: `Tulostettava vuoden ${y} kalenteri – juhlapäivät ja viikot | Viikko Nro`,
+      description: `Tulostettava vuoden ${y} kalenteri A4-koossa. Viikkonumerot, juhlapäivät ja koko vuosi yhdellä sivulla.`,
+      robots: "index, follow",
+    };
+  }
+  if (half === 1) {
+    return {
+      title: `Vuoden ${y} kalenteri, 1. vuosipuolisko (tammi–kesäkuu) | Viikko Nro`,
+      description: `Vuoden ${y} kevätpuolen kalenteri: tammikuu–kesäkuu. Viikkonumerot, juhlapäivät ja tulostettava PDF.`,
+    };
+  }
+  if (half === 2) {
+    return {
+      title: `Vuoden ${y} kalenteri, 2. vuosipuolisko (heinä–joulukuu) | Viikko Nro`,
+      description: `Vuoden ${y} syyspuolen kalenteri: heinäkuu–joulukuu. Viikkonumerot, juhlapäivät ja tulostettava PDF.`,
+    };
+  }
+  return {
+    title: `Vuoden ${y} kalenteri – viikkonumerot ja juhlapäivät | Viikko Nro`,
+    description: `Vuoden ${y} kalenteri, jossa näkyvät kaikki viikkonumerot ja Suomen juhlapäivät. Ilmainen ja tulostettava, ISO 8601 -standardin mukaan.`,
+  };
+}
+
 // --- Swedish (/sv/) pilot meta ---------------------------------------------
 export function svHomeMeta(now) {
   const w = isoWeek(now);
@@ -335,6 +362,23 @@ export function sitemapEntries(year) {
   }
   entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
 
+  // Full-year calendar pages: 2020–2035 × {full, half 1, half 2, print} = 64.
+  for (let cy = 2020; cy <= 2035; cy++) {
+    const cur = cy === year;
+    entries.push({
+      path: `/kalenteri-${cy}`,
+      changefreq: cur ? "weekly" : "yearly",
+      priority: cur ? "0.7" : "0.5",
+    });
+    entries.push({ path: `/kalenteri-${cy}-1`, changefreq: "yearly", priority: "0.3" });
+    entries.push({ path: `/kalenteri-${cy}-2`, changefreq: "yearly", priority: "0.3" });
+    entries.push({
+      path: `/tulostettava-kalenteri-${cy}`,
+      changefreq: "yearly",
+      priority: "0.3",
+    });
+  }
+
   // Swedish (/sv/) pilot — bounded year range while it's validated.
   entries.push({ path: "/sv", changefreq: "daily", priority: "0.8" });
   for (let y = SV_MIN_YEAR; y <= SV_MAX_YEAR; y++) {
@@ -374,6 +418,11 @@ export function metaFor(url) {
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
   if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) return holidaysMeta(+m[1]);
   if ((m = url.match(/^\/tyopaivat-(\d+)$/))) return workingDaysMeta(+m[1]);
+  if ((m = url.match(/^\/kalenteri-(\d+)-([12])$/)))
+    return calendarMeta(+m[1], +m[2], false);
+  if ((m = url.match(/^\/kalenteri-(\d+)$/))) return calendarMeta(+m[1], null, false);
+  if ((m = url.match(/^\/tulostettava-kalenteri-(\d+)$/)))
+    return calendarMeta(+m[1], null, true);
   if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) return svWeekMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/sv\/veckor-(\d+)$/))) return svYearMeta(+m[1]);
   if ((m = url.match(/^\/sv\/helgdagar-(\d+)$/))) return svHolidaysMeta(+m[1]);
@@ -422,6 +471,18 @@ export function breadcrumbTrail(url) {
       { name: `Viikot ${m[1]}`, path: `/vuosi-${m[1]}` },
       { name: `Työpäivät ${m[1]}`, path: url },
     ];
+  }
+  const kalenteri = { name: "Kalenteri", path: `/kalenteri-${isoYear(new Date())}` };
+  if ((m = url.match(/^\/kalenteri-(\d+)(?:-([12]))?$/))) {
+    const suffix = m[2]
+      ? m[2] === "1"
+        ? ", 1. vuosipuolisko"
+        : ", 2. vuosipuolisko"
+      : "";
+    return [home, kalenteri, { name: `${m[1]}${suffix}`, path: url }];
+  }
+  if ((m = url.match(/^\/tulostettava-kalenteri-(\d+)$/))) {
+    return [home, kalenteri, { name: `Tulostettava ${m[1]}`, path: url }];
   }
   return null;
 }
