@@ -20,6 +20,7 @@ import {
   SITE_URL,
   sitemapEntries,
   breadcrumbTrail,
+  hreflangAlternates,
 } from "./src/data/seo.js";
 import { faqs, faqCategories } from "./src/data/faqs.js";
 
@@ -189,6 +190,25 @@ for (const url of routes) {
 
     if (url === "/faq") {
       html = html.replace("</head>", `${faqScript()}</head>`);
+    }
+
+    // hreflang alternates (fi <-> sv) for pages that have a translated twin.
+    const alts = hreflangAlternates(url);
+    if (alts) {
+      const fiPath = alts.find((a) => a.lang === "fi").path;
+      const tags =
+        alts
+          .map(
+            (a) =>
+              `<link rel="alternate" hreflang="${a.lang}" href="${canonicalFor(a.path)}" />`,
+          )
+          .join("\n    ") +
+        `\n    <link rel="alternate" hreflang="x-default" href="${canonicalFor(fiPath)}" />`;
+      html = html.replace("</head>", `${tags}\n  </head>`);
+    }
+    // Swedish pages declare lang="sv".
+    if (url === "/sv" || url.startsWith("/sv/")) {
+      html = html.replace('<html lang="fi"', '<html lang="sv"');
     }
 
     html = html.replace(

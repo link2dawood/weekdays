@@ -109,6 +109,67 @@ export function workingDaysMeta(y) {
   };
 }
 
+// --- Swedish (/sv/) pilot meta ---------------------------------------------
+export function svHomeMeta(now) {
+  const w = isoWeek(now);
+  const y = isoYear(now);
+  return {
+    title: `Vecka ${w} – vilken vecka är det nu? | viikkonro.fi`,
+    description: `Just nu är det vecka ${w} år ${y}. Se aktuellt veckonummer och alla veckor enligt ISO 8601. Gratis, snabbt och utan reklam.`,
+  };
+}
+export function svWeekMeta(w, y) {
+  return {
+    title: `Vecka ${w} år ${y} – datum och veckodagar | viikkonro.fi`,
+    description: `Vilka datum har vecka ${w} år ${y}? Se veckans måndag–söndag, röda dagar och veckonummer enligt ISO 8601.`,
+  };
+}
+export function svYearMeta(y) {
+  const total = weeksInIsoYear(y);
+  return {
+    title: `Veckonummer ${y} – alla ${total} veckor | viikkonro.fi`,
+    description: `Alla veckonummer ${y} med start- och slutdatum enligt ISO 8601 samt röda dagar. Gratis veckokalender.`,
+  };
+}
+export function svHolidaysMeta(y) {
+  return {
+    title: `Röda dagar ${y} – helgdagar i Sverige | viikkonro.fi`,
+    description: `Alla röda dagar och helgdagar i Sverige ${y} med datum, veckodag och veckonummer. Nyårsdagen, påsk, midsommar, jul med flera.`,
+  };
+}
+
+// Swedish pilot spans a bounded range while it's validated; widen later.
+const SV_MIN_YEAR = 2024;
+const SV_MAX_YEAR = 2028;
+
+// hreflang alternates for a route: returns [{lang, path}] (fi + sv) when a real
+// translated equivalent exists on both sides, else null. Only emitted when the
+// Swedish page is actually within the prerendered SV range, so hreflang never
+// points at a 404.
+export function hreflangAlternates(url) {
+  const pair = (fi, sv) => [
+    { lang: "fi", path: fi },
+    { lang: "sv", path: sv },
+  ];
+  if (url === "/" || url === "/sv") return pair("/", "/sv");
+  let m;
+  const inSv = (y) => y >= SV_MIN_YEAR && y <= SV_MAX_YEAR;
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/)) && inSv(+m[2]))
+    return pair(`/viikko-${m[1]}-${m[2]}`, `/sv/vecka-${m[1]}-${m[2]}`);
+  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/)))
+    return pair(`/viikko-${m[1]}-${m[2]}`, `/sv/vecka-${m[1]}-${m[2]}`);
+  if ((m = url.match(/^\/vuosi-(\d+)$/)) && inSv(+m[1]))
+    return pair(`/vuosi-${m[1]}`, `/sv/veckor-${m[1]}`);
+  if ((m = url.match(/^\/sv\/veckor-(\d+)$/)))
+    return pair(`/vuosi-${m[1]}`, `/sv/veckor-${m[1]}`);
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/)) && inSv(+m[1]))
+    return pair(`/pyhapaivat-${m[1]}`, `/sv/helgdagar-${m[1]}`);
+  if ((m = url.match(/^\/sv\/helgdagar-(\d+)$/)))
+    return pair(`/pyhapaivat-${m[1]}`, `/sv/helgdagar-${m[1]}`);
+  return null;
+}
+export { SV_MIN_YEAR, SV_MAX_YEAR };
+
 // Home page title/description carry the actual current week and date range
 // (what F-04 calls "distinguishing data"), computed the same way at build
 // time (prerender.js, for crawlers) and at hydration (Home.jsx render body —
@@ -271,6 +332,29 @@ export function sitemapEntries(year) {
     });
   }
   entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
+
+  // Swedish (/sv/) pilot — bounded year range while it's validated.
+  entries.push({ path: "/sv", changefreq: "daily", priority: "0.8" });
+  for (let y = SV_MIN_YEAR; y <= SV_MAX_YEAR; y++) {
+    const cur = y === year;
+    entries.push({
+      path: `/sv/veckor-${y}`,
+      changefreq: cur ? "weekly" : "yearly",
+      priority: cur ? "0.6" : "0.5",
+    });
+    entries.push({
+      path: `/sv/helgdagar-${y}`,
+      changefreq: cur ? "monthly" : "yearly",
+      priority: cur ? "0.6" : "0.5",
+    });
+    for (let w = 1; w <= weeksInIsoYear(y); w++) {
+      entries.push({
+        path: `/sv/vecka-${w}-${y}`,
+        changefreq: cur ? "weekly" : "yearly",
+        priority: cur ? "0.5" : "0.4",
+      });
+    }
+  }
   return entries;
 }
 
@@ -280,6 +364,7 @@ export function sitemapEntries(year) {
 export function metaFor(url) {
   if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
   if (routeMeta[url]) return routeMeta[url];
+  if (url === "/sv") return svHomeMeta(new Date());
   let m;
   if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) return weekMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
@@ -287,6 +372,9 @@ export function metaFor(url) {
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
   if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) return holidaysMeta(+m[1]);
   if ((m = url.match(/^\/tyopaivat-(\d+)$/))) return workingDaysMeta(+m[1]);
+  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) return svWeekMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/sv\/veckor-(\d+)$/))) return svYearMeta(+m[1]);
+  if ((m = url.match(/^\/sv\/helgdagar-(\d+)$/))) return svHolidaysMeta(+m[1]);
   return null;
 }
 
