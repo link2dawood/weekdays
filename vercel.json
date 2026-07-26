@@ -22,6 +22,10 @@
         {
           "key": "Strict-Transport-Security",
           "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\"; type=\"text/plain\"; title=\"LLM-readable site summary\", </faq>; rel=\"help\", </privacy-policy>; rel=\"privacy-policy\", </terms-and-conditions>; rel=\"terms-of-service\""
         }
       ]
     },
