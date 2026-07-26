@@ -355,13 +355,23 @@ try {
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
 // (currentYear is defined above, alongside the prerender route list.)
 const today = new Date().toISOString().slice(0, 10);
+// Per-URL <lastmod>: a page describing a finalized past year (its week/date
+// content can never change again) is frozen to that year's end — an honest
+// "stable, old" signal that keeps crawl budget off the deep archive. The
+// homepage, current/future-year pages, and editable static pages use the build
+// date. Self-maintaining: the boundary moves automatically as currentYear rolls.
+const lastmodFor = (p) => {
+  const m = p.match(/-(\d{4})(?:-[12])?$/);
+  if (m && Number(m[1]) < currentYear) return `${m[1]}-12-31`;
+  return today;
+};
 const urlset = sitemapEntries(currentYear)
   .map((e) => {
     const loc = e.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${e.path}`;
     return [
       "  <url>",
       `    <loc>${loc}</loc>`,
-      `    <lastmod>${today}</lastmod>`,
+      `    <lastmod>${lastmodFor(e.path)}</lastmod>`,
       `    <changefreq>${e.changefreq}</changefreq>`,
       `    <priority>${e.priority}</priority>`,
       "  </url>",

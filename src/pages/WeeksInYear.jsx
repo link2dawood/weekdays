@@ -1,13 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { isoWeek, isoYear, weeksInIsoYear } from "../components/dateUtils";
+import {
+  isoYear,
+  weeksInIsoYear,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { routeMeta } from "../data/seo";
 
 const WeeksInYear = () => {
   const meta = routeMeta["/kuinka-monta-viikkoa-vuodessa"];
-  const YEAR_MIN = 2020,
-    YEAR_MAX = 2035;
 
   const years = [];
   for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
@@ -20,9 +23,7 @@ const WeeksInYear = () => {
     if (weeksInIsoYear(y) === 53) longYears.push(y);
   }
 
-  const NOW = new Date();
-  const W_NOW = isoWeek(NOW);
-  const Y_NOW = isoYear(NOW);
+  const Y_NOW = isoYear(new Date());
 
   return (
     <>
@@ -46,6 +47,19 @@ const WeeksInYear = () => {
           <p>
             Tämä työkalu käsittelee eron automaattisesti, joten näkemäsi
             viikkonumero on aina oikein.
+          </p>
+          <p>
+            Viikkojen laskenta perustuu{" "}
+            <a
+              href="https://fi.wikipedia.org/wiki/ISO_8601"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ISO 8601 -standardiin
+            </a>
+            , jossa vuoden ensimmäinen viikko sisältää vuoden ensimmäisen
+            torstain. Lue tarkemmin:{" "}
+            <Link to="/mika-on-viikkonumero">mikä on viikkonumero</Link>.
           </p>
         </div>
 
