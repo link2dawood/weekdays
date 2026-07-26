@@ -10,6 +10,11 @@
 // Vite transform and so only ever sees real process.env).
 export const SITE_URL = process.env.SITE_ORIGIN || "https://viikkonro.fi";
 
+// Finnish date formatters live in one place (dateUtils.js). Imported with an
+// explicit .js extension so plain-Node prerender.js can resolve it too (the
+// ISO-week math below stays inline — untouched — per the no-touch rule).
+import { fmtFullFi, M_GENITIVE } from "../components/dateUtils.js";
+
 // Mirrors src/components/dateUtils.jsx's isoWeek/weeksInIsoYear exactly.
 // Duplicated (not imported) because prerender.js runs this file as plain
 // Node ESM, which can't load a .jsx module.
@@ -58,9 +63,6 @@ const M_FULL = [
   "Marraskuu",
   "Joulukuu",
 ];
-function dWritten(d) {
-  return `${d.getDate()} ${M_FULL[d.getMonth()]} ${d.getFullYear()}`;
-}
 
 // Per-route <title>/<description> for the DYNAMIC pages. These are the single
 // source of truth used by BOTH the page components (their <SEO> tag) and
@@ -74,13 +76,13 @@ export function weekMeta(w, y) {
   su.setDate(mo.getDate() + 6);
   return {
     title: `Viikko ${w} vuonna ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
-    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${dWritten(mo)} ja päättyy sunnuntaina ${dWritten(su)}. Katso viikon ${w} päivämäärät, juhlapäivät ja nimipäivät sekä tulostettava kalenteri.`,
+    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${fmtFullFi(mo)} ja päättyy sunnuntaina ${fmtFullFi(su)}. Katso viikon ${w} päivämäärät, juhlapäivät ja nimipäivät sekä tulostettava kalenteri.`,
   };
 }
 export function monthMeta(m, y) {
   return {
     title: `${M_FULL[m - 1]} ${y} – viikkonumerot ja kalenteri | Viikko Nro`,
-    description: `Kuukauden ${M_FULL[m - 1]} ${y} viikkonumerot, päivämäärät, juhlapäivät ja nimipäivät. Tulostettava kuukausikalenteri viikkonumeroilla ISO 8601 -standardin mukaan.`,
+    description: `${M_GENITIVE[m - 1].replace(/^./, (c) => c.toUpperCase())} ${y} viikkonumerot, päivämäärät, juhlapäivät ja nimipäivät. Tulostettava kuukausikalenteri viikkonumeroilla ISO 8601 -standardin mukaan.`,
   };
 }
 export function yearMeta(y) {

@@ -3,7 +3,8 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import {
   isoWeek,
   isoYear,
-  dWritten,
+  fmtFullFi,
+  M_GENITIVE,
   mondayOf,
   dFull,
   weeksInIsoYear,
@@ -62,20 +63,6 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   const mo = mondayOf(w, y);
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
-  var M_FULL = [
-    "Tammikuu",
-    "Helmikuu",
-    "Maaliskuu",
-    "Huhtikuu",
-    "Toukokuu",
-    "Kesäkuu",
-    "Heinäkuu",
-    "Elokuu",
-    "Syyskuu",
-    "Lokakuu",
-    "Marraskuu",
-    "Joulukuu",
-  ];
   var WD = [
     "Sunnuntai",
     "Maanantai",
@@ -91,18 +78,18 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   if (mo.getMonth() === su.getMonth()) {
     monthLinks = (
       <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
-        {M_FULL[mo.getMonth()]} {mo.getFullYear()} viikot
+        {M_GENITIVE[mo.getMonth()]} {mo.getFullYear()}
       </Link>
     );
   } else {
     monthLinks = (
       <>
         <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
-          {M_FULL[mo.getMonth()]}
+          {M_GENITIVE[mo.getMonth()]}
         </Link>{" "}
         ja{" "}
         <Link to={`/kuukausi-${su.getMonth() + 1}-${su.getFullYear()}`}>
-          {M_FULL[su.getMonth()]}
+          {M_GENITIVE[su.getMonth()]}
         </Link>
       </>
     );
@@ -181,12 +168,9 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       )}
 
       <p className="lead">
-        Viikko {week} alkaa <strong>maanantaina {dWritten(mo)}</strong> ja
-        päättyy <strong>sunnuntaina {dWritten(su)}.</strong> Se sijoittuu {""}
-        {mo.getMonth() === su.getMonth()
-          ? "kuukauteen"
-          : "kuukausiin"}{" "}
-        {monthLinks}.
+        Viikko {week} alkaa <strong>maanantaina {fmtFullFi(mo)}</strong> ja
+        päättyy <strong>sunnuntaina {fmtFullFi(su)}.</strong> Se kuuluu{" "}
+        {monthLinks} kalenteriin.
       </p>
 
       {officialHolidays.length > 0 && (

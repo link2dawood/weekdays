@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { M_FULL, isoWeek, isoYear } from "../components/dateUtils";
+import { M_FULL, M_GENITIVE, isoWeek, isoYear } from "../components/dateUtils";
 import WeekCard from "../components/WeekCard";
 import SEO from "../components/SEO";
 import { canonicalFor, monthMeta } from "../data/seo";
@@ -67,7 +67,8 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
         Viikot – {M_FULL[mi]} {year}{" "}
       </h2>
       <p className="lead">
-        Nämä viikkonumerot osuvat kuukauteen {M_FULL[mi]} {year} . Osa viikoista
+        Nämä viikkonumerot kuuluvat {M_GENITIVE[mi]} {year} kalenteriin. Osa
+        viikoista
         voi jatkua viereiseen kuukauteen.
       </p>
       <div className="grid">

@@ -105,11 +105,14 @@ export var M_SHORT = [
   "marras",
   "joulu",
 ];
+// Kept as thin aliases to the canonical Finnish formatter (fmtFullFi) so every
+// existing caller renders correct Finnish ("20. heinäkuuta 2026") without each
+// call site having to be found and changed.
 export function dWritten(d) {
-  return d.getDate() + " " + M_FULL[d.getMonth()] + " " + d.getFullYear();
+  return fmtFullFi(d);
 }
 export function dFull(d) {
-  return d.getDate() + " " + M_SHORT[d.getMonth()] + " " + d.getFullYear();
+  return fmtFullFi(d);
 }
 
 export function formatShort(date) {
@@ -140,4 +143,79 @@ export function getWeekdayName(date) {
 }
 export function getDate(date) {
   return formatLong(date);
+}
+
+// ─── Centralized Finnish date formatting (single source of truth) ──────────
+// getDay() is Sunday-indexed (0 = Sunday). WD/M_FULL above are the capitalized
+// nominative forms (headings/labels only); the forms below carry the cases
+// Finnish prose needs.
+
+// Weekday essive ("on maanantaina"), lowercase — for prose.
+export const WD_ESSIVE = [
+  "sunnuntaina",
+  "maanantaina",
+  "tiistaina",
+  "keskiviikkona",
+  "torstaina",
+  "perjantaina",
+  "lauantaina",
+];
+// Month genitive ("kesäkuun viikot"), lowercase.
+export const M_GENITIVE = [
+  "tammikuun",
+  "helmikuun",
+  "maaliskuun",
+  "huhtikuun",
+  "toukokuun",
+  "kesäkuun",
+  "heinäkuun",
+  "elokuun",
+  "syyskuun",
+  "lokakuun",
+  "marraskuun",
+  "joulukuun",
+];
+// Month partitive ("20. heinäkuuta"), lowercase.
+export const M_PARTITIVE = [
+  "tammikuuta",
+  "helmikuuta",
+  "maaliskuuta",
+  "huhtikuuta",
+  "toukokuuta",
+  "kesäkuuta",
+  "heinäkuuta",
+  "elokuuta",
+  "syyskuuta",
+  "lokakuuta",
+  "marraskuuta",
+  "joulukuuta",
+];
+
+// "20. heinäkuuta 2026"
+export function fmtFullFi(date) {
+  return `${date.getDate()}. ${M_PARTITIVE[date.getMonth()]} ${date.getFullYear()}`;
+}
+// "maanantaina 20. heinäkuuta 2026" (weekday lowercase essive)
+export function fmtDayWithWeekdayFi(date) {
+  return `${WD_ESSIVE[date.getDay()]} ${fmtFullFi(date)}`;
+}
+// "Maanantai 20. heinäkuuta 2026" (weekday capitalized nominative)
+export function fmtDayHeadingFi(date) {
+  return `${WD[date.getDay()]} ${fmtFullFi(date)}`;
+}
+// "20.7.2026"
+export function fmtShortFi(date) {
+  return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
+}
+// Range: "20.–26. heinäkuuta 2026" (same month); "29.6.–5.7.2026" (same year,
+// different months); "29.12.2026–4.1.2027" (spanning a year boundary).
+export function fmtRangeFi(mo, su) {
+  const sameYear = mo.getFullYear() === su.getFullYear();
+  if (sameYear && mo.getMonth() === su.getMonth()) {
+    return `${mo.getDate()}.–${su.getDate()}. ${M_PARTITIVE[su.getMonth()]} ${su.getFullYear()}`;
+  }
+  if (sameYear) {
+    return `${mo.getDate()}.${mo.getMonth() + 1}.–${su.getDate()}.${su.getMonth() + 1}.${su.getFullYear()}`;
+  }
+  return `${fmtShortFi(mo)}–${fmtShortFi(su)}`;
 }
