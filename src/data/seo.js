@@ -362,8 +362,9 @@ export function sitemapEntries(year) {
   }
   entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
 
-  // Full-year calendar pages: 2020–2035 × {full, half 1, half 2, print} = 64.
-  for (let cy = 2020; cy <= 2035; cy++) {
+  // Full-year calendar pages: 2020 .. year+9 (rolling) × {full, half 1, half 2,
+  // print}. Auto-advances every rebuild so the indexed set never freezes.
+  for (let cy = 2020; cy <= year + 9; cy++) {
     const cur = cy === year;
     entries.push({
       path: `/kalenteri-${cy}`,

@@ -7,7 +7,10 @@ import SEO from "../components/SEO";
 import { canonicalFor, calendarMeta } from "../data/seo";
 
 const YEAR_MIN = 2020;
-const YEAR_MAX = 2035;
+// Rolling horizon: current year + 9 (≈2035 today), so the year pills and
+// cross-links auto-advance every rebuild instead of freezing. Any /kalenteri-{y}
+// still renders client-side via the dispatcher even outside this range.
+const YEAR_MAX = new Date().getFullYear() + 9;
 // getDay()-indexed Finnish weekday initials (Su, Mo, Tu, We, Th, Fr, Sa).
 const WD_INITIAL = ["S", "M", "T", "K", "T", "P", "L"];
 

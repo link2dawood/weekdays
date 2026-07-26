@@ -185,6 +185,16 @@ for (const url of routes) {
       url: canonical,
     });
 
+    // Per-year OG image for calendar pages (all four variants of a year share
+    // its image); every other page keeps the site's default /og.png.
+    const calOg = url.match(/^\/(?:tulostettava-)?kalenteri-(\d+)/);
+    if (calOg) {
+      const og = `${SITE_URL}/og/kalenteri-${calOg[1]}.png`;
+      html = html
+        .replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${og}$2`)
+        .replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${og}$2`);
+    }
+
     const crumb = breadcrumbScript(url);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
@@ -374,6 +384,58 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
   const ogBuf = Buffer.from(await res.arrayBuffer());
   fs.writeFileSync(path.join(distDir, "og.png"), ogBuf);
   console.log(`generated og.png (Viikko ${ogWeek}/${ogYear}, ${ogBuf.length} bytes)`);
+}
+
+// Per-year calendar OG images (dist/og/kalenteri-{y}.png), one per year across
+// the same rolling range as the calendar pages; shared by the full/half/print
+// variants and referenced by the per-page og:image override in the loop above.
+{
+  const h = React.createElement;
+  fs.mkdirSync(path.join(distDir, "og"), { recursive: true });
+  let count = 0;
+  for (let cy = 2020; cy <= currentYear + 9; cy++) {
+    const card = h(
+      "div",
+      {
+        style: {
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "88px 96px",
+          background:
+            "linear-gradient(135deg, #15211f 0%, #0f2a21 55%, #16130f 100%)",
+          color: "#ffffff",
+        },
+      },
+      h(
+        "div",
+        { style: { display: "flex", fontSize: 34, letterSpacing: 6, color: "#bbf7d0" } },
+        "VIIKKONRO.FI",
+      ),
+      h(
+        "div",
+        { style: { display: "flex", fontSize: 112, fontWeight: 800, lineHeight: 1, marginTop: 26 } },
+        `Vuoden ${cy}`,
+      ),
+      h(
+        "div",
+        { style: { display: "flex", fontSize: 112, fontWeight: 800, lineHeight: 1, color: "#e0a23b", marginTop: 4 } },
+        "kalenteri",
+      ),
+      h(
+        "div",
+        { style: { display: "flex", marginTop: 40, fontSize: 33, color: "#8aa39b" } },
+        "Viikkonumerot · juhlapäivät · ISO 8601",
+      ),
+    );
+    const res = new ImageResponse(card, { width: 1200, height: 630 });
+    const buf = Buffer.from(await res.arrayBuffer());
+    fs.writeFileSync(path.join(distDir, "og", `kalenteri-${cy}.png`), buf);
+    count += 1;
+  }
+  console.log(`generated ${count} calendar OG images (dist/og/kalenteri-*.png)`);
 }
 
 // Remove the temporary SSR bundle so it never ships in the image.
