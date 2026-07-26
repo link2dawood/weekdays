@@ -177,6 +177,36 @@ export const routeMeta = {
       "Viikko Nro -palvelun käyttöehdot: palvelun käyttö, vastuunrajoitukset ja sovellettava lainsäädäntö selkeästi selitettynä ennen palvelun käyttöä.",
     breadcrumb: "Käyttöehdot",
   },
+  "/laskurit": {
+    title: "Viikkolaskurit ja päivämäärätyökalut | Viikko Nro",
+    description:
+      "Ilmaiset laskurit: päivämäärästä viikkonumeroon, viikosta päivämääräksi, työpäivät ja päivien erotus. Nopeita työkaluja ISO 8601 -viikkoihin.",
+    breadcrumb: "Laskurit",
+  },
+  "/paivamaara-viikoksi": {
+    title: "Päivämäärästä viikkonumeroon – viikkolaskuri | Viikko Nro",
+    description:
+      "Selvitä minkä tahansa päivämäärän viikkonumero ISO 8601 -standardin mukaan. Syötä päivä ja näe heti viikko, viikonpäivä ja viikon päivämäärät.",
+    breadcrumb: "Päivämäärästä viikkoon",
+  },
+  "/viikko-paivamaaraksi": {
+    title: "Viikosta päivämääräksi – viikon päivämäärät | Viikko Nro",
+    description:
+      "Syötä viikkonumero ja vuosi, niin näet viikon alkamis- ja päättymispäivän sekä kaikki viikonpäivät. ISO 8601 -viikkolaskuri.",
+    breadcrumb: "Viikosta päivämääräksi",
+  },
+  "/tyopaivalaskuri": {
+    title: "Työpäivälaskuri – työpäivät kahden päivän välillä | Viikko Nro",
+    description:
+      "Laske työpäivien määrä kahden päivämäärän välillä, viikonloput ja Suomen arkipyhät huomioiden. Hyödyksi palkanlaskentaan ja projektien suunnitteluun.",
+    breadcrumb: "Työpäivälaskuri",
+  },
+  "/paivien-erotus": {
+    title: "Päivien erotus – montako päivää välissä | Viikko Nro",
+    description:
+      "Laske montako päivää, viikkoa ja työpäivää kahden päivämäärän välillä on. Ilmainen päivälaskuri.",
+    breadcrumb: "Päivien erotus",
+  },
 };
 
 // Self-referencing canonical URL for a route ("/" keeps its trailing slash,
@@ -193,6 +223,11 @@ export function sitemapEntries(year) {
     { path: "/what-is-a-week-number", changefreq: "monthly", priority: "0.8" },
     { path: "/weeks-in-a-year", changefreq: "monthly", priority: "0.8" },
     { path: "/faq", changefreq: "monthly", priority: "0.8" },
+    { path: "/laskurit", changefreq: "monthly", priority: "0.7" },
+    { path: "/paivamaara-viikoksi", changefreq: "monthly", priority: "0.7" },
+    { path: "/viikko-paivamaaraksi", changefreq: "monthly", priority: "0.7" },
+    { path: "/tyopaivalaskuri", changefreq: "monthly", priority: "0.7" },
+    { path: "/paivien-erotus", changefreq: "monthly", priority: "0.7" },
     { path: "/about-us", changefreq: "yearly", priority: "0.4" },
     { path: "/contact-us", changefreq: "yearly", priority: "0.4" },
     { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },

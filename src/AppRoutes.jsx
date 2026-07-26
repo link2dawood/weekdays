@@ -10,6 +10,11 @@ import WhatWeek from "./pages/WhatWeek";
 import PrintCalendar from "./pages/PrintCalendar";
 import PublicHolidays from "./pages/PublicHolidays";
 import WorkingDays from "./pages/WorkingDays";
+import Calculators from "./pages/Calculators";
+import DateToWeek from "./pages/DateToWeek";
+import WeekToDate from "./pages/WeekToDate";
+import WorkingDaysBetween from "./pages/WorkingDaysBetween";
+import DaysBetween from "./pages/DaysBetween";
 import WeeksInYear from "./pages/WeeksInYear";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
@@ -53,6 +58,11 @@ const AppRoutes = () => {
         <Route path="/what-is-a-week-number" element={<WhatWeek />} />
         <Route path="/weeks-in-a-year" element={<WeeksInYear />} />
         <Route path="/faq" element={<FAQPage />} />
+        <Route path="/laskurit" element={<Calculators />} />
+        <Route path="/paivamaara-viikoksi" element={<DateToWeek />} />
+        <Route path="/viikko-paivamaaraksi" element={<WeekToDate />} />
+        <Route path="/tyopaivalaskuri" element={<WorkingDaysBetween />} />
+        <Route path="/paivien-erotus" element={<DaysBetween />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

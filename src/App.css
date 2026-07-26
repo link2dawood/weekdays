@@ -1435,3 +1435,43 @@ footer {
   font-size: 14px;
   color: var(--ink-soft);
 }
+
+/* ---- Calculator pages ---- */
+.two-fields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.two-fields > div {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+.tool-card:hover {
+  border-color: var(--accent);
+}
+.tool-name {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 16px;
+}
+.tool-desc {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
