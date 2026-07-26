@@ -220,16 +220,25 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
                 ))}
                 <div>
                   {day.sun.polarNight
-                    ? "Aurinko ei nouse tänään (kaamos)."
+                    ? "Aurinko ei nouse Helsingissä tänään (kaamos)."
                     : day.sun.polarDay
-                      ? "Aurinko ei laske tänään (yötön yö)."
-                      : `Aurinko: ${formatHelsinkiTime(day.sun.sunrise)}–${formatHelsinkiTime(day.sun.sunset)} (${Math.floor(day.sun.daylightMinutes / 60)}h ${day.sun.daylightMinutes % 60}min valoisaa${day.sun.deltaMinutesFromPreviousDay !== 0 ? `, ${day.sun.deltaMinutesFromPreviousDay > 0 ? "+" : ""}${day.sun.deltaMinutesFromPreviousDay} min edelliseen päivään verrattuna` : ""})`}
+                      ? "Aurinko ei laske Helsingissä tänään (yötön yö)."
+                      : `Aurinko Helsingissä: ${formatHelsinkiTime(day.sun.sunrise)}–${formatHelsinkiTime(day.sun.sunset)} (${Math.floor(day.sun.daylightMinutes / 60)} h ${day.sun.daylightMinutes % 60} min valoisaa${
+                          day.sun.deltaMinutesFromPreviousDay !== 0
+                            ? `, ${day.sun.deltaMinutesFromPreviousDay > 0 ? "+" : "−"}${Math.abs(day.sun.deltaMinutesFromPreviousDay)} min edelliseen päivään verrattuna`
+                            : ""
+                        })`}
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      <p className="note-soft">
+        Ajat lasketaan <Link to="/kaupunki/helsinki">Helsingin</Link> sijainnin
+        mukaan.
+      </p>
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>
         <Link to={`/viikko-${prevW}-${prevY}`}>
