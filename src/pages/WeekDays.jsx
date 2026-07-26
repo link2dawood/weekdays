@@ -19,6 +19,13 @@ import { nameDaysForWeek } from "../data/nameDays";
 import { schoolHolidaysInWeek } from "../data/schoolHolidays";
 import { sunTimesForWeek, formatHelsinkiTime, HELSINKI } from "../data/sunTimes";
 
+// Prerendered range for all week/month/hub pages (mirrors seo.js sitemapEntries:
+// floor 2020, rolling ceiling = build year + 9). Used to guard the "related"
+// links so a boundary week that spills into an out-of-range year is never
+// linked to a page that would 404.
+const YEAR_MIN = 2020;
+const YEAR_MAX = new Date().getFullYear() + 9;
+
 function sameDay(a, b) {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -145,6 +152,28 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   const officialHolidays = weekHolidays.filter((h) => h.official);
   const observedOnlyHolidays = weekHolidays.filter((h) => !h.official);
 
+  // Sibling weeks of this week's (Monday's) month — a topical mesh so each of
+  // the ~835 week pages links to its month-neighbours, not just prev/next.
+  // Each week keeps its OWN ISO year (a boundary week can belong to an adjacent
+  // year, e.g. early-January days in week 52/53 of the previous year), matching
+  // WeeksOfMonth's approach. Out-of-range years and this page itself are skipped.
+  const anchorMonth = mo.getMonth();
+  const anchorYear = mo.getFullYear();
+  const monthWeeks = [];
+  const seenWeeks = {};
+  const daysInAnchorMonth = new Date(anchorYear, anchorMonth + 1, 0).getDate();
+  for (let dd = 1; dd <= daysInAnchorMonth; dd++) {
+    const d2 = new Date(anchorYear, anchorMonth, dd);
+    const wk2 = isoWeek(d2);
+    const yr2 = isoYear(d2);
+    const key = `${yr2}-${wk2}`;
+    if (seenWeeks[key]) continue;
+    seenWeeks[key] = true;
+    if (yr2 < YEAR_MIN || yr2 > YEAR_MAX) continue; // never link a 404
+    if (wk2 === w && yr2 === y) continue; // this page itself
+    monthWeeks.push({ week: wk2, year: yr2 });
+  }
+
   return (
     <section className="app">
       <SEO
@@ -265,6 +294,60 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
           )}
         </div>
       )}
+
+      <section className="related">
+        <h2>Katso myös</h2>
+
+        {monthWeeks.length > 0 && (
+          <>
+            <h3>
+              Muut {M_GENITIVE[anchorMonth]} {anchorYear} viikot
+            </h3>
+            <div className="pills">
+              {monthWeeks.map((mw) => (
+                <Link
+                  key={`${mw.year}-${mw.week}`}
+                  className="pill"
+                  to={`/viikko-${mw.week}-${mw.year}`}
+                  onClick={() => window.scrollTo(0, 0)}
+                >
+                  Viikko {mw.week}
+                  {mw.year !== y ? ` / ${mw.year}` : ""}
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+
+        <h3>Vuosi {y}</h3>
+        <ul className="links">
+          <li>
+            <Link to={`/vuosi-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Kaikki viikot vuonna {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/kalenteri-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Vuoden {y} kalenteri
+            </Link>
+          </li>
+          <li>
+            <Link to={`/pyhapaivat-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Pyhäpäivät ja liputuspäivät {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/tyopaivat-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Työpäivät ja arkipäivät {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/tulosta-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Tulostettava viikkolista {y}
+            </Link>
+          </li>
+        </ul>
+      </section>
     </section>
   );
 };
