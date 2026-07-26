@@ -962,7 +962,7 @@ details p {
 }
 
 /* Form Headings match your app's typography scale */
-.contact-card h2 {
+.contact-card h1 {
   color: var(--accent-deep);
   font-size: 24px;
   font-weight: 700;
@@ -1701,4 +1701,13 @@ body:has(.cal-print) footer {
 }
 .related ul.links a:hover {
   text-decoration: underline;
+}
+
+/* Sub-labels for the homepage year directory (YearsWeek): distinguishes the
+   /vuosi- and /kalenteri- pill rows. */
+.dir-h {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 20px 0 8px;
 }

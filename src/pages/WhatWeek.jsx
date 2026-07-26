@@ -18,9 +18,16 @@ const WhatWeek = () => {
       <div className="prose">
         <p>
           Viikkonumero kertoo, mikä vuoden viikko on parhaillaan menossa. Viikot
-          numeroidaan <strong>ISO 8601 -standardin</strong> mukaan, jota
-          käytetään laajasti kaikkialla Euroopassa ja liike-elämässä ympäri
-          maailmaa.
+          numeroidaan{" "}
+          <a
+            href="https://fi.wikipedia.org/wiki/ISO_8601"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <strong>ISO 8601 -standardin</strong>
+          </a>{" "}
+          mukaan, jota käytetään laajasti kaikkialla Euroopassa ja
+          liike-elämässä ympäri maailmaa.
         </p>
 
         <p>Säännöt ovat yksinkertaiset:</p>

@@ -198,7 +198,7 @@ function ContactUs() {
       </div>
       <div className="contact-container">
         <div className="contact-card">
-          <h2>Ota yhteyttä</h2>
+          <h1>Ota yhteyttä</h1>
           <p className="contact-subtitle">
             Kuulemme mielellämme sinusta. Jätä meille viesti!
           </p>

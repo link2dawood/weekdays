@@ -76,9 +76,9 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
         <Link to={"/"}>Etusivu</Link> /{" "}
         <Link to={`/vuosi-${year}`}>Viikot {year}</Link> / {M_FULL[mi]}
       </div>
-      <h2 id="mh">
+      <h1 id="mh">
         Viikot – {M_FULL[mi]} {year}{" "}
-      </h2>
+      </h1>
       <p className="lead">
         Nämä viikkonumerot kuuluvat {M_GENITIVE[mi]} {year} kalenteriin. Osa
         viikoista

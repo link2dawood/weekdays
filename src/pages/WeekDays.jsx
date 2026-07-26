@@ -272,8 +272,7 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       </div>
 
       <p className="note-soft">
-        Ajat lasketaan <Link to="/kaupunki/helsinki">Helsingin</Link> sijainnin
-        mukaan.
+        Ajat lasketaan Helsingin sijainnin mukaan.
       </p>
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>

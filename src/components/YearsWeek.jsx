@@ -1,30 +1,46 @@
-import React, { useEffect, useState } from "react";
-import { isoWeek, isoYear } from "./dateUtils";
+import React from "react";
+import {
+  isoYear,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "./dateUtils";
 import { Link } from "react-router-dom";
 const YearsWeek = () => {
-  var YEAR_MIN = 2020,
-    YEAR_MAX = 2035;
-
   const years = [];
-  for (var y = YEAR_MIN; y <= YEAR_MAX; y++) {
+  for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
     years.push(y);
   }
-  var NOW = new Date(),
-    W_NOW = isoWeek(NOW),
-    Y_NOW = isoYear(NOW);
+  const Y_NOW = isoYear(new Date());
 
   return (
     <>
       <section>
-        <h2 className="mh">Selaa vuoden viikkoja</h2>
+        <h2 className="mh">Selaa vuosia</h2>
         <p className="lead">
-          Kaikki viikkonumerot vuosi kerrallaan päivämäärineen.
+          Kaikki viikkonumerot ja vuosikalenterit vuosi kerrallaan
+          päivämäärineen.
         </p>
+
+        <h3 className="dir-h">Viikkonumerot vuosittain</h3>
         <div className="pills">
           {years.map((year) => (
             <Link
-              key={year}
+              key={`v-${year}`}
               to={`/vuosi-${year}`}
+              className={`pill ${year === Y_NOW ? "active" : ""}`}
+              onClick={() => window.scrollTo(0, 0)}
+            >
+              {year}
+            </Link>
+          ))}
+        </div>
+
+        <h3 className="dir-h">Vuosikalenterit</h3>
+        <div className="pills">
+          {years.map((year) => (
+            <Link
+              key={`k-${year}`}
+              to={`/kalenteri-${year}`}
               className={`pill ${year === Y_NOW ? "active" : ""}`}
               onClick={() => window.scrollTo(0, 0)}
             >

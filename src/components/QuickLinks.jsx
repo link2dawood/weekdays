@@ -28,6 +28,22 @@ const QuickLinks = () => {
           </Link>
           <Link
             className="ql"
+            to={`/pyhapaivat-${Y_NOW}`}
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Suomen pyhäpäivät {Y_NOW}</b>
+            <span>Arkipyhät, viikonpäivät ja viikkonumerot</span>
+          </Link>
+          <Link
+            className="ql"
+            to={`/tyopaivat-${Y_NOW}`}
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Työpäivät {Y_NOW}</b>
+            <span>Montako työpäivää vuodessa</span>
+          </Link>
+          <Link
+            className="ql"
             to="/mika-on-viikkonumero"
             onClick={() => window.scrollTo(0, 0)}
           >
