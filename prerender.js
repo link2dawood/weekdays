@@ -120,12 +120,12 @@ function breadcrumbScript(url) {
 }
 
 // FAQPage structured data generated from src/data/faqs.js. Injected only on
-// /faq, whose visible list matches it exactly (Google requires the two agree).
+// /ukk, whose visible list matches it exactly (Google requires the two agree).
 function faqScript() {
   const data = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "@id": `${SITE_URL}/faq#faq`,
+    "@id": `${SITE_URL}/ukk#faq`,
     inLanguage: "fi-FI",
     mainEntity: faqs.map((f) => ({
       "@type": "Question",
@@ -188,7 +188,7 @@ for (const url of routes) {
     const crumb = breadcrumbScript(url);
     if (crumb) html = html.replace("</head>", `${crumb}</head>`);
 
-    if (url === "/faq") {
+    if (url === "/ukk") {
       html = html.replace("</head>", `${faqScript()}</head>`);
     }
 
@@ -216,7 +216,7 @@ for (const url of routes) {
       `<div id="root">${appHtml}</div>`,
     );
 
-    // Flat files (dist/faq.html), not dist/faq/index.html: a real directory
+    // Flat files (dist/ukk.html), not dist/ukk/index.html: a real directory
     // on disk makes nginx auto-redirect the slash-less URL to a trailing-
     // slash one (its own directory-index convention), which fights the
     // opposite (no-trailing-slash) convention canonicalFor() declares and
@@ -256,7 +256,7 @@ console.log(
 );
 
 // Generate llms-full.txt from the FAQ single-source so AI ingestion always
-// matches the visible /faq page and the FAQPage JSON-LD.
+// matches the visible /ukk page and the FAQPage JSON-LD.
 const llmsFull =
   "# Viikko Nro – täysi sisältö\n\n" +
   "> Viikko Nro (viikkonro.fi) on ilmainen suomalainen viikkolaskuri. Se näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan. Alla kaikki usein kysytyt kysymykset vastauksineen.\n\n" +

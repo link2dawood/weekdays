@@ -4,7 +4,7 @@ import SEO from "../components/SEO";
 import { routeMeta } from "../data/seo";
 
 const TermsAndConditions = () => {
-  const meta = routeMeta["/terms-and-conditions"];
+  const meta = routeMeta["/kayttoehdot"];
   return (
     <section className="app">
       <SEO title={meta.title} description={meta.description} />

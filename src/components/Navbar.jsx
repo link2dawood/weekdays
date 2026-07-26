@@ -59,13 +59,13 @@ const Navbar = () => {
           <Link to="/laskurit" onClick={closeMenu}>
             Laskurit
           </Link>
-          <Link to="/what-is-a-week-number" onClick={closeMenu}>
+          <Link to="/mika-on-viikkonumero" onClick={closeMenu}>
             Tietoa viikoista
           </Link>
-          <Link to="/about-us" onClick={closeMenu}>
+          <Link to="/tietoa-meista" onClick={closeMenu}>
             Tietoa meistä
           </Link>
-          <Link to="/contact-us" onClick={closeMenu}>
+          <Link to="/ota-yhteytta" onClick={closeMenu}>
             Ota yhteyttä
           </Link>
         </nav>

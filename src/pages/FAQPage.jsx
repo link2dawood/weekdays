@@ -5,7 +5,7 @@ import SEO from "../components/SEO";
 import { routeMeta } from "../data/seo";
 
 const FAQPage = () => {
-  const meta = routeMeta["/faq"];
+  const meta = routeMeta["/ukk"];
   return (
     <>
       <section className="app">

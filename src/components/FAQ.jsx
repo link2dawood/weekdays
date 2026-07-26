@@ -14,7 +14,7 @@ const FAQ = () => {
           </details>
         ))}
         <p className="faq-more">
-          <Link to="/faq" onClick={() => window.scrollTo(0, 0)}>
+          <Link to="/ukk" onClick={() => window.scrollTo(0, 0)}>
             Katso kaikki usein kysytyt kysymykset →
           </Link>
         </p>

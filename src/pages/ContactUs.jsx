@@ -188,7 +188,7 @@ function ContactUs() {
     }
   };
 
-  const meta = routeMeta["/contact-us"];
+  const meta = routeMeta["/ota-yhteytta"];
 
   return (
     <section className="app">

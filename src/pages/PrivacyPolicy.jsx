@@ -4,7 +4,7 @@ import SEO from "../components/SEO";
 import { routeMeta } from "../data/seo";
 
 const PrivacyPolicy = () => {
-  const meta = routeMeta["/privacy-policy"];
+  const meta = routeMeta["/tietosuoja"];
   return (
     <>
       <section className="app">

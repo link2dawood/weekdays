@@ -12,16 +12,16 @@ Keskeiset faktat viikkonumeroista Suomessa:
 ## Sivut
 
 - [Etusivu – Mikä viikko nyt on?](https://viikkonro.fi/): kuluva viikkonumero ja minkä tahansa päivän viikkohaku
-- [Mikä on viikkonumero?](https://viikkonro.fi/what-is-a-week-number): viikkonumeron ja ISO 8601 -standardin selitys
-- [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/weeks-in-a-year): 52 vai 53 viikkoa ja miksi
-- [Usein kysytyt kysymykset](https://viikkonro.fi/faq): kattavat vastaukset viikkonumeroista
+- [Mikä on viikkonumero?](https://viikkonro.fi/mika-on-viikkonumero): viikkonumeron ja ISO 8601 -standardin selitys
+- [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/kuinka-monta-viikkoa-vuodessa): 52 vai 53 viikkoa ja miksi
+- [Usein kysytyt kysymykset](https://viikkonro.fi/ukk): kattavat vastaukset viikkonumeroista
 - [Tulostettava viikkokalenteri](https://viikkonro.fi/tulosta-2026): koko vuoden viikot ja päivämäärät
-- [Tietoa meistä](https://viikkonro.fi/about-us): palvelun esittely
-- [Ota yhteyttä](https://viikkonro.fi/contact-us): yhteydenottolomake
+- [Tietoa meistä](https://viikkonro.fi/tietoa-meista): palvelun esittely
+- [Ota yhteyttä](https://viikkonro.fi/ota-yhteytta): yhteydenottolomake
 
 ## Optional
 
 - [Täysi sisältö LLM:ille](https://viikkonro.fi/llms-full.txt): kaikki usein kysytyt kysymykset vastauksineen
-- [Käyttöehdot](https://viikkonro.fi/terms-and-conditions)
-- [Tietosuojaseloste](https://viikkonro.fi/privacy-policy)
+- [Käyttöehdot](https://viikkonro.fi/kayttoehdot)
+- [Tietosuojaseloste](https://viikkonro.fi/tietosuoja)
 - [Sivukartta (XML)](https://viikkonro.fi/sitemap.xml)

@@ -24,9 +24,9 @@ function Footer() {
             />
           </div>
           <p className="footer-desc">
-            Selkeä ja tarkka digitaalinen apuvälineesi ISO 8601 -viikkonumeroiden,
-            kalenteriaikataulujen ja vuosittaisten lukujen seurantaan. Aina
-            laskettu ehdottoman teknisellä tarkkuudella.
+            Selkeä ja tarkka työkalu ISO 8601 -viikkonumeroihin ja vuosien
+            kalenteriaikatauluihin. Laskelmat perustuvat aina ISO 8601
+            -standardiin.
           </p>
           <SocialLinks className="footer-social" />
         </div>
@@ -41,20 +41,20 @@ function Footer() {
               </Link>
             </li>
             <li>
-              <Link to="/weeks-in-a-year" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/kuinka-monta-viikkoa-vuodessa" onClick={() => window.scrollTo(0, 0)}>
                 Viikkoja vuodessa
               </Link>
             </li>
             <li>
               <Link
-                to="/what-is-a-week-number"
+                to="/mika-on-viikkonumero"
                 onClick={() => window.scrollTo(0, 0)}
               >
                 Mikä on viikkonumero?
               </Link>
             </li>
             <li>
-              <Link to="/faq" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/ukk" onClick={() => window.scrollTo(0, 0)}>
                 Usein kysytyt kysymykset
               </Link>
             </li>
@@ -66,25 +66,25 @@ function Footer() {
           <h3>Yritys</h3>
           <ul>
             <li>
-              <Link to="/about-us" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/tietoa-meista" onClick={() => window.scrollTo(0, 0)}>
                 Tietoa meistä
               </Link>
             </li>
             <li>
-              <Link to="/contact-us" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/ota-yhteytta" onClick={() => window.scrollTo(0, 0)}>
                 Asiakastuki
               </Link>
             </li>
             <li>
               <Link
-                to="/terms-and-conditions"
+                to="/kayttoehdot"
                 onClick={() => window.scrollTo(0, 0)}
               >
                 Käyttöehdot
               </Link>
             </li>
             <li>
-              <Link to="/privacy-policy" onClick={() => window.scrollTo(0, 0)}>
+              <Link to="/tietosuoja" onClick={() => window.scrollTo(0, 0)}>
                 Tietosuojaseloste
               </Link>
             </li>
@@ -98,7 +98,7 @@ function Footer() {
       {/* Baseline Copyright and Info Row */}
       <div className="footer-baseline">
         <p>&copy; {currentYear} Viikko Nro. Kaikki oikeudet pidätetään.</p>
-        <p className="footer-tz">Yleismaailmallinen ISO-aikamalli</p>
+        <p className="footer-tz">Kansainvälisen ISO 8601 -standardin mukaan</p>
       </div>
     </footer>
   );

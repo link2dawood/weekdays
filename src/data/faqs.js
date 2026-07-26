@@ -1,8 +1,8 @@
 // Single source of truth for all FAQ content (Finnish).
 //
 // This drives THREE outputs, all generated from this one file so they never
-// drift: the visible /faq page (FAQPage.jsx) + home featured block (FAQ.jsx),
-// the FAQPage JSON-LD injected into /faq by prerender.js, and the generated
+// drift: the visible /ukk page (FAQPage.jsx) + home featured block (FAQ.jsx),
+// the FAQPage JSON-LD injected into /ukk by prerender.js, and the generated
 // dist/llms-full.txt. Edit here only.
 
 export const faqCategories = [

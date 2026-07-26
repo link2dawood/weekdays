@@ -4,7 +4,7 @@ import SEO from "../components/SEO";
 import SocialLinks from "../components/SocialLinks";
 import { routeMeta } from "../data/seo";
 const AboutUs = () => {
-  const meta = routeMeta["/about-us"];
+  const meta = routeMeta["/tietoa-meista"];
   return (
     <>
       <section className="app">

@@ -8,7 +8,14 @@
     { "source": "/week/:week/:year", "destination": "/viikko-:week-:year", "permanent": true },
     { "source": "/month/:month/:year", "destination": "/kuukausi-:month-:year", "permanent": true },
     { "source": "/year/:year", "destination": "/vuosi-:year", "permanent": true },
-    { "source": "/print/:year", "destination": "/tulosta-:year", "permanent": true }
+    { "source": "/print/:year", "destination": "/tulosta-:year", "permanent": true },
+    { "source": "/what-is-a-week-number", "destination": "/mika-on-viikkonumero", "permanent": true },
+    { "source": "/weeks-in-a-year", "destination": "/kuinka-monta-viikkoa-vuodessa", "permanent": true },
+    { "source": "/about-us", "destination": "/tietoa-meista", "permanent": true },
+    { "source": "/contact-us", "destination": "/ota-yhteytta", "permanent": true },
+    { "source": "/faq", "destination": "/ukk", "permanent": true },
+    { "source": "/privacy-policy", "destination": "/tietosuoja", "permanent": true },
+    { "source": "/terms-and-conditions", "destination": "/kayttoehdot", "permanent": true }
   ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
@@ -31,7 +38,7 @@
         },
         {
           "key": "Link",
-          "value": "</llms.txt>; rel=\"describedby\"; type=\"text/plain\"; title=\"LLM-readable site summary\", </faq>; rel=\"help\", </privacy-policy>; rel=\"privacy-policy\", </terms-and-conditions>; rel=\"terms-of-service\""
+          "value": "</llms.txt>; rel=\"describedby\"; type=\"text/plain\"; title=\"LLM-readable site summary\", </ukk>; rel=\"help\", </tietosuoja>; rel=\"privacy-policy\", </kayttoehdot>; rel=\"terms-of-service\""
         }
       ]
     },

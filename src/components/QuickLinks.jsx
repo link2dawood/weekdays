@@ -20,7 +20,7 @@ const QuickLinks = () => {
           </Link>
           <Link
             className="ql"
-            to="/what-is-a-week-number"
+            to="/mika-on-viikkonumero"
             onClick={() => window.scrollTo(0, 0)}
           >
             <b>Mikä on viikkonumero?</b>
@@ -28,13 +28,13 @@ const QuickLinks = () => {
           </Link>
           <Link
             className="ql"
-            to="/weeks-in-a-year"
+            to="/kuinka-monta-viikkoa-vuodessa"
             onClick={() => window.scrollTo(0, 0)}
           >
             <b>Kuinka monta viikkoa vuodessa on?</b>
             <span>52 tai 53 viikkoa</span>
           </Link>
-          <Link className="ql" to="/faq" onClick={() => window.scrollTo(0, 0)}>
+          <Link className="ql" to="/ukk" onClick={() => window.scrollTo(0, 0)}>
             <b>UKK</b>
             <span>Vastauksia viikoista</span>
           </Link>

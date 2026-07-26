@@ -30,7 +30,7 @@ import Footer from "./components/Footer";
 // Finnish dynamic pages use keyword-rich single-segment slugs
 // (/viikko-30-2026, /kuukausi-7-2026, /vuosi-2026, /tulosta-2026). React Router
 // can't parse two params inside one path segment, so a single /:slug route
-// dispatches by pattern. Static routes (/faq, /about-us, …) outrank /:slug, so
+// dispatches by pattern. Static routes (/ukk, /tietoa-meista, …) outrank /:slug, so
 // only unmatched single segments ever reach this — the same reachability the
 // old explicit routes had. Deterministic, so SSR and client hydration agree.
 const DynamicSlug = () => {
@@ -70,18 +70,18 @@ const AppRoutes = () => {
       <main id="main">
         <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/what-is-a-week-number" element={<WhatWeek />} />
-        <Route path="/weeks-in-a-year" element={<WeeksInYear />} />
-        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/mika-on-viikkonumero" element={<WhatWeek />} />
+        <Route path="/kuinka-monta-viikkoa-vuodessa" element={<WeeksInYear />} />
+        <Route path="/ukk" element={<FAQPage />} />
         <Route path="/laskurit" element={<Calculators />} />
         <Route path="/paivamaara-viikoksi" element={<DateToWeek />} />
         <Route path="/viikko-paivamaaraksi" element={<WeekToDate />} />
         <Route path="/tyopaivalaskuri" element={<WorkingDaysBetween />} />
         <Route path="/paivien-erotus" element={<DaysBetween />} />
-        <Route path="/about-us" element={<AboutUs />} />
-        <Route path="/contact-us" element={<ContactUs />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/tietoa-meista" element={<AboutUs />} />
+        <Route path="/ota-yhteytta" element={<ContactUs />} />
+        <Route path="/tietosuoja" element={<PrivacyPolicy />} />
+        <Route path="/kayttoehdot" element={<TermsAndConditions />} />
         <Route path="/sv" element={<SvHome />} />
         <Route path="/sv/:slug" element={<SvDynamic />} />
         <Route path="/:slug" element={<DynamicSlug />} />

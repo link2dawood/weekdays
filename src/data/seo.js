@@ -198,43 +198,43 @@ export const routeMeta = {
     description:
       "Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
   },
-  "/what-is-a-week-number": {
+  "/mika-on-viikkonumero": {
     title: "Mikä on viikkonumero? ISO 8601 selitettynä | Viikko Nro",
     description:
       "Mikä on viikkonumero ja miten se lasketaan? Selitämme ISO 8601 -standardin, viikon alkamisen maanantaista ja miten vuoden ensimmäinen viikko määräytyy.",
     breadcrumb: "Mikä on viikkonumero",
   },
-  "/weeks-in-a-year": {
+  "/kuinka-monta-viikkoa-vuodessa": {
     title: "Kuinka monta viikkoa vuodessa on? 52 vai 53 | Viikko Nro",
     description:
       "Vuodessa on 52 tai 53 viikkoa. Katso milloin vuodessa on 53 viikkoa ja mitkä vuodet – kuten 2020, 2026 ja 2032 – ovat 53 viikon vuosia.",
     breadcrumb: "Viikkoja vuodessa",
   },
-  "/faq": {
+  "/ukk": {
     title: "Usein kysytyt kysymykset viikkonumeroista | Viikko Nro",
     description:
       "Vastauksia viikkonumeroista: mikä viikko nyt on, alkaako viikko maanantaista, kuinka monta viikkoa vuodessa on ja miten viikkonumero lasketaan.",
     breadcrumb: "UKK",
   },
-  "/about-us": {
+  "/tietoa-meista": {
     title: "Tietoa meistä | Viikko Nro",
     description:
       "Viikko Nro on ilmainen suomalainen viikkolaskuri. Lue lisää palvelusta ja tehtävästämme tehdä viikkonumeroiden tarkistamisesta helppoa.",
     breadcrumb: "Tietoa meistä",
   },
-  "/contact-us": {
+  "/ota-yhteytta": {
     title: "Ota yhteyttä | Viikko Nro",
     description:
       "Ota yhteyttä Viikko Nro -tiimiin verkkolomakkeella. Vastaamme palautteeseen, kysymyksiin ja kehitysehdotuksiin niin nopeasti kuin mahdollista.",
     breadcrumb: "Ota yhteyttä",
   },
-  "/privacy-policy": {
+  "/tietosuoja": {
     title: "Tietosuojaseloste | Viikko Nro",
     description:
       "Viikko Nro -palvelun tietosuojaseloste: mitä tietoja keräämme, miten käytämme niitä ja miten suojaamme yksityisyyttäsi.",
     breadcrumb: "Tietosuojaseloste",
   },
-  "/terms-and-conditions": {
+  "/kayttoehdot": {
     title: "Käyttöehdot | Viikko Nro",
     description:
       "Viikko Nro -palvelun käyttöehdot: palvelun käyttö, vastuunrajoitukset ja sovellettava lainsäädäntö selkeästi selitettynä ennen palvelun käyttöä.",
@@ -283,18 +283,18 @@ export function canonicalFor(path) {
 export function sitemapEntries(year) {
   const entries = [
     { path: "/", changefreq: "daily", priority: "1.0" },
-    { path: "/what-is-a-week-number", changefreq: "monthly", priority: "0.8" },
-    { path: "/weeks-in-a-year", changefreq: "monthly", priority: "0.8" },
-    { path: "/faq", changefreq: "monthly", priority: "0.8" },
+    { path: "/mika-on-viikkonumero", changefreq: "monthly", priority: "0.8" },
+    { path: "/kuinka-monta-viikkoa-vuodessa", changefreq: "monthly", priority: "0.8" },
+    { path: "/ukk", changefreq: "monthly", priority: "0.8" },
     { path: "/laskurit", changefreq: "monthly", priority: "0.7" },
     { path: "/paivamaara-viikoksi", changefreq: "monthly", priority: "0.7" },
     { path: "/viikko-paivamaaraksi", changefreq: "monthly", priority: "0.7" },
     { path: "/tyopaivalaskuri", changefreq: "monthly", priority: "0.7" },
     { path: "/paivien-erotus", changefreq: "monthly", priority: "0.7" },
-    { path: "/about-us", changefreq: "yearly", priority: "0.4" },
-    { path: "/contact-us", changefreq: "yearly", priority: "0.4" },
-    { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
-    { path: "/terms-and-conditions", changefreq: "yearly", priority: "0.3" },
+    { path: "/tietoa-meista", changefreq: "yearly", priority: "0.4" },
+    { path: "/ota-yhteytta", changefreq: "yearly", priority: "0.4" },
+    { path: "/tietosuoja", changefreq: "yearly", priority: "0.3" },
+    { path: "/kayttoehdot", changefreq: "yearly", priority: "0.3" },
   ];
   // Historical floor 2020 (matches the year-picker's YEAR_MIN) through a rolling
   // +9-year horizon (≈2035 today). Every week/month/year page across that span

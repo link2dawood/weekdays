@@ -18,5 +18,5 @@ Preferred-Citation: https://viikkonro.fi/
 # Finnish ISO 8601 week numbers, week/month/year calendars, printable
 # calendars, Finnish public holidays and name days. Facts are free to use.
 
-Contact: https://viikkonro.fi/contact-us
+Contact: https://viikkonro.fi/ota-yhteytta
 Sitemap: https://viikkonro.fi/sitemap.xml

@@ -7,7 +7,7 @@ const WhatWeek = () => {
   const NOW = new Date();
   const W_NOW = isoWeek(NOW);
   const Y_NOW = isoYear(NOW);
-  const meta = routeMeta["/what-is-a-week-number"];
+  const meta = routeMeta["/mika-on-viikkonumero"];
   return (
     <section className="app">
       <SEO title={meta.title} description={meta.description} />

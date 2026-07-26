@@ -5,7 +5,7 @@ import SEO from "../components/SEO";
 import { routeMeta } from "../data/seo";
 
 const WeeksInYear = () => {
-  const meta = routeMeta["/weeks-in-a-year"];
+  const meta = routeMeta["/kuinka-monta-viikkoa-vuodessa"];
   const YEAR_MIN = 2020,
     YEAR_MAX = 2035;
 
