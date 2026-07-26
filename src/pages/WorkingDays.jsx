@@ -135,6 +135,12 @@ const WorkingDays = ({ year: pYear } = {}) => {
         <Link to={`/tulosta-${year}`}>tulostettava viikkolista</Link>.
       </p>
 
+      <p>
+        Laskurit: <Link to="/tyopaivalaskuri">työpäivälaskuri</Link> (työpäivät
+        kahden päivämäärän välillä) ja{" "}
+        <Link to="/paivien-erotus">päivien erotus</Link>.
+      </p>
+
       <div className="prevnext">
         {y - 1 >= YEAR_MIN && (
           <Link to={`/tyopaivat-${y - 1}`}>

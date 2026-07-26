@@ -355,6 +355,20 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
             </Link>
           </li>
         </ul>
+
+        <h3>Laskurit</h3>
+        <ul className="links">
+          <li>
+            <Link to="/paivamaara-viikoksi" onClick={() => window.scrollTo(0, 0)}>
+              Muunna päivämäärä viikkonumeroksi
+            </Link>
+          </li>
+          <li>
+            <Link to="/viikko-paivamaaraksi" onClick={() => window.scrollTo(0, 0)}>
+              Muunna viikkonumero päivämääräksi
+            </Link>
+          </li>
+        </ul>
       </section>
     </section>
   );

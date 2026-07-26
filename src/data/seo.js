@@ -76,7 +76,9 @@ export function weekMeta(w, y) {
   su.setDate(mo.getDate() + 6);
   return {
     title: `Viikko ${w} vuonna ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
-    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${fmtFullFi(mo)} ja päättyy sunnuntaina ${fmtFullFi(su)}. Katso viikon ${w} päivämäärät, juhlapäivät ja nimipäivät sekä tulostettava kalenteri.`,
+    // Short dates (fmtFullFi ran ~190 chars → truncated in SERPs). ~148 chars
+    // keeps every keyword term within Google's snippet limit.
+    description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${formatShort(mo)} ja päättyy sunnuntaina ${formatShort(su)}${su.getFullYear()}. Katso päivämäärät, juhla- ja nimipäivät sekä tulostettava kalenteri.`,
   };
 }
 export function monthMeta(m, y) {
