@@ -42,6 +42,15 @@ function schoolPeriodLabel(p) {
   return `${SCHOOL_PERIOD_LABELS[p.type]}${region}${estimate}`;
 }
 
+// Meteorological season of the ISO week's Thursday (its canonical month),
+// in the illative case for the phrase "viikko ajoittuu ___".
+function seasonIllative(monthIndex) {
+  if (monthIndex === 11 || monthIndex <= 1) return "talveen";
+  if (monthIndex <= 4) return "kevääseen";
+  if (monthIndex <= 7) return "kesään";
+  return "syksyyn";
+}
+
 // Props come from the /:slug dispatcher (parsed "/viikko-30-2026"); the
 // useParams fallback keeps the component usable under a plain param route too.
 const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
@@ -65,6 +74,15 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   const mo = mondayOf(w, y);
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
+
+  // Distinguishing per-week facts (so each of the ~835 week bodies reads
+  // differently, not just the shared template): the week's season, taken from
+  // its Thursday's month, and how many weeks of the year remain after it.
+  const thursday = new Date(mo);
+  thursday.setDate(mo.getDate() + 3);
+  const season = seasonIllative(thursday.getMonth());
+  const weeksLeft = total - w;
+
   var WD = [
     "Sunnuntai",
     "Maanantai",
@@ -204,7 +222,10 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       <p className="lead">
         Viikko {week} alkaa <strong>maanantaina {fmtFullFi(mo)}</strong> ja
         päättyy <strong>sunnuntaina {fmtFullFi(su)}.</strong> Se kuuluu{" "}
-        {monthLinks} kalenteriin.
+        {monthLinks} kalenteriin ja ajoittuu {season}.{" "}
+        {weeksLeft === 0
+          ? `Viikko ${w} on vuoden ${y} viimeinen viikko.`
+          : `Vuodessa ${y} on ${total} viikkoa, joten viikon ${w} jälkeen niitä on jäljellä ${weeksLeft}.`}
       </p>
 
       {officialHolidays.length > 0 && (
