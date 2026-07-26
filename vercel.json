@@ -15,9 +15,13 @@
     { "source": "/contact-us", "destination": "/ota-yhteytta", "permanent": true },
     { "source": "/faq", "destination": "/ukk", "permanent": true },
     { "source": "/privacy-policy", "destination": "/tietosuoja", "permanent": true },
-    { "source": "/terms-and-conditions", "destination": "/kayttoehdot", "permanent": true }
+    { "source": "/terms-and-conditions", "destination": "/kayttoehdot", "permanent": true },
+    { "source": "/sv/vecka-:w(\\d+)-:y(\\d+)", "destination": "/viikko-:w-:y", "permanent": true },
+    { "source": "/sv/veckor-:y(\\d+)", "destination": "/vuosi-:y", "permanent": true },
+    { "source": "/sv/helgdagar-:y(\\d+)", "destination": "/pyhapaivat-:y", "permanent": true },
+    { "source": "/sv", "destination": "/", "permanent": true },
+    { "source": "/sv/:path*", "destination": "/", "permanent": true }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/(.*)",

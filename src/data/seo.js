@@ -177,26 +177,9 @@ const SV_MAX_YEAR = 2028;
 // translated equivalent exists on both sides, else null. Only emitted when the
 // Swedish page is actually within the prerendered SV range, so hreflang never
 // points at a 404.
-export function hreflangAlternates(url) {
-  const pair = (fi, sv) => [
-    { lang: "fi", path: fi },
-    { lang: "sv", path: sv },
-  ];
-  if (url === "/" || url === "/sv") return pair("/", "/sv");
-  let m;
-  const inSv = (y) => y >= SV_MIN_YEAR && y <= SV_MAX_YEAR;
-  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/)) && inSv(+m[2]))
-    return pair(`/viikko-${m[1]}-${m[2]}`, `/sv/vecka-${m[1]}-${m[2]}`);
-  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/)))
-    return pair(`/viikko-${m[1]}-${m[2]}`, `/sv/vecka-${m[1]}-${m[2]}`);
-  if ((m = url.match(/^\/vuosi-(\d+)$/)) && inSv(+m[1]))
-    return pair(`/vuosi-${m[1]}`, `/sv/veckor-${m[1]}`);
-  if ((m = url.match(/^\/sv\/veckor-(\d+)$/)))
-    return pair(`/vuosi-${m[1]}`, `/sv/veckor-${m[1]}`);
-  if ((m = url.match(/^\/pyhapaivat-(\d+)$/)) && inSv(+m[1]))
-    return pair(`/pyhapaivat-${m[1]}`, `/sv/helgdagar-${m[1]}`);
-  if ((m = url.match(/^\/sv\/helgdagar-(\d+)$/)))
-    return pair(`/pyhapaivat-${m[1]}`, `/sv/helgdagar-${m[1]}`);
+export function hreflangAlternates() {
+  // Swedish pilot retired — the site is Finnish-only, so no hreflang alternates
+  // are emitted on any page. /sv/* is 308-redirected to the Finnish pages.
   return null;
 }
 export { SV_MIN_YEAR, SV_MAX_YEAR };
@@ -382,28 +365,9 @@ export function sitemapEntries(year) {
     });
   }
 
-  // Swedish (/sv/) pilot — bounded year range while it's validated.
-  entries.push({ path: "/sv", changefreq: "daily", priority: "0.8" });
-  for (let y = SV_MIN_YEAR; y <= SV_MAX_YEAR; y++) {
-    const cur = y === year;
-    entries.push({
-      path: `/sv/veckor-${y}`,
-      changefreq: cur ? "weekly" : "yearly",
-      priority: cur ? "0.6" : "0.5",
-    });
-    entries.push({
-      path: `/sv/helgdagar-${y}`,
-      changefreq: cur ? "monthly" : "yearly",
-      priority: cur ? "0.6" : "0.5",
-    });
-    for (let w = 1; w <= weeksInIsoYear(y); w++) {
-      entries.push({
-        path: `/sv/vecka-${w}-${y}`,
-        changefreq: cur ? "weekly" : "yearly",
-        priority: cur ? "0.5" : "0.4",
-      });
-    }
-  }
+  // Swedish (/sv/) pilot retired — the site is Finnish-only. No /sv entries are
+  // emitted, so they are neither prerendered nor listed in the sitemap; /sv/*
+  // is 308-redirected to the Finnish equivalents (see vercel.json).
   return entries;
 }
 

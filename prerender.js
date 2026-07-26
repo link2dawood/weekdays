@@ -243,6 +243,34 @@ for (const url of routes) {
   }
 }
 
+// 404 page: a static dist/404.html so Vercel serves it (with a real 404 status,
+// not 200) for any path that doesn't match a prerendered file. Rendered from the
+// NotFound route; meta is set manually (metaFor has no 404 entry) and forced to
+// noindex since the same page answers many unmatched URLs.
+try {
+  const nf = stripInlineMeta(render("/404"));
+  let html404 = applyMeta(template, {
+    title: "Sivua ei löytynyt (404) | Viikko Nro",
+    description:
+      "Etsimääsi sivua ei löytynyt. Palaa etusivulle ja jatka viikkonumeroiden selaamista.",
+    url: `${SITE_URL}/404`,
+  });
+  // Flip the template's default index,follow to noindex (don't append a second
+  // robots meta — the same 404 page answers many unmatched URLs).
+  html404 = html404.replace(
+    'content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"',
+    'content="noindex, follow"',
+  );
+  html404 = html404.replace(
+    '<div id="root"></div>',
+    `<div id="root">${nf}</div>`,
+  );
+  fs.writeFileSync(path.join(distDir, "404.html"), html404);
+  console.log("prerendered 404 -> dist/404.html");
+} catch (err) {
+  console.error("failed to prerender 404.html:", err);
+}
+
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
 // (currentYear is defined above, alongside the prerender route list.)
 const today = new Date().toISOString().slice(0, 10);
