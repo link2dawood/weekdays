@@ -219,7 +219,12 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
                   Vuoden {day.dayOfYear}. päivä · {day.daysRemaining} päivää vuoden
                   loppuun · {day.quarter}. neljännes
                 </div>
-                {day.names.length > 0 && <div>Nimipäivä: {day.names.join(", ")}</div>}
+                {day.names.length > 0 && (
+                  <div>
+                    {day.names.length === 1 ? "Nimipäivä" : "Nimipäivät"}:{" "}
+                    {day.names.join(", ")}
+                  </div>
+                )}
                 {day.holidays.map((h) => (
                   <div key={h.name}>
                     {h.name}

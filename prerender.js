@@ -286,6 +286,30 @@ const patchedRobots = robotsTxt.replace(
 fs.writeFileSync(robotsPath, patchedRobots);
 console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
 
+// Name-day coverage warning: list calendar dates that still lack licensed data
+// (their Nimipäivä row is hidden). Read the JSON directly with fs so this stays
+// node-native (no JSON import assertion needed here).
+{
+  const nd = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "src/data/nimipaivat.json"), "utf-8"),
+  );
+  const missing = [];
+  const s = new Date(2024, 0, 1); // leap year → all 366 dates
+  for (let i = 0; i < 366; i++) {
+    const d = new Date(s);
+    d.setDate(s.getDate() + i);
+    const k = `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const real = (nd[k] ?? []).filter((n) => n && !/^[A-Z]{2,}-\d/.test(n));
+    if (real.length === 0) missing.push(k);
+  }
+  if (missing.length) {
+    console.warn(
+      `name-days: ${missing.length}/366 dates lack licensed data (Nimipäivä row hidden). ` +
+        `First missing: ${missing.slice(0, 10).join(", ")}${missing.length > 10 ? " …" : ""}`,
+    );
+  }
+}
+
 // Generate the static Open Graph image (dist/og.png, 1200×630) showing the
 // current ISO week. Built on every deploy, so the daily rebuild keeps it
 // current. A plain static file — not an edge function — so it can never 404

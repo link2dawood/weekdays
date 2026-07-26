@@ -1,47 +1,33 @@
 import { describe, it, expect } from "vitest";
 import {
-  NAME_DAYS_FI,
-  NAME_DAYS_SV,
   CALENDAR_META,
-  CALENDAR_META_SV,
   nameDaysForDate,
   nameDaysForWeek,
+  missingNameDayDates,
 } from "./nameDays";
 
-// These tests verify the ENGINE (lookup mechanism, week iteration, leap-year
-// handling) works correctly — not the DATA, which is intentionally
-// placeholder until the Almanac Office licensing question is resolved (see
-// the file header). Once real data lands, these should still pass
-// unchanged; only CALENDAR_META's isPlaceholder-related assertions below
-// will need updating.
-
-describe("placeholder calendar shape", () => {
-  it("has exactly 366 entries (all calendar dates incl. 29 Feb)", () => {
-    expect(Object.keys(NAME_DAYS_FI).length).toBe(366);
-    expect(Object.keys(NAME_DAYS_SV).length).toBe(366);
-  });
-  it("includes 29 February", () => {
-    expect(NAME_DAYS_FI["02-29"]).toBeDefined();
-  });
-  it("every day has at least one name", () => {
-    for (const names of Object.values(NAME_DAYS_FI)) {
-      expect(names.length).toBeGreaterThan(0);
-    }
-  });
-  it("is explicitly flagged as placeholder, not real data", () => {
-    expect(CALENDAR_META.isPlaceholder).toBe(true);
-    expect(CALENDAR_META.source).toBeNull();
-    expect(CALENDAR_META_SV.isPlaceholder).toBe(true);
-  });
-});
+// Tests the ENGINE (lookup, week iteration, leap handling) and the hard
+// guarantee that no PLACEHOLDER/empty value can ever leak through to a page.
+// The dataset itself is a partial seed until the Almanac Office licensing is
+// resolved (see the file header).
 
 describe("nameDaysForDate", () => {
-  it("looks up by calendar date regardless of year", () => {
-    expect(nameDaysForDate(new Date(2026, 0, 15))).toEqual(["PLACEHOLDER-01-15"]);
-    expect(nameDaysForDate(new Date(1999, 0, 15))).toEqual(["PLACEHOLDER-01-15"]);
+  it("returns seeded names by calendar date regardless of year", () => {
+    expect(nameDaysForDate(new Date(2026, 0, 2))).toEqual(["Aapeli"]);
+    expect(nameDaysForDate(new Date(1999, 0, 2))).toEqual(["Aapeli"]);
+    expect(nameDaysForDate(new Date(2026, 0, 3))).toEqual(["Elmeri", "Elmer"]);
   });
-  it("resolves 29 February in a leap year", () => {
-    expect(nameDaysForDate(new Date(2024, 1, 29))).toEqual(["PLACEHOLDER-02-29"]);
+  it("returns [] for dates without licensed data (no placeholder leaks)", () => {
+    expect(nameDaysForDate(new Date(2026, 6, 20))).toEqual([]);
+  });
+  it("never returns a PLACEHOLDER value on any calendar date", () => {
+    for (let m = 0; m < 12; m++) {
+      for (let d = 1; d <= 28; d++) {
+        for (const n of nameDaysForDate(new Date(2026, m, d))) {
+          expect(n).not.toMatch(/^PLACEHOLDER/);
+        }
+      }
+    }
   });
 });
 
@@ -56,21 +42,32 @@ describe("nameDaysForWeek", () => {
     }
   });
   it("each day carries a names array matching nameDaysForDate", () => {
-    const days = nameDaysForWeek(2026, 30);
-    for (const { date, names } of days) {
+    for (const { date, names } of nameDaysForWeek(2026, 30)) {
       expect(names).toEqual(nameDaysForDate(date));
     }
   });
-  it("correctly includes 29 February for a week that contains it in a leap year (2024, week 9)", () => {
-    const days = nameDaysForWeek(2024, 9);
-    const feb29 = days.find((d) => d.date.getMonth() === 1 && d.date.getDate() === 29);
-    expect(feb29).toBeDefined();
-    expect(feb29.names).toEqual(["PLACEHOLDER-02-29"]);
-  });
   it("a non-leap-year week never produces a 29 February date", () => {
-    // 2026 week 9 covers the same time of year; 2026 is not a leap year.
     const days = nameDaysForWeek(2026, 9);
-    const feb29 = days.find((d) => d.date.getMonth() === 1 && d.date.getDate() === 29);
+    const feb29 = days.find(
+      (d) => d.date.getMonth() === 1 && d.date.getDate() === 29,
+    );
     expect(feb29).toBeUndefined();
+  });
+  it("includes 29 February for a leap-year week containing it (2024, week 9)", () => {
+    const days = nameDaysForWeek(2024, 9);
+    const feb29 = days.find(
+      (d) => d.date.getMonth() === 1 && d.date.getDate() === 29,
+    );
+    expect(feb29).toBeDefined();
+    expect(Array.isArray(feb29.names)).toBe(true); // [] until data is licensed
+  });
+});
+
+describe("coverage diagnostics", () => {
+  it("no longer a placeholder calendar; reports the seed gap", () => {
+    expect(CALENDAR_META.isPlaceholder).toBe(false);
+    const missing = missingNameDayDates();
+    expect(missing.length).toBe(363); // 3 of 366 seeded
+    expect(missing).not.toContain("01-02");
   });
 });
