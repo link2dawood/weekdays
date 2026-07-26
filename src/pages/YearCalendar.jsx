@@ -115,6 +115,10 @@ const YearCalendar = ({ year: pYear } = {}) => {
           Tulostettava kalenteri {selectedYear}
         </Link>
       </p>
+      <p className="hub-links">
+        Katso myös <Link to={`/pyhapaivat-${year}`}>pyhäpäivät {year}</Link> ja{" "}
+        <Link to={`/tyopaivat-${year}`}>työpäivät {year}</Link>.
+      </p>
     </section>
   );
 };

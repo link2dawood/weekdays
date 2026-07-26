@@ -1346,3 +1346,92 @@ footer {
     text-decoration: none;
   }
 }
+
+/* ---- Data tables + stat boxes (holiday / working-day hub pages) ---- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  margin: 20px 0;
+  -webkit-overflow-scrolling: touch;
+}
+.data-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: 15px;
+}
+.data-table th,
+.data-table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.data-table thead th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  background: var(--paper);
+  font-weight: 700;
+}
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.data-table td.num,
+.data-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.data-table a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.data-table a:hover {
+  text-decoration: underline;
+}
+.tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  white-space: nowrap;
+}
+.tag.observed {
+  background: rgba(224, 162, 59, 0.16);
+  color: #8a6414;
+}
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+}
+.stat-box {
+  flex: 1 1 150px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.stat-box .n {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-deep);
+  font-variant-numeric: tabular-nums;
+}
+.stat-box .l {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 5px;
+}
+.note-soft {
+  font-size: 14px;
+  color: var(--ink-soft);
+}

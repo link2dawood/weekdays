@@ -96,6 +96,18 @@ export function printMeta(y) {
     description: `Tulosta tai tallenna vuoden ${y} viikkokalenteri PDF-muodossa: kaikki viikkonumerot, päivämäärät ja juhlapäivät yhdellä A4-sivulla. Ilmainen.`,
   };
 }
+export function holidaysMeta(y) {
+  return {
+    title: `Suomen pyhäpäivät ${y} – arkipyhät ja vapaapäivät | Viikko Nro`,
+    description: `Kaikki Suomen viralliset pyhäpäivät ${y}: päivämäärät, viikonpäivät ja viikkonumerot. Uudenvuodenpäivä, pääsiäinen, vappu, juhannus, itsenäisyyspäivä ja joulu.`,
+  };
+}
+export function workingDaysMeta(y) {
+  return {
+    title: `Työpäivät ${y} – montako työpäivää vuodessa | Viikko Nro`,
+    description: `Montako työpäivää vuonna ${y}? Työpäivien määrä kuukausittain, viikonloput ja arkipyhät huomioiden – hyödyksi palkanlaskentaan ja työajan suunnitteluun.`,
+  };
+}
 
 // Home page title/description carry the actual current week and date range
 // (what F-04 calls "distinguishing data"), computed the same way at build
@@ -212,6 +224,16 @@ export function sitemapEntries(year) {
         priority: current ? "0.6" : "0.4",
       });
     }
+    entries.push({
+      path: `/pyhapaivat-${y}`,
+      changefreq: current ? "monthly" : "yearly",
+      priority: current ? "0.7" : "0.5",
+    });
+    entries.push({
+      path: `/tyopaivat-${y}`,
+      changefreq: current ? "monthly" : "yearly",
+      priority: current ? "0.7" : "0.5",
+    });
   }
   entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
   return entries;
@@ -228,6 +250,8 @@ export function metaFor(url) {
   if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/vuosi-(\d+)$/))) return yearMeta(+m[1]);
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) return holidaysMeta(+m[1]);
+  if ((m = url.match(/^\/tyopaivat-(\d+)$/))) return workingDaysMeta(+m[1]);
   return null;
 }
 
@@ -259,6 +283,20 @@ export function breadcrumbTrail(url) {
   }
   if ((m = url.match(/^\/tulosta-(\d+)$/))) {
     return [home, { name: `Tulostettava ${m[1]}`, path: url }];
+  }
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) {
+    return [
+      home,
+      { name: `Viikot ${m[1]}`, path: `/vuosi-${m[1]}` },
+      { name: `Pyhäpäivät ${m[1]}`, path: url },
+    ];
+  }
+  if ((m = url.match(/^\/tyopaivat-(\d+)$/))) {
+    return [
+      home,
+      { name: `Viikot ${m[1]}`, path: `/vuosi-${m[1]}` },
+      { name: `Työpäivät ${m[1]}`, path: url },
+    ];
   }
   return null;
 }

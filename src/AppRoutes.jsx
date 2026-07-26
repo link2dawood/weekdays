@@ -8,6 +8,8 @@ import WeekDays from "./pages/WeekDays";
 import WeeksInEachMonth from "./pages/WeeksInEachMonth";
 import WhatWeek from "./pages/WhatWeek";
 import PrintCalendar from "./pages/PrintCalendar";
+import PublicHolidays from "./pages/PublicHolidays";
+import WorkingDays from "./pages/WorkingDays";
 import WeeksInYear from "./pages/WeeksInYear";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
@@ -31,6 +33,9 @@ const DynamicSlug = () => {
     return <WeeksInEachMonth month={+m[1]} year={+m[2]} />;
   if ((m = slug.match(/^vuosi-(\d+)$/))) return <YearCalendar year={+m[1]} />;
   if ((m = slug.match(/^tulosta-(\d+)$/))) return <PrintCalendar year={+m[1]} />;
+  if ((m = slug.match(/^pyhapaivat-(\d+)$/)))
+    return <PublicHolidays year={+m[1]} />;
+  if ((m = slug.match(/^tyopaivat-(\d+)$/))) return <WorkingDays year={+m[1]} />;
   return <NotFound />;
 };
 
