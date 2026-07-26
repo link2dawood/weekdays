@@ -13,7 +13,7 @@ export const SITE_URL = process.env.SITE_ORIGIN || "https://viikkonro.fi";
 // Finnish date formatters live in one place (dateUtils.js). Imported with an
 // explicit .js extension so plain-Node prerender.js can resolve it too (the
 // ISO-week math below stays inline — untouched — per the no-touch rule).
-import { fmtFullFi, M_GENITIVE } from "../components/dateUtils.js";
+import { M_GENITIVE } from "../components/dateUtils.js";
 
 // Mirrors src/components/dateUtils.jsx's isoWeek/weeksInIsoYear exactly.
 // Duplicated (not imported) because prerender.js runs this file as plain
@@ -211,9 +211,9 @@ export const routeMeta = {
       "Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
   },
   "/mika-on-viikkonumero": {
-    title: "Mikä on viikkonumero? ISO 8601 selitettynä | Viikko Nro",
+    title: "Mikä on viikkonumero? ISO 8601 -viikkolaskenta selitettynä",
     description:
-      "Mikä on viikkonumero ja miten se lasketaan? Selitämme ISO 8601 -standardin, viikon alkamisen maanantaista ja miten vuoden ensimmäinen viikko määräytyy.",
+      "Viikkonumero on 1–53 välinen luku vuoden kuluvasta viikosta. Suomessa noudatetaan ISO 8601:tä: viikko alkaa maanantaista, 4. tammikuuta on aina viikolla 1.",
     breadcrumb: "Mikä on viikkonumero",
   },
   "/kuinka-monta-viikkoa-vuodessa": {

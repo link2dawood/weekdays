@@ -136,6 +136,83 @@ function faqScript() {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+// Article + FAQPage structured data for the /mika-on-viikkonumero explainer.
+// BreadcrumbList is added separately (breadcrumbScript), so it is not repeated
+// here. The FAQ entries mirror the page's visible <details> list exactly.
+function mikaOnViikkonumeroScript() {
+  const modified = new Date().toISOString().slice(0, 10);
+  const faq = [
+    [
+      "Mikä on viikkonumero yhdellä lauseella?",
+      "Viikkonumero on 1–53 välinen kokonaisluku, joka kertoo, kuinka mones vuoden viikko on parhaillaan menossa. Suomessa se lasketaan ISO 8601 -standardin mukaan.",
+    ],
+    [
+      "Miksi vuoden ensimmäinen viikko määräytyy torstain mukaan?",
+      "Torstai on viikon keskimmäinen arkipäivä. Kun viikon vuosi määräytyy torstain sijainnin mukaan, kalenterivuoden ja viikkovuoden ero jää enintään kolmeksi päiväksi.",
+    ],
+    [
+      "Mikä on vk:n ja viikkonumeron ero?",
+      "Ei mikään. Vk on viikon lyhenne. Vk 30 tarkoittaa samaa kuin viikko 30 tai viikkonumero 30.",
+    ],
+    [
+      "Miksi kaksi eri kalenteria näyttävät eri viikkonumeron samalle päivälle?",
+      "Toinen kalenteri noudattaa todennäköisesti ISO 8601 -standardia ja toinen Yhdysvaltain käytäntöä, jossa viikko alkaa sunnuntaista ja viikko 1 sisältää 1. tammikuuta. Suomessa käytetään aina ISO-viikkoa.",
+    ],
+    [
+      "Onko ISO 8601 sama asia kuin viikkonumero?",
+      "Ei. ISO 8601 on laaja standardi, joka määrittelee kaikki päivämäärä- ja aikaesitykset. Viikkonumero on yksi standardin osa, määritelty pykälässä 3.2.4.",
+    ],
+    [
+      "Missä muodossa viikkonumero merkitään?",
+      "Suomessa yleisimmin vk 30 tai viikko 30. Vuosi lisätään kauttaviivalla tai pilkulla, esim. viikko 30/2026. ISO-standardimuoto on 2026-W30.",
+    ],
+    [
+      "Miten viikkonumeron saa näkyviin puhelimessa ja tietokoneella?",
+      "Windowsissa Kalenteri-sovelluksen asetuksista, macOS:ssa Calendar → Preferences, iPhonessa Kalenteri → Asetukset → Näytä viikkonumerot, Google Kalenterissa asetuksista.",
+    ],
+  ];
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: "Mikä on viikkonumero? ISO 8601 -viikkolaskenta selitettynä",
+        description:
+          "Viikkonumero on 1–53 välinen luku, joka kertoo vuoden kuluvan viikon. Suomessa noudatetaan ISO 8601 -standardia: viikko alkaa maanantaista ja viikko 1 on aina se, johon 4. tammikuuta osuu.",
+        inLanguage: "fi-FI",
+        datePublished: "2026-01-01",
+        dateModified: modified,
+        author: { "@type": "Organization", name: "Viikko Nro", url: `${SITE_URL}/` },
+        publisher: {
+          "@type": "Organization",
+          name: "Viikko Nro",
+          logo: {
+            "@type": "ImageObject",
+            url: `${SITE_URL}/logo-horizontal.svg`,
+          },
+        },
+        mainEntityOfPage: `${SITE_URL}/mika-on-viikkonumero`,
+        about: [
+          { "@type": "Thing", name: "ISO 8601" },
+          { "@type": "Thing", name: "Viikkonumero" },
+          { "@type": "Thing", name: "Kalenteri" },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${SITE_URL}/mika-on-viikkonumero#faq`,
+        inLanguage: "fi-FI",
+        mainEntity: faq.map(([q, a]) => ({
+          "@type": "Question",
+          name: q,
+          acceptedAnswer: { "@type": "Answer", text: a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
 // The <SEO> component renders <title>/<meta> via Helmet, and React emits those
 // inline in the SSR output — which would leave a duplicate <title> inside
 // <body>. The authoritative tags are written into <head> by applyMeta() above,
@@ -200,6 +277,10 @@ for (const url of routes) {
 
     if (url === "/ukk") {
       html = html.replace("</head>", `${faqScript()}</head>`);
+    }
+
+    if (url === "/mika-on-viikkonumero") {
+      html = html.replace("</head>", `${mikaOnViikkonumeroScript()}</head>`);
     }
 
     // hreflang alternates (fi <-> sv) for pages that have a translated twin.
