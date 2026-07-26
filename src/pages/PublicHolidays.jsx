@@ -72,8 +72,9 @@ const PublicHolidays = ({ year: pYear } = {}) => {
 
       <p>
         Katso myös <Link to={`/tyopaivat-${year}`}>työpäivät vuonna {year}</Link>,{" "}
-        <Link to={`/vuosi-${year}`}>vuoden {year} viikkonumerot</Link> ja{" "}
-        <Link to={`/tulosta-${year}`}>tulostettava kalenteri</Link>.
+        <Link to={`/vuosi-${year}`}>vuoden {year} viikkonumerot</Link>,{" "}
+        <Link to={`/kalenteri-${year}`}>vuoden {year} kalenteri</Link> ja{" "}
+        <Link to={`/tulosta-${year}`}>tulostettava viikkolista</Link>.
       </p>
 
       <div className="prevnext">

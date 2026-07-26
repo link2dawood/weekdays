@@ -179,6 +179,12 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
             <Link to={`/vuosi-${y}`}>Kaikki viikot vuonna {y}</Link>
           </li>
           <li>
+            <Link to={`/pyhapaivat-${y}`}>Pyhäpäivät ja liputuspäivät {y}</Link>
+          </li>
+          <li>
+            <Link to={`/tyopaivat-${y}`}>Työpäivät ja arkipäivät {y}</Link>
+          </li>
+          <li>
             <Link to={`/tulosta-${y}`}>Tulostettava viikkolista {y}</Link>
           </li>
           <li>

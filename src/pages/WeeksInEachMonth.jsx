@@ -86,6 +86,55 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
           {M_FULL[nextM - 1]} {nextY}
         </Link>
       </div>
+
+      <section className="related">
+        <h2>Katso myös</h2>
+
+        <h3>Kuukaudet {y}</h3>
+        <div className="pills">
+          {M_FULL.map((name, i) =>
+            i + 1 === m ? null : (
+              <Link
+                key={i}
+                className="pill"
+                to={`/kuukausi-${i + 1}-${y}`}
+                onClick={() => window.scrollTo(0, 0)}
+              >
+                {name}
+              </Link>
+            ),
+          )}
+        </div>
+
+        <h3>Vuosi {y}</h3>
+        <ul className="links">
+          <li>
+            <Link to={`/vuosi-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Kaikki viikot vuonna {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/kalenteri-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Vuoden {y} kalenteri
+            </Link>
+          </li>
+          <li>
+            <Link to={`/pyhapaivat-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Pyhäpäivät ja liputuspäivät {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/tyopaivat-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Työpäivät ja arkipäivät {y}
+            </Link>
+          </li>
+          <li>
+            <Link to={`/tulosta-${y}`} onClick={() => window.scrollTo(0, 0)}>
+              Tulostettava viikkolista {y}
+            </Link>
+          </li>
+        </ul>
+      </section>
     </section>
   );
 };
