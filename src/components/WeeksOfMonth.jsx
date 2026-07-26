@@ -69,7 +69,7 @@ const WeeksOfMonth = () => {
           {weeksGrid.map((wk) => (
             <Link
               key={wk.id}
-              to={`/week/${wk.weekNum}/${wk.year}`}
+              to={`/viikko-${wk.weekNum}-${wk.year}`}
               style={{ textDecoration: "none", color: "inherit" }}
               onClick={() => window.scrollTo(0, 0)}
             >

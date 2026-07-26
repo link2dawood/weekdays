@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 import Home from "./pages/Home";
 import YearCalendar from "./pages/YearCalendar";
 import Navbar from "./components/Navbar";
@@ -16,6 +16,24 @@ import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
 import Footer from "./components/Footer";
 
+// Finnish dynamic pages use keyword-rich single-segment slugs
+// (/viikko-30-2026, /kuukausi-7-2026, /vuosi-2026, /tulosta-2026). React Router
+// can't parse two params inside one path segment, so a single /:slug route
+// dispatches by pattern. Static routes (/faq, /about-us, …) outrank /:slug, so
+// only unmatched single segments ever reach this — the same reachability the
+// old explicit routes had. Deterministic, so SSR and client hydration agree.
+const DynamicSlug = () => {
+  const { slug } = useParams();
+  let m;
+  if ((m = slug.match(/^viikko-(\d+)-(\d+)$/)))
+    return <WeekDays week={+m[1]} year={+m[2]} />;
+  if ((m = slug.match(/^kuukausi-(\d+)-(\d+)$/)))
+    return <WeeksInEachMonth month={+m[1]} year={+m[2]} />;
+  if ((m = slug.match(/^vuosi-(\d+)$/))) return <YearCalendar year={+m[1]} />;
+  if ((m = slug.match(/^tulosta-(\d+)$/))) return <PrintCalendar year={+m[1]} />;
+  return <NotFound />;
+};
+
 // Router-agnostic app shell. Wrapped in <BrowserRouter> on the client (App.jsx)
 // and in <StaticRouter> at build time for prerendering (entry-server.jsx).
 const AppRoutes = () => {
@@ -27,17 +45,14 @@ const AppRoutes = () => {
       <main id="main">
         <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/year/:year" element={<YearCalendar />} />
-        <Route path="/week/:week/:year" element={<WeekDays />} />
-        <Route path="/month/:month/:year" element={<WeeksInEachMonth />} />
         <Route path="/what-is-a-week-number" element={<WhatWeek />} />
         <Route path="/weeks-in-a-year" element={<WeeksInYear />} />
-        <Route path="/print/:year" element={<PrintCalendar />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/:slug" element={<DynamicSlug />} />
         <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

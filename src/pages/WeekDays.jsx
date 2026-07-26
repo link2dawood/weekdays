@@ -39,8 +39,12 @@ function schoolPeriodLabel(p) {
   return `${SCHOOL_PERIOD_LABELS[p.type]}${region}${estimate}`;
 }
 
-const WeekDays = () => {
-  const { week, year } = useParams();
+// Props come from the /:slug dispatcher (parsed "/viikko-30-2026"); the
+// useParams fallback keeps the component usable under a plain param route too.
+const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
+  const params = useParams();
+  const week = pWeek ?? params.week;
+  const year = pYear ?? params.year;
   const w = Number(week);
   const y = Number(year);
   const total = weeksInIsoYear(y);
@@ -49,7 +53,7 @@ const WeekDays = () => {
   // to the nearest real week rather than rendering nonsense dates.
   if (w < 1 || w > total) {
     const clamped = Math.min(Math.max(w, 1), total);
-    return <Navigate to={`/week/${clamped}/${y}`} replace />;
+    return <Navigate to={`/viikko-${clamped}-${y}`} replace />;
   }
 
   const NOW = new Date();
@@ -86,18 +90,18 @@ const WeekDays = () => {
 
   if (mo.getMonth() === su.getMonth()) {
     monthLinks = (
-      <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
+      <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
         {M_FULL[mo.getMonth()]} {mo.getFullYear()} viikot
       </Link>
     );
   } else {
     monthLinks = (
       <>
-        <Link to={`/month/${mo.getMonth() + 1}/${mo.getFullYear()}`}>
+        <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
           {M_FULL[mo.getMonth()]}
         </Link>{" "}
         ja{" "}
-        <Link to={`/month/${su.getMonth() + 1}/${su.getFullYear()}`}>
+        <Link to={`/kuukausi-${su.getMonth() + 1}-${su.getFullYear()}`}>
           {M_FULL[su.getMonth()]}
         </Link>
       </>
@@ -158,11 +162,11 @@ const WeekDays = () => {
     <section className="app">
       <SEO
         {...weekMeta(w, y)}
-        canonical={canonicalFor(`/week/${week}/${year}`)}
+        canonical={canonicalFor(`/viikko-${week}-${year}`)}
       />
       <div className="breadcrumb">
         <Link to={"/"}>Etusivu </Link> /{" "}
-        <Link to={`/year/${year}`}>Viikot {year}</Link> / Viikko {week}
+        <Link to={`/vuosi-${year}`}>Viikot {year}</Link> / Viikko {week}
       </div>
       <h1>
         Viikko {week} vuonna {year}
@@ -239,10 +243,10 @@ const WeekDays = () => {
       </div>
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>
-        <Link to={`/week/${prevW}/${prevY}`}>
+        <Link to={`/viikko-${prevW}-${prevY}`}>
           <span className="lbl">Edellinen</span>Viikko {prevW}, {prevY}
         </Link>
-        <Link to={`/week/${nextW}/${nextY}`}>
+        <Link to={`/viikko-${nextW}-${nextY}`}>
           <span className="lbl">Seuraava</span>Viikko {nextW}, {nextY}
         </Link>
       </div>
@@ -250,12 +254,12 @@ const WeekDays = () => {
       {(sameWeekPrevYearValid || sameWeekNextYearValid) && (
         <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>
           {sameWeekPrevYearValid && (
-            <Link to={`/week/${w}/${y - 1}`}>
+            <Link to={`/viikko-${w}-${y - 1}`}>
               <span className="lbl">Viikko {w} viime vuonna</span>Viikko {w}, {y - 1}
             </Link>
           )}
           {sameWeekNextYearValid && (
-            <Link to={`/week/${w}/${y + 1}`}>
+            <Link to={`/viikko-${w}-${y + 1}`}>
               <span className="lbl">Viikko {w} ensi vuonna</span>Viikko {w}, {y + 1}
             </Link>
           )}

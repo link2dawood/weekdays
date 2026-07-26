@@ -194,26 +194,26 @@ export function sitemapEntries(year) {
   for (let y = 2020; y <= year + FUTURE_HORIZON; y++) {
     const current = y === year;
     entries.push({
-      path: `/year/${y}`,
+      path: `/vuosi-${y}`,
       changefreq: current ? "weekly" : "yearly",
       priority: current ? "0.7" : "0.6",
     });
     for (let w = 1; w <= weeksInIsoYear(y); w++) {
       entries.push({
-        path: `/week/${w}/${y}`,
+        path: `/viikko-${w}-${y}`,
         changefreq: current ? "weekly" : "yearly",
         priority: current ? "0.6" : "0.4",
       });
     }
     for (let m = 1; m <= 12; m++) {
       entries.push({
-        path: `/month/${m}/${y}`,
+        path: `/kuukausi-${m}-${y}`,
         changefreq: current ? "monthly" : "yearly",
         priority: current ? "0.6" : "0.4",
       });
     }
   }
-  entries.push({ path: `/print/${year}`, changefreq: "yearly", priority: "0.5" });
+  entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
   return entries;
 }
 
@@ -224,10 +224,10 @@ export function metaFor(url) {
   if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
   if (routeMeta[url]) return routeMeta[url];
   let m;
-  if ((m = url.match(/^\/week\/(\d+)\/(\d+)$/))) return weekMeta(+m[1], +m[2]);
-  if ((m = url.match(/^\/month\/(\d+)\/(\d+)$/))) return monthMeta(+m[1], +m[2]);
-  if ((m = url.match(/^\/year\/(\d+)$/))) return yearMeta(+m[1]);
-  if ((m = url.match(/^\/print\/(\d+)$/))) return printMeta(+m[1]);
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) return weekMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) return yearMeta(+m[1]);
+  if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
   return null;
 }
 
@@ -240,24 +240,24 @@ export function breadcrumbTrail(url) {
     return [home, { name: routeMeta[url].breadcrumb, path: url }];
   }
   let m;
-  if ((m = url.match(/^\/year\/(\d+)$/))) {
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) {
     return [home, { name: `Viikot ${m[1]}`, path: url }];
   }
-  if ((m = url.match(/^\/week\/(\d+)\/(\d+)$/))) {
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
     return [
       home,
-      { name: `Viikot ${m[2]}`, path: `/year/${m[2]}` },
+      { name: `Viikot ${m[2]}`, path: `/vuosi-${m[2]}` },
       { name: `Viikko ${m[1]}`, path: url },
     ];
   }
-  if ((m = url.match(/^\/month\/(\d+)\/(\d+)$/))) {
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
     return [
       home,
-      { name: `Viikot ${m[2]}`, path: `/year/${m[2]}` },
+      { name: `Viikot ${m[2]}`, path: `/vuosi-${m[2]}` },
       { name: M_FULL[+m[1] - 1], path: url },
     ];
   }
-  if ((m = url.match(/^\/print\/(\d+)$/))) {
+  if ((m = url.match(/^\/tulosta-(\d+)$/))) {
     return [home, { name: `Tulostettava ${m[1]}`, path: url }];
   }
   return null;

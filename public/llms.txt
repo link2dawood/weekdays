@@ -15,7 +15,7 @@ Keskeiset faktat viikkonumeroista Suomessa:
 - [Mikä on viikkonumero?](https://viikkonro.fi/what-is-a-week-number): viikkonumeron ja ISO 8601 -standardin selitys
 - [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/weeks-in-a-year): 52 vai 53 viikkoa ja miksi
 - [Usein kysytyt kysymykset](https://viikkonro.fi/faq): kattavat vastaukset viikkonumeroista
-- [Tulostettava viikkokalenteri](https://viikkonro.fi/print/2026): koko vuoden viikot ja päivämäärät
+- [Tulostettava viikkokalenteri](https://viikkonro.fi/tulosta-2026): koko vuoden viikot ja päivämäärät
 - [Tietoa meistä](https://viikkonro.fi/about-us): palvelun esittely
 - [Ota yhteyttä](https://viikkonro.fi/contact-us): yhteydenottolomake
 

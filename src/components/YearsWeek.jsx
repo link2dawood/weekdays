@@ -24,7 +24,7 @@ const YearsWeek = () => {
           {years.map((year) => (
             <Link
               key={year}
-              to={`/year/${year}`}
+              to={`/vuosi-${year}`}
               className={`pill ${year === Y_NOW ? "active" : ""}`}
               onClick={() => window.scrollTo(0, 0)}
             >

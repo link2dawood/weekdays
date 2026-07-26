@@ -95,7 +95,7 @@ const WeeklySearch = () => {
                 <span>
                   <Link
                     className="open-link"
-                    to={`/week/${result.weekNum}/${result.isoYearNum}`}
+                    to={`/viikko-${result.weekNum}-${result.isoYearNum}`}
                   >
                     avaa viikko {result.weekNum}
                   </Link>

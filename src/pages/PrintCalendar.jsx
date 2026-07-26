@@ -10,9 +10,9 @@ import {
 import SEO from "../components/SEO";
 import { canonicalFor, printMeta } from "../data/seo";
 
-const PrintCalendar = () => {
-  const { year } = useParams();
-  const selectedYear = Number(year);
+const PrintCalendar = ({ year: pYear } = {}) => {
+  const params = useParams();
+  const selectedYear = Number(pYear ?? params.year);
 
   const YEAR_MIN = 2020,
     YEAR_MAX = 2035;
@@ -34,7 +34,7 @@ const PrintCalendar = () => {
     <section className="app">
       <SEO
         {...printMeta(selectedYear)}
-        canonical={canonicalFor(`/print/${selectedYear}`)}
+        canonical={canonicalFor(`/tulosta-${selectedYear}`)}
       />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Tulostettava {selectedYear}
@@ -51,7 +51,7 @@ const PrintCalendar = () => {
           {years.map((y) => (
             <Link
               key={y}
-              to={`/print/${y}`}
+              to={`/tulosta-${y}`}
               className={`pill ${y === selectedYear ? "active" : ""}`}
             >
               {y}

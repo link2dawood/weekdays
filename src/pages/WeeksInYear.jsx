@@ -58,7 +58,7 @@ const WeeksInYear = () => {
           {longYears.map((y) => (
             <Link
               key={y}
-              to={`/year/${y}`}
+              to={`/vuosi-${y}`}
               className={`pill ${y === Y_NOW ? "active" : ""}`}
               onClick={() => window.scrollTo(0, 0)}
             >
@@ -72,7 +72,7 @@ const WeeksInYear = () => {
           {years.map((y) => (
             <Link
               key={y}
-              to={`/year/${y}`}
+              to={`/vuosi-${y}`}
               className={`pill ${y === Y_NOW ? "active" : ""}`}
             >
               {y}

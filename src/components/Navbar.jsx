@@ -50,10 +50,10 @@ const Navbar = () => {
 
         {/* Navigation Links Grid Block */}
         <nav className={`nav-links ${isOpen ? "mobile-open" : ""}`}>
-          <Link id="navYear" to={`/year/${Y_NOW}`} onClick={closeMenu}>
+          <Link id="navYear" to={`/vuosi-${Y_NOW}`} onClick={closeMenu}>
             Tämän vuoden viikot
           </Link>
-          <Link id="navPrint" to={`/print/${year}`} onClick={closeMenu}>
+          <Link id="navPrint" to={`/tulosta-${year}`} onClick={closeMenu}>
             Tulostettava
           </Link>
           <Link to="/what-is-a-week-number" onClick={closeMenu}>
@@ -71,7 +71,7 @@ const Navbar = () => {
         <Link
           className="badge"
           id="navBadge"
-          to={`/year/${Y_NOW}`}
+          to={`/vuosi-${Y_NOW}`}
           onClick={closeMenu}
         >
           Vk {weekNow}

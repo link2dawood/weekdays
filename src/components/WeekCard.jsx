@@ -11,7 +11,7 @@ const WeekCard = ({ w, y }) => {
   const isCurrent = w === isoWeek(now) && y === isoYear(now);
 
   return (
-    <Link className={`wk ${isCurrent ? "current" : ""}`} to={`/week/${w}/${y}`}>
+    <Link className={`wk ${isCurrent ? "current" : ""}`} to={`/viikko-${w}-${y}`}>
       <div className="n">Viikko {w}</div>
 
       <div className="r">

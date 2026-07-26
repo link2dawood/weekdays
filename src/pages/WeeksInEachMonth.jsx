@@ -5,9 +5,11 @@ import WeekCard from "../components/WeekCard";
 import SEO from "../components/SEO";
 import { canonicalFor, monthMeta } from "../data/seo";
 
-const WeeksInEachMonth = () => {
-  const { month, year } = useParams();
+const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
+  const params = useParams();
 
+  const month = pMonth ?? params.month;
+  const year = pYear ?? params.year;
   const y = Number(year);
   const m = Number(month);
   var mi = m - 1;
@@ -55,11 +57,11 @@ const WeeksInEachMonth = () => {
     <section className="app">
       <SEO
         {...monthMeta(m, y)}
-        canonical={canonicalFor(`/month/${month}/${year}`)}
+        canonical={canonicalFor(`/kuukausi-${month}-${year}`)}
       />
       <div className="breadcrumb">
         <Link to={"/"}>Etusivu</Link> /{" "}
-        <Link to={`/year/${year}`}>Viikot {year}</Link> / {M_FULL[mi]}
+        <Link to={`/vuosi-${year}`}>Viikot {year}</Link> / {M_FULL[mi]}
       </div>
       <h2 id="mh">
         Viikot – {M_FULL[mi]} {year}{" "}
@@ -74,11 +76,11 @@ const WeeksInEachMonth = () => {
         ))}
       </div>
       <div className="prevnext">
-        <Link to={`/month/${prevM}/${prevY}`}>
+        <Link to={`/kuukausi-${prevM}-${prevY}`}>
           <span className="lbl">Edellinen</span>
           {M_FULL[prevM - 1]} {prevY}
         </Link>
-        <Link className="nx" to={`/month/${nextM}/${nextY}`}>
+        <Link className="nx" to={`/kuukausi-${nextM}-${nextY}`}>
           <span className="lbl">Seuraava</span>
           {M_FULL[nextM - 1]} {nextY}
         </Link>

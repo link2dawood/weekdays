@@ -28,7 +28,7 @@ const NotFound = () => {
       <div className="prose">
         <p>
           Tarkista osoite tai palaa etusivulle jatkaaksesi. Voit myös katsoa{" "}
-          <Link to={`/year/${Y_NOW}`} onClick={() => window.scrollTo(0, 0)}>
+          <Link to={`/vuosi-${Y_NOW}`} onClick={() => window.scrollTo(0, 0)}>
             vuoden {Y_NOW} viikot
           </Link>
           .

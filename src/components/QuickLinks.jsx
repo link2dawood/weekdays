@@ -12,7 +12,7 @@ const QuickLinks = () => {
         <div className="quicklinks">
           <Link
             className="ql"
-            to={`/print/${Y_NOW}`}
+            to={`/tulosta-${Y_NOW}`}
             onClick={() => window.scrollTo(0, 0)}
           >
             <b>Tulostettava viikkokalenteri</b>

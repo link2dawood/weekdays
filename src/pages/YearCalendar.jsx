@@ -10,8 +10,9 @@ import {
 import SEO from "../components/SEO";
 import { canonicalFor, yearMeta } from "../data/seo";
 
-const YearCalendar = () => {
-  const { year } = useParams();
+const YearCalendar = ({ year: pYear } = {}) => {
+  const params = useParams();
+  const year = pYear ?? params.year;
   const selectedYear = Number(year);
   // console.log(year);
   const YEAR_MIN = 2020,
@@ -45,7 +46,7 @@ const YearCalendar = () => {
     return (
       <Link
         className={`wk ${isCurrent ? "current" : ""}`}
-        to={`/week/${w}/${y}`}
+        to={`/viikko-${w}-${y}`}
       >
         <div className="n">Viikko {w}</div>
         <div className="r">
@@ -59,7 +60,7 @@ const YearCalendar = () => {
     <section className="app">
       <SEO
         {...yearMeta(selectedYear)}
-        canonical={canonicalFor(`/year/${year}`)}
+        canonical={canonicalFor(`/vuosi-${year}`)}
       />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> / Viikot {year}
@@ -76,7 +77,7 @@ const YearCalendar = () => {
         {years.map((y) => (
           <Link
             key={y}
-            to={`/year/${y}`}
+            to={`/vuosi-${y}`}
             className={`pill ${y === selectedYear ? "active" : ""}`}
           >
             {y}
@@ -92,22 +93,22 @@ const YearCalendar = () => {
       <h2 id="mh">Viikot kuukausittain {year} </h2>
       <div className="pills">
         {M_FULL.map((month, index) => (
-          <Link key={index} className="pill" to={`/month/${index + 1}/${year}`}>
+          <Link key={index} className="pill" to={`/kuukausi-${index + 1}-${year}`}>
             {month}
           </Link>
         ))}
       </div>
       <div className="prevnext">
-        <Link to={`/year/${selectedYear - 1}`}>
+        <Link to={`/vuosi-${selectedYear - 1}`}>
           <span className="lbl">Edellinen</span>Viikot {selectedYear - 1}
         </Link>
-        <Link className="nx" to={`/year/${selectedYear + 1}`}>
+        <Link className="nx" to={`/vuosi-${selectedYear + 1}`}>
           <span className="lbl">Seuraava</span>Viikot {selectedYear + 1}
         </Link>
       </div>
       <p>
         <Link
-          to={`/print/${year}`}
+          to={`/tulosta-${year}`}
           className="btn"
           onClick={() => window.scrollTo(0, 0)}
         >

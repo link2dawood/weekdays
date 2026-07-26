@@ -4,6 +4,12 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/week/:week/:year", "destination": "/viikko-:week-:year", "permanent": true },
+    { "source": "/month/:month/:year", "destination": "/kuukausi-:month-:year", "permanent": true },
+    { "source": "/year/:year", "destination": "/vuosi-:year", "permanent": true },
+    { "source": "/print/:year", "destination": "/tulosta-:year", "permanent": true }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {

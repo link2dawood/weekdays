@@ -61,7 +61,7 @@ const WhatWeek = () => {
         </ul>
       </div>
       <p>
-        <Link className="btn" to={`/year/${Y_NOW}`}>
+        <Link className="btn" to={`/vuosi-${Y_NOW}`}>
           Katso vuoden {Y_NOW} viikot
         </Link>
       </p>
