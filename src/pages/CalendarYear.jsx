@@ -1,16 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { isoWeek, isoYear, M_FULL, weeksInIsoYear } from "../components/dateUtils";
+import {
+  isoWeek,
+  isoYear,
+  M_FULL,
+  weeksInIsoYear,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "../components/dateUtils";
 import { getJuhlapaivat, getLiputuspaivat } from "../data/juhlapaivat";
 import nimipaivat from "../data/nimipaivat.json";
 import SEO from "../components/SEO";
 import { canonicalFor, calendarMeta } from "../data/seo";
 
-const YEAR_MIN = 2020;
-// Rolling horizon: current year + 9 (≈2035 today), so the year pills and
-// cross-links auto-advance every rebuild instead of freezing. Any /kalenteri-{y}
-// still renders client-side via the dispatcher even outside this range.
-const YEAR_MAX = new Date().getFullYear() + 9;
+// Year horizon (YEAR_MIN/YEAR_MAX) is imported from dateUtils so the pills,
+// cross-links, and every page's prev/next nav share one rolling source of truth.
 // getDay()-indexed Finnish weekday initials (Su, Mo, Tu, We, Th, Fr, Sa).
 const WD_INITIAL = ["S", "M", "T", "K", "T", "P", "L"];
 
@@ -79,11 +83,19 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
         >
           <span className="cal-wi">{WD_INITIAL[dow]}</span>
           <span className="cal-dn">{d}</span>
-          {isMon && (
-            <Link className="cal-wk" to={`/viikko-${isoWeek(date)}-${isoYear(date)}`}>
-              vk {isoWeek(date)}
-            </Link>
-          )}
+          {isMon &&
+            (isoYear(date) >= YEAR_MIN && isoYear(date) <= YEAR_MAX ? (
+              <Link
+                className="cal-wk"
+                to={`/viikko-${isoWeek(date)}-${isoYear(date)}`}
+              >
+                vk {isoWeek(date)}
+              </Link>
+            ) : (
+              // Boundary week whose ISO year is past the horizon (e.g. Dec 2035
+              // → week 1 2036): show the number, but don't link a 404.
+              <span className="cal-wk">vk {isoWeek(date)}</span>
+            ))}
           {holiday && (
             <span className="cal-hol" title={holiday}>
               {holiday}

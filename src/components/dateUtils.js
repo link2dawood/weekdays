@@ -105,6 +105,15 @@ export var M_SHORT = [
   "marras",
   "joulu",
 ];
+
+// Prerendered year horizon, shared by every year-series page and its prev/next
+// navigation. Mirrors prerender.js exactly: floor 2020, rolling ceiling =
+// build year + 9 (seo.js sitemapEntries uses `year + FUTURE_HORIZON` and
+// prerender passes new Date().getFullYear()). Guarding nav to this range keeps
+// links off pages that were never prerendered — they'd 404 under the SPA
+// fallback. Evaluated once at module load; the daily rebuild keeps it current.
+export const PRERENDER_MIN_YEAR = 2020;
+export const PRERENDER_MAX_YEAR = new Date().getFullYear() + 9;
 // Kept as thin aliases to the canonical Finnish formatter (fmtFullFi) so every
 // existing caller renders correct Finnish ("20. heinäkuuta 2026") without each
 // call site having to be found and changed.

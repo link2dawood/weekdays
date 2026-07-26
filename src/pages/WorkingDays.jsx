@@ -3,6 +3,10 @@ import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
 import { canonicalFor, workingDaysMeta } from "../data/seo";
 import { holidaysInYear } from "../data/holidays";
+import {
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "../components/dateUtils";
 
 const M_FULL = [
   "Tammikuu",
@@ -132,12 +136,16 @@ const WorkingDays = ({ year: pYear } = {}) => {
       </p>
 
       <div className="prevnext">
-        <Link to={`/tyopaivat-${y - 1}`}>
-          <span className="lbl">Edellinen</span>Työpäivät {y - 1}
-        </Link>
-        <Link className="nx" to={`/tyopaivat-${y + 1}`}>
-          <span className="lbl">Seuraava</span>Työpäivät {y + 1}
-        </Link>
+        {y - 1 >= YEAR_MIN && (
+          <Link to={`/tyopaivat-${y - 1}`}>
+            <span className="lbl">Edellinen</span>Työpäivät {y - 1}
+          </Link>
+        )}
+        {y + 1 <= YEAR_MAX && (
+          <Link className="nx" to={`/tyopaivat-${y + 1}`}>
+            <span className="lbl">Seuraava</span>Työpäivät {y + 1}
+          </Link>
+        )}
       </div>
     </section>
   );

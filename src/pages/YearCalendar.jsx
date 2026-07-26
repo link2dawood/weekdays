@@ -6,6 +6,8 @@ import {
   dShort,
   mondayOf,
   M_FULL,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { canonicalFor, yearMeta } from "../data/seo";
@@ -14,9 +16,6 @@ const YearCalendar = ({ year: pYear } = {}) => {
   const params = useParams();
   const year = pYear ?? params.year;
   const selectedYear = Number(year);
-  // console.log(year);
-  const YEAR_MIN = 2020,
-    YEAR_MAX = 2035;
 
   const years = [];
   for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
@@ -99,12 +98,16 @@ const YearCalendar = ({ year: pYear } = {}) => {
         ))}
       </div>
       <div className="prevnext">
-        <Link to={`/vuosi-${selectedYear - 1}`}>
-          <span className="lbl">Edellinen</span>Viikot {selectedYear - 1}
-        </Link>
-        <Link className="nx" to={`/vuosi-${selectedYear + 1}`}>
-          <span className="lbl">Seuraava</span>Viikot {selectedYear + 1}
-        </Link>
+        {selectedYear - 1 >= YEAR_MIN && (
+          <Link to={`/vuosi-${selectedYear - 1}`}>
+            <span className="lbl">Edellinen</span>Viikot {selectedYear - 1}
+          </Link>
+        )}
+        {selectedYear + 1 <= YEAR_MAX && (
+          <Link className="nx" to={`/vuosi-${selectedYear + 1}`}>
+            <span className="lbl">Seuraava</span>Viikot {selectedYear + 1}
+          </Link>
+        )}
       </div>
       <p>
         <Link

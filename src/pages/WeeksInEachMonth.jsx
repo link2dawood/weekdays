@@ -1,6 +1,13 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { M_FULL, M_GENITIVE, isoWeek, isoYear } from "../components/dateUtils";
+import {
+  M_FULL,
+  M_GENITIVE,
+  isoWeek,
+  isoYear,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "../components/dateUtils";
 import WeekCard from "../components/WeekCard";
 import SEO from "../components/SEO";
 import { canonicalFor, monthMeta } from "../data/seo";
@@ -23,15 +30,21 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
     for (let dd = 1; dd <= dim; dd++) {
       const dt = new Date(y, mi, dd);
 
-      const k = `${isoYear(dt)}-${isoWeek(dt)}`;
+      const wy = isoYear(dt);
+      const k = `${wy}-${isoWeek(dt)}`;
 
       if (seen[k]) continue;
 
       seen[k] = true;
 
+      // A boundary week can belong to an adjacent ISO year; skip it if that
+      // year is outside the prerendered range (e.g. Dec 2035 → week 1 2036),
+      // so the grid never renders a WeekCard linking a page that 404s.
+      if (wy < YEAR_MIN || wy > YEAR_MAX) continue;
+
       weeks.push({
         week: isoWeek(dt),
-        year: isoYear(dt),
+        year: wy,
       });
     }
 
@@ -77,14 +90,18 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
         ))}
       </div>
       <div className="prevnext">
-        <Link to={`/kuukausi-${prevM}-${prevY}`}>
-          <span className="lbl">Edellinen</span>
-          {M_FULL[prevM - 1]} {prevY}
-        </Link>
-        <Link className="nx" to={`/kuukausi-${nextM}-${nextY}`}>
-          <span className="lbl">Seuraava</span>
-          {M_FULL[nextM - 1]} {nextY}
-        </Link>
+        {prevY >= YEAR_MIN && (
+          <Link to={`/kuukausi-${prevM}-${prevY}`}>
+            <span className="lbl">Edellinen</span>
+            {M_FULL[prevM - 1]} {prevY}
+          </Link>
+        )}
+        {nextY <= YEAR_MAX && (
+          <Link className="nx" to={`/kuukausi-${nextM}-${nextY}`}>
+            <span className="lbl">Seuraava</span>
+            {M_FULL[nextM - 1]} {nextY}
+          </Link>
+        )}
       </div>
 
       <section className="related">

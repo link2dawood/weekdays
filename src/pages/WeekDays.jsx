@@ -11,6 +11,8 @@ import {
   dayOfYear,
   daysRemainingInYear,
   quarterOf,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { canonicalFor, weekMeta } from "../data/seo";
@@ -18,13 +20,6 @@ import { holidaysInWeek } from "../data/holidays";
 import { nameDaysForWeek } from "../data/nameDays";
 import { schoolHolidaysInWeek } from "../data/schoolHolidays";
 import { sunTimesForWeek, formatHelsinkiTime, HELSINKI } from "../data/sunTimes";
-
-// Prerendered range for all week/month/hub pages (mirrors seo.js sitemapEntries:
-// floor 2020, rolling ceiling = build year + 9). Used to guard the "related"
-// links so a boundary week that spills into an out-of-range year is never
-// linked to a page that would 404.
-const YEAR_MIN = 2020;
-const YEAR_MAX = new Date().getFullYear() + 9;
 
 function sameDay(a, b) {
   return (
@@ -80,24 +75,30 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
     "Lauantai",
   ];
 
+  // Link a month only when it's inside the prerendered range; otherwise render
+  // the name as plain text. Guards the Dec-2019 half of week 1 2020 (whose
+  // Monday lives in an out-of-range year) from linking a page that 404s.
+  const monthLink = (date, label) =>
+    date.getFullYear() >= YEAR_MIN && date.getFullYear() <= YEAR_MAX ? (
+      <Link to={`/kuukausi-${date.getMonth() + 1}-${date.getFullYear()}`}>
+        {label}
+      </Link>
+    ) : (
+      label
+    );
+
   let monthLinks;
 
   if (mo.getMonth() === su.getMonth()) {
-    monthLinks = (
-      <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
-        {M_GENITIVE[mo.getMonth()]} {mo.getFullYear()}
-      </Link>
+    monthLinks = monthLink(
+      mo,
+      `${M_GENITIVE[mo.getMonth()]} ${mo.getFullYear()}`,
     );
   } else {
     monthLinks = (
       <>
-        <Link to={`/kuukausi-${mo.getMonth() + 1}-${mo.getFullYear()}`}>
-          {M_GENITIVE[mo.getMonth()]}
-        </Link>{" "}
-        ja{" "}
-        <Link to={`/kuukausi-${su.getMonth() + 1}-${su.getFullYear()}`}>
-          {M_GENITIVE[su.getMonth()]}
-        </Link>
+        {monthLink(mo, M_GENITIVE[mo.getMonth()])} ja{" "}
+        {monthLink(su, M_GENITIVE[su.getMonth()])}
       </>
     );
   }
@@ -120,8 +121,12 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   // so blindly linking /week/53/(y-1) or /week/53/(y+1) could point at a
   // year with only 52 weeks, forcing a redirect on click — exactly what D-06
   // rules out ("zero internal links to... redirect chains").
-  const sameWeekPrevYearValid = w <= weeksInIsoYear(y - 1);
-  const sameWeekNextYearValid = w <= weeksInIsoYear(y + 1);
+  // ...and only when that adjacent year is itself within the prerendered range,
+  // so we never link a page that would 404 at the floor/ceiling of the horizon.
+  const sameWeekPrevYearValid =
+    y - 1 >= YEAR_MIN && w <= weeksInIsoYear(y - 1);
+  const sameWeekNextYearValid =
+    y + 1 <= YEAR_MAX && w <= weeksInIsoYear(y + 1);
 
   // D-01–D-04 data for this week. nameDaysForWeek/sunTimesForWeek return
   // exactly 7 entries Monday–Sunday, aligned index-for-index with the `days`
@@ -272,12 +277,16 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       </p>
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>
-        <Link to={`/viikko-${prevW}-${prevY}`}>
-          <span className="lbl">Edellinen</span>Viikko {prevW}, {prevY}
-        </Link>
-        <Link to={`/viikko-${nextW}-${nextY}`}>
-          <span className="lbl">Seuraava</span>Viikko {nextW}, {nextY}
-        </Link>
+        {prevY >= YEAR_MIN && (
+          <Link to={`/viikko-${prevW}-${prevY}`}>
+            <span className="lbl">Edellinen</span>Viikko {prevW}, {prevY}
+          </Link>
+        )}
+        {nextY <= YEAR_MAX && (
+          <Link to={`/viikko-${nextW}-${nextY}`}>
+            <span className="lbl">Seuraava</span>Viikko {nextW}, {nextY}
+          </Link>
+        )}
       </div>
 
       {(sameWeekPrevYearValid || sameWeekNextYearValid) && (

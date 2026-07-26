@@ -1,6 +1,13 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-import { isoWeek, isoYear, getWeekdayName, dWritten } from "../components/dateUtils";
+import {
+  isoWeek,
+  isoYear,
+  getWeekdayName,
+  dWritten,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
+} from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { canonicalFor, holidaysMeta } from "../data/seo";
 import { holidaysInYear } from "../data/holidays";
@@ -78,12 +85,16 @@ const PublicHolidays = ({ year: pYear } = {}) => {
       </p>
 
       <div className="prevnext">
-        <Link to={`/pyhapaivat-${y - 1}`}>
-          <span className="lbl">Edellinen</span>Pyhäpäivät {y - 1}
-        </Link>
-        <Link className="nx" to={`/pyhapaivat-${y + 1}`}>
-          <span className="lbl">Seuraava</span>Pyhäpäivät {y + 1}
-        </Link>
+        {y - 1 >= YEAR_MIN && (
+          <Link to={`/pyhapaivat-${y - 1}`}>
+            <span className="lbl">Edellinen</span>Pyhäpäivät {y - 1}
+          </Link>
+        )}
+        {y + 1 <= YEAR_MAX && (
+          <Link className="nx" to={`/pyhapaivat-${y + 1}`}>
+            <span className="lbl">Seuraava</span>Pyhäpäivät {y + 1}
+          </Link>
+        )}
       </div>
     </section>
   );
