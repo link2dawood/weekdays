@@ -120,14 +120,17 @@ img {
 .nav .nav-links {
   margin-left: auto;
   display: flex;
-  gap: 6px;
+  flex-wrap: nowrap;
+  gap: 2px;
 }
 
 .nav .nav-links a {
-  font-size: 14px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  flex: none;
   text-decoration: none;
   color: var(--ink-soft);
-  padding: 7px 11px;
+  padding: 7px 9px;
   border-radius: 9px;
   transition: all 0.2s ease;
 }
@@ -172,7 +175,7 @@ img {
 }
 
 /* Responsive Mobile Rules Breakpoint Configuration Mapping */
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .menu-toggle {
     display: flex;
     order: 1; /* FIXED: Places hamburger on the left edge */
