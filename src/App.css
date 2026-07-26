@@ -175,7 +175,7 @@ img {
 }
 
 /* Responsive Mobile Rules Breakpoint Configuration Mapping */
-@media (max-width: 1080px) {
+@media (max-width: 900px) {
   .menu-toggle {
     display: flex;
     order: 1; /* FIXED: Places hamburger on the left edge */

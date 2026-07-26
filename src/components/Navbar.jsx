@@ -65,12 +65,6 @@ const Navbar = () => {
           <Link to="/mika-on-viikkonumero" onClick={closeMenu}>
             Tietoa viikoista
           </Link>
-          <Link to="/tietoa-meista" onClick={closeMenu}>
-            Tietoa meistä
-          </Link>
-          <Link to="/ota-yhteytta" onClick={closeMenu}>
-            Ota yhteyttä
-          </Link>
         </nav>
 
         {/* Badge Indicator Block */}
