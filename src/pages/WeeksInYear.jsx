@@ -63,6 +63,43 @@ const WeeksInYear = () => {
           </p>
         </div>
 
+        <h2 className="mh">Mitä 53. viikko tarkoittaa käytännössä?</h2>
+        <div className="prose">
+          <p>
+            <strong>Palkanlaskenta:</strong> Monet palkka- ja
+            työaikajärjestelmät on rakennettu olettaen 52 viikkoa vuodessa.
+            53. viikko tarkoittaa yhtä ylimääräistä palkanmaksu- tai
+            raportointijaksoa niille, joiden palkka lasketaan viikoittain –
+            tämä kannattaa tarkistaa palkkajärjestelmästä etukäteen, jotta
+            vuosikohtaiset summat ja jaksotukset täsmäävät.
+          </p>
+          <p>
+            <strong>Vähittäiskauppa ja raportointi:</strong> Monet yritykset
+            käyttävät sisäisessä raportoinnissaan viikkopohjaista
+            tilikautta (esim. ns. 4-4-5-kalenteria), jossa vuosi jaetaan
+            tasaisiin viikkojaksoihin. 53. viikko rikkoo tämän jaon
+            säännöllisesti, joten vuositason vertailut (esim. edellisvuoteen)
+            vaativat oikaisua sellaisina vuosina.
+          </p>
+        </div>
+
+        <h2 className="mh">Miksi eri kalenterit näyttävät eri viikkonumeron?</h2>
+        <div className="prose">
+          <p>
+            Kalenteriohjelmat ja -sovellukset eivät aina noudata ISO
+            8601 -standardia. Osa ohjelmistoista (esimerkiksi
+            oletusasetuksin Yhdysvaltain alueasetuksilla) numeroi viikot
+            niin, että viikko alkaa sunnuntaista ja viikko 1 on aina se,
+            johon 1. tammikuuta osuu – ei se, johon vuoden ensimmäinen
+            torstai osuu. Tämä ero näkyy erityisesti vuodenvaihteessa: sama
+            päivä voi olla ISO-standardin mukaan edellisen tai seuraavan
+            vuoden viikossa, kun taas amerikkalaistyyppinen laskenta antaa
+            eri numeron. Tarkista aina, noudattaako käyttämäsi
+            kalenteriohjelma ISO 8601 -standardia, jos viikkonumero
+            vaikuttaa väärältä.
+          </p>
+        </div>
+
         <h2 className="mh">53 viikon vuodet</h2>
         <p className="lead">
           Seuraavissa vuosissa on poikkeuksellinen viikko 53. Kaikissa muissa

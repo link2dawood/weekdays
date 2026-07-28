@@ -21,6 +21,8 @@ import SvHome from "./pages/sv/SvHome";
 import SvWeek from "./pages/sv/SvWeek";
 import SvYear from "./pages/sv/SvYear";
 import SvHolidays from "./pages/sv/SvHolidays";
+import SiteSearch from "./pages/SiteSearch";
+import EmbedWidget from "./pages/EmbedWidget";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -85,6 +87,8 @@ const AppRoutes = () => {
         <Route path="/viikko-paivamaaraksi" element={<WeekToDate />} />
         <Route path="/tyopaivalaskuri" element={<WorkingDaysBetween />} />
         <Route path="/paivien-erotus" element={<DaysBetween />} />
+        <Route path="/haku" element={<SiteSearch />} />
+        <Route path="/upota-widgetti" element={<EmbedWidget />} />
         <Route path="/tietoa-meista" element={<AboutUs />} />
         <Route path="/ota-yhteytta" element={<ContactUs />} />
         <Route path="/tietosuoja" element={<PrivacyPolicy />} />

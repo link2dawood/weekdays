@@ -282,6 +282,20 @@ export const routeMeta = {
       "Laske montako päivää, viikkoa ja työpäivää kahden päivämäärän välillä on. Ilmainen päivälaskuri.",
     breadcrumb: "Päivien erotus",
   },
+  "/upota-widgetti": {
+    title: "Upota viikkonumero-widgetti sivullesi | Viikko Nro",
+    description:
+      "Ilmainen, kevyt viikkonumero-widgetti omalle sivustollesi. Yksi rivi koodia, ei riippuvuuksia, näyttää aina kuluvan ISO 8601 -viikkonumeron.",
+    breadcrumb: "Upota widgetti",
+  },
+  // The SearchAction target (index.html's WebSite schema) — a query resolver,
+  // not indexable content, hence noindex and deliberately absent from
+  // sitemapEntries() below. Still prerendered (see prerender.js) so it has
+  // its own static shell for hydration to attach to.
+  "/haku": {
+    title: "Haku | Viikko Nro",
+    description: "Hae päivämäärää, viikkoa tai vuotta Viikko Nro -sivustolta.",
+  },
 };
 
 // Self-referencing canonical URL for a route ("/" keeps its trailing slash,
@@ -299,6 +313,7 @@ export function sitemapEntries(year) {
     { path: "/kuinka-monta-viikkoa-vuodessa", changefreq: "monthly", priority: "0.8" },
     { path: "/ukk", changefreq: "monthly", priority: "0.8" },
     { path: "/laskurit", changefreq: "monthly", priority: "0.7" },
+    { path: "/upota-widgetti", changefreq: "monthly", priority: "0.5" },
     { path: "/paivamaara-viikoksi", changefreq: "monthly", priority: "0.7" },
     { path: "/viikko-paivamaaraksi", changefreq: "monthly", priority: "0.7" },
     { path: "/tyopaivalaskuri", changefreq: "monthly", priority: "0.7" },

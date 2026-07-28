@@ -64,6 +64,49 @@ const AboutUs = () => {
         <p>
           Kiitos, että olemme osa päivittäistä tuottavuusrutiiniasi!
         </p>
+        <h2>Tietolähteet ja standardit</h2>
+        <div className="prose">
+          <p>
+            Viikkonumerot lasketaan{" "}
+            <a
+              href="https://fi.wikipedia.org/wiki/ISO_8601"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ISO 8601 -standardin
+            </a>{" "}
+            mukaan: viikko alkaa maanantaista, ja vuoden ensimmäinen viikko on
+            se, johon vuoden ensimmäinen torstai osuu. Lue lisää:{" "}
+            <Link to="/mika-on-viikkonumero">mikä on viikkonumero</Link>.
+          </p>
+          <ul>
+            <li>
+              <strong>Pyhäpäivät:</strong> lasketaan Suomen lainsäädännön
+              (laki 272/1944 ja laki 388/1937) mukaisista arkipyhistä.
+            </li>
+            <li>
+              <strong>Auringonnousu ja -lasku:</strong> lasketaan{" "}
+              <a
+                href="https://github.com/mourner/suncalc"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                suncalc
+              </a>
+              -kirjastolla, oletussijaintina Helsinki.
+            </li>
+            <li>
+              <strong>Koulujen loma-ajat:</strong> perustuvat kuntien ja
+              opetushallinnon julkaisemiin lukuvuositietoihin.
+            </li>
+            <li>
+              <strong>Nimipäivät:</strong> täysi kalenteri odottaa
+              lisenssivahvistusta Helsingin yliopiston almanakkatoimistolta;
+              näytämme toistaiseksi vain vahvistetut nimet.
+            </li>
+          </ul>
+        </div>
+
         <h2>Seuraa meitä</h2>
         <div className="prose">
           <p>Löydät Viikko Nron myös sosiaalisessa mediassa:</p>

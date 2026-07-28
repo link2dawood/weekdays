@@ -14,6 +14,17 @@ import { routeMeta } from "../data/seo";
 const WEB3FORMS_ACCESS_KEY =
   import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || "YOUR_WEB3FORMS_ACCESS_KEY";
 
+// ── Cloudflare Turnstile (spam protection) ──────────────────────────────────
+// This is the SITE key — safe to expose in frontend code, same as the
+// Web3Forms access key above (it can only render a challenge, not verify
+// one). The SECRET key must NEVER appear in this repo or any client bundle:
+// there is no backend here to hold it safely. It's configured directly in
+// the Web3Forms dashboard (Form settings -> Turnstile), which verifies the
+// token server-side using that secret before it ever reaches this code.
+const TURNSTILE_SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAAD_Qfiift-e0h-DI";
+const TURNSTILE_SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+
 // ── Anti-spam / rate-limit tuning (all client-side, no backend) ─────────────
 const RATE_LIMIT_KEY = "vn_contact_submits"; // localStorage bucket of send timestamps
 const COOLDOWN_MS = 30 * 1000; // min gap between two sends
@@ -64,6 +75,48 @@ function ContactUs() {
 
   // Disables the button and prevents double-submits while a request is in flight
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cloudflare Turnstile: the widget itself is loaded/rendered client-only
+  // (this page's script, not a global one — no reason to ship a third-party
+  // script to every page for a widget only the contact form uses). The
+  // token is single-use, so it's reset after every submit attempt.
+  const turnstileContainerRef = useRef(null);
+  const turnstileWidgetIdRef = useRef(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  useEffect(() => {
+    function renderWidget() {
+      if (!turnstileContainerRef.current || !window.turnstile) return;
+      turnstileWidgetIdRef.current = window.turnstile.render(turnstileContainerRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => setTurnstileToken(""),
+      });
+    }
+
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      const existing = document.querySelector(`script[src="${TURNSTILE_SCRIPT_SRC}"]`);
+      if (existing) {
+        existing.addEventListener("load", renderWidget, { once: true });
+      } else {
+        const script = document.createElement("script");
+        script.src = TURNSTILE_SCRIPT_SRC;
+        script.async = true;
+        script.defer = true;
+        script.addEventListener("load", renderWidget, { once: true });
+        document.head.appendChild(script);
+      }
+    }
+
+    return () => {
+      if (window.turnstile && turnstileWidgetIdRef.current !== null) {
+        window.turnstile.remove(turnstileWidgetIdRef.current);
+      }
+    };
+  }, []);
 
   //  The universal input handler logic
   // This updates the exact field being typed into using the HTML 'name' attribute
@@ -131,6 +184,14 @@ function ContactUs() {
       return;
     }
 
+    if (!turnstileToken) {
+      setStatus({
+        type: "error",
+        message: "Vahvista, ettet ole robotti, ja yritä uudelleen.",
+      });
+      return;
+    }
+
     if (WEB3FORMS_ACCESS_KEY === "YOUR_WEB3FORMS_ACCESS_KEY") {
       setStatus({
         type: "error",
@@ -161,6 +222,7 @@ function ContactUs() {
           email: formData.email,
           message: formData.message,
           botcheck: "", // Web3Forms' own honeypot — must stay empty
+          "cf-turnstile-response": turnstileToken, // verified server-side by Web3Forms
         }),
       });
 
@@ -185,6 +247,12 @@ function ContactUs() {
       });
     } finally {
       setIsSubmitting(false);
+      // Turnstile tokens are single-use — reset so the widget issues a fresh
+      // one for the next attempt, whether this one succeeded or failed.
+      if (window.turnstile && turnstileWidgetIdRef.current !== null) {
+        window.turnstile.reset(turnstileWidgetIdRef.current);
+      }
+      setTurnstileToken("");
     }
   };
 
@@ -270,6 +338,10 @@ function ContactUs() {
                 required
               ></textarea>
             </div>
+
+            {/* Cloudflare Turnstile widget — rendered into this container by
+                the effect above once the script has loaded. */}
+            <div ref={turnstileContainerRef} className="turnstile-widget" />
 
             {/* Submit Button */}
             <button type="submit" className="submit-btn" disabled={isSubmitting}>

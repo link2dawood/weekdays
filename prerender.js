@@ -36,6 +36,17 @@ const serverDir = path.resolve(__dirname, "dist-server");
 const currentYear = new Date().getFullYear();
 const routes = sitemapEntries(currentYear).map((e) => e.path);
 
+// /haku (the SearchAction target in index.html's WebSite schema) is a query
+// resolver, not real content — it's deliberately excluded from the sitemap
+// above. But it still needs a prerendered shell: hydrateRoot (main.jsx)
+// hydrates whatever HTML the server returns, and every unprerendered URL
+// falls back to serving dist/index.html verbatim (nginx's SPA try_files).
+// Without its own static file, /haku would hydrate React's <SiteSearch>
+// tree onto the Home page's markup and throw a hydration mismatch. Prerender
+// it standalone (no query string, matching the "no results" fallback UI) so
+// the shell React hydrates onto always matches its own first client render.
+routes.push("/haku");
+
 let template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
 
 // Inline the render-blocking stylesheet into <head> so the first paint doesn't
@@ -283,6 +294,17 @@ for (const url of routes) {
       html = html.replace("</head>", `${mikaOnViikkonumeroScript()}</head>`);
     }
 
+    // /haku is a query resolver, not indexable content — flip the template's
+    // default index,follow to noindex directly in the static HTML (a
+    // JS-injected <SEO robots> tag wouldn't be seen by crawlers that don't
+    // execute JS).
+    if (url === "/haku") {
+      html = html.replace(
+        /<meta\s+name="robots"[^>]*>/,
+        '<meta name="robots" content="noindex, follow" />',
+      );
+    }
+
     // hreflang alternates (fi <-> sv) for pages that have a translated twin.
     const alts = hreflangAlternates(url);
     if (alts) {
@@ -339,8 +361,8 @@ try {
   // Flip the template's default index,follow to noindex (don't append a second
   // robots meta — the same 404 page answers many unmatched URLs).
   html404 = html404.replace(
-    'content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"',
-    'content="noindex, follow"',
+    /<meta\s+name="robots"[^>]*>/,
+    '<meta name="robots" content="noindex, follow" />',
   );
   html404 = html404.replace(
     '<div id="root"></div>',

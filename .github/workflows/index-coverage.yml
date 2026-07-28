@@ -1,0 +1,66 @@
+name: Daily index coverage sampling
+
+# G-04 — the early-warning system for the Phase 1 risk (near-duplicate week/
+# month/year pages either get indexed individually or silently don't). Its
+# own daily workflow (same reasoning as week-check.yml/search-console-
+# report.yml): this samples the URL Inspection API on its own schedule,
+# independent of whether a build/deploy happens to run that day.
+#
+# There's no database in this project (static site, no backend — see
+# CLAUDE.md), so history is a git-tracked JSON file
+# (data/index-coverage-history.json) that this workflow commits back to main
+# after each run — the simplest thing that actually persists across
+# independent, ephemeral CI runs.
+#
+# Needs the same GOOGLE_APPLICATION_CREDENTIALS_JSON secret as F-07/F-08/G-03
+# (must have Full access on the domain property); SLACK_WEBHOOK_URL is
+# optional, same opt-in pattern as elsewhere.
+
+on:
+  schedule:
+    # A few hours after deploy.yml's daily rebuild, so a fresh crawl/index
+    # state has had time to settle before sampling it.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # to commit the updated history file back to main
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Sample index coverage
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+            echo "::warning::GOOGLE_APPLICATION_CREDENTIALS_JSON secret not set — skipping (see F-07)."
+            exit 0
+          fi
+          node src/cli.js sample-coverage
+
+      - name: Commit updated history
+        run: |
+          if git diff --quiet -- data/index-coverage-history.json; then
+            echo "No change to index-coverage-history.json (job skipped or nothing new) — nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/index-coverage-history.json
+          git commit -m "chore: record daily index-coverage sample"
+          git push

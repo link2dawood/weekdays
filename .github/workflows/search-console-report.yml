@@ -1,0 +1,48 @@
+name: Weekly Search Console report
+
+# G-03: posts a per-template click summary (and, once G-04 lands, index
+# coverage) to Slack every week. Its own workflow (same reasoning as
+# week-check.yml) rather than a step in deploy.yml — this reports on the
+# LIVE property's Search Console data, entirely unrelated to whether a
+# build/deploy happens to run that day.
+#
+# Needs two repo secrets to do anything real:
+#   - GOOGLE_APPLICATION_CREDENTIALS_JSON (same service-account key as F-07/
+#     F-08 in deploy.yml — must have Full access on the domain property)
+#   - SLACK_WEBHOOK_URL (optional — same opt-in pattern as week-check.yml;
+#     without it, weekly-report just logs the report instead of failing)
+
+on:
+  schedule:
+    # Monday 06:00 UTC — well after getFinalDateRange()'s 3-day settling
+    # window has closed for the prior week, and after deploy.yml's own daily
+    # rebuild so this isn't racing anything.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run weekly Search Console report
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+            echo "::warning::GOOGLE_APPLICATION_CREDENTIALS_JSON secret not set — skipping (see F-07)."
+            exit 0
+          fi
+          node src/cli.js weekly-report
