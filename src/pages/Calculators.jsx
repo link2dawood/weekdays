@@ -24,6 +24,11 @@ const TOOLS = [
     name: "Päivien erotus",
     desc: "Montako päivää ja viikkoa kahden päivämäärän välillä on.",
   },
+  {
+    to: "/upota-widgetti",
+    name: "Upota widgetti",
+    desc: "Näytä kuluva viikkonumero omalla sivustollasi yhdellä koodirivillä.",
+  },
 ];
 
 const Calculators = () => (

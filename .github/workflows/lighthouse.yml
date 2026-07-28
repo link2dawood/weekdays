@@ -1,0 +1,40 @@
+name: Lighthouse CI
+
+# G-02: a lab-based performance regression gate. Deliberately its own
+# workflow (same reasoning as week-check.yml) rather than a step inside
+# deploy.yml — it needs to run on pull requests too, before anything reaches
+# main, not just after a push has already been built and deployed.
+#
+# See lighthouserc.cjs for what the thresholds mean and why they're set
+# where they are (a regression gate against today's measured baseline, not
+# HANDOFF's aspirational field targets — those need real Search Console/CrUX
+# data, not a single-machine lab run).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        run: npm run lighthouse

@@ -685,6 +685,30 @@ h2 {
   text-align: start;
 }
 
+/* Embeddable widget: copy-paste snippet box */
+.code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  flex-wrap: wrap;
+}
+.code-box code {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: pre;
+}
+.code-box .btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
 /* Lookup */
 .lookup {
   background: var(--card);
@@ -1587,7 +1611,10 @@ body:has(.cal-print) footer {
 }
 
 /* ─── Full-year calendar view (/kalenteri-*) ──────────────────────────── */
-.cal-page { max-width: min(1500px, 96vw); }
+/* Same max-width as every other page's .app (var(--maxw)) — this used to be
+   wider (min(1500px, 96vw)) for the month grid, but that made it the only
+   page on the site with a different content width. */
+.cal-page { max-width: var(--maxw); }
 .cal-halves { margin-top: 8px; margin-bottom: 18px; }
 
 .cal-grid {

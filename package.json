@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "check": "node src/cli.js check",
     "check:crawl": "node scripts/check-crawl.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lighthouse": "lhci autorun --config=lighthouserc.cjs"
   },
   "dependencies": {
     "@vercel/og": "^0.11.1",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
