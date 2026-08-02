@@ -9,6 +9,8 @@
     { "source": "/month/:month/:year", "destination": "/kuukausi-:month-:year", "statusCode": 301 },
     { "source": "/year/:year", "destination": "/vuosi-:year", "statusCode": 301 },
     { "source": "/print/:year", "destination": "/tulosta-:year", "statusCode": 301 },
+    { "source": "/kalenteri-:y(\\d+)-1", "destination": "/kalenteri-:y-alkuvuosi", "statusCode": 301 },
+    { "source": "/kalenteri-:y(\\d+)-2", "destination": "/kalenteri-:y-loppuvuosi", "statusCode": 301 },
     { "source": "/what-is-a-week-number", "destination": "/mika-on-viikkonumero", "statusCode": 301 },
     { "source": "/weeks-in-a-year", "destination": "/kuinka-monta-viikkoa-vuodessa", "statusCode": 301 },
     { "source": "/about-us", "destination": "/tietoa-meista", "statusCode": 301 },

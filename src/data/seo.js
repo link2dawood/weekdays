@@ -356,8 +356,8 @@ export function sitemapEntries(year) {
       changefreq: cur ? "weekly" : "yearly",
       priority: cur ? "0.7" : "0.5",
     });
-    entries.push({ path: `/kalenteri-${cy}-1`, changefreq: "yearly", priority: "0.3" });
-    entries.push({ path: `/kalenteri-${cy}-2`, changefreq: "yearly", priority: "0.3" });
+    entries.push({ path: `/kalenteri-${cy}-alkuvuosi`, changefreq: "yearly", priority: "0.3" });
+    entries.push({ path: `/kalenteri-${cy}-loppuvuosi`, changefreq: "yearly", priority: "0.3" });
     entries.push({
       path: `/tulostettava-kalenteri-${cy}`,
       changefreq: "yearly",
@@ -385,8 +385,8 @@ export function metaFor(url) {
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
   if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) return holidaysMeta(+m[1]);
   if ((m = url.match(/^\/tyopaivat-(\d+)$/))) return workingDaysMeta(+m[1]);
-  if ((m = url.match(/^\/kalenteri-(\d+)-([12])$/)))
-    return calendarMeta(+m[1], +m[2], false);
+  if ((m = url.match(/^\/kalenteri-(\d+)-(alkuvuosi|loppuvuosi)$/)))
+    return calendarMeta(+m[1], m[2] === "alkuvuosi" ? 1 : 2, false);
   if ((m = url.match(/^\/kalenteri-(\d+)$/))) return calendarMeta(+m[1], null, false);
   if ((m = url.match(/^\/tulostettava-kalenteri-(\d+)$/)))
     return calendarMeta(+m[1], null, true);

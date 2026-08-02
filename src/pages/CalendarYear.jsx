@@ -53,8 +53,11 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
 
   const halfLabel =
     half === 1 ? ", 1. vuosipuolisko" : half === 2 ? ", 2. vuosipuolisko" : "";
+  // Unambiguous half-year slugs (was -1/-2, which read as "page 2" next to
+  // /kalenteri-YYYY). alkuvuosi = Jan–Jun, loppuvuosi = Jul–Dec.
+  const halfSlug = half === 1 ? "alkuvuosi" : half === 2 ? "loppuvuosi" : null;
   const canonicalPath = half
-    ? `/kalenteri-${y}-${half}`
+    ? `/kalenteri-${y}-${halfSlug}`
     : print
       ? `/tulostettava-kalenteri-${y}`
       : `/kalenteri-${y}`;
@@ -155,13 +158,13 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
           Koko vuosi
         </Link>
         <Link
-          to={`/kalenteri-${y}-1`}
+          to={`/kalenteri-${y}-alkuvuosi`}
           className={`pill ${half === 1 ? "active" : ""}`}
         >
           1. vuosipuolisko (tammi–kesäkuu)
         </Link>
         <Link
-          to={`/kalenteri-${y}-2`}
+          to={`/kalenteri-${y}-loppuvuosi`}
           className={`pill ${half === 2 ? "active" : ""}`}
         >
           2. vuosipuolisko (heinä–joulukuu)
@@ -216,8 +219,8 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
           )}
           {!half && (
             <li>
-              <Link to={`/kalenteri-${y}-1`}>1. vuosipuolisko</Link> ·{" "}
-              <Link to={`/kalenteri-${y}-2`}>2. vuosipuolisko</Link>
+              <Link to={`/kalenteri-${y}-alkuvuosi`}>1. vuosipuolisko</Link> ·{" "}
+              <Link to={`/kalenteri-${y}-loppuvuosi`}>2. vuosipuolisko</Link>
             </li>
           )}
         </ul>

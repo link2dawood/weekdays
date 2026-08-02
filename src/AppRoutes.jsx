@@ -46,8 +46,8 @@ const DynamicSlug = () => {
   if ((m = slug.match(/^pyhapaivat-(\d+)$/)))
     return <PublicHolidays year={+m[1]} />;
   if ((m = slug.match(/^tyopaivat-(\d+)$/))) return <WorkingDays year={+m[1]} />;
-  if ((m = slug.match(/^kalenteri-(\d+)-([12])$/)))
-    return <CalendarYear year={+m[1]} half={+m[2]} />;
+  if ((m = slug.match(/^kalenteri-(\d+)-(alkuvuosi|loppuvuosi)$/)))
+    return <CalendarYear year={+m[1]} half={m[2] === "alkuvuosi" ? 1 : 2} />;
   if ((m = slug.match(/^kalenteri-(\d+)$/)))
     return <CalendarYear year={+m[1]} />;
   if ((m = slug.match(/^tulostettava-kalenteri-(\d+)$/)))
