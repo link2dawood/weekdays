@@ -36,6 +36,21 @@ const serverDir = path.resolve(__dirname, "dist-server");
 const currentYear = new Date().getFullYear();
 const routes = sitemapEntries(currentYear).map((e) => e.path);
 
+// Indexable window: keep the high-intent recent + near-future years in Google's
+// index and noindex the long tail, so ~1,100 near-identical template pages
+// across 16 years don't become the site's dominant "content at scale" signal
+// (which caps a thin calculator site's ranking). Rolling currentYear-2 ..
+// currentYear+4 = 2024..2030 today. Out-of-window pages are still prerendered
+// (so they stay navigable) but carry noindex and are dropped from the sitemap.
+const INDEX_MIN_YEAR = currentYear - 2;
+const INDEX_MAX_YEAR = currentYear + 4;
+const isIndexable = (p) => {
+  const m = p.match(/-(\d{4})(?:-(?:alkuvuosi|loppuvuosi))?$/);
+  if (!m) return true; // static pages have no year → always indexable
+  const y = Number(m[1]);
+  return y >= INDEX_MIN_YEAR && y <= INDEX_MAX_YEAR;
+};
+
 let template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
 
 // Inline the render-blocking stylesheet into <head> so the first paint doesn't
@@ -262,6 +277,16 @@ for (const url of routes) {
       url: canonical,
     });
 
+    // Prune the index to the high-intent window: out-of-window year pages stay
+    // prerendered (navigable) but are noindexed (flip the template's default
+    // index,follow) and dropped from the sitemap below.
+    if (!isIndexable(url)) {
+      html = html.replace(
+        'content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"',
+        'content="noindex, follow"',
+      );
+    }
+
     // Per-year OG image for calendar pages (all four variants of a year share
     // its image); every other page keeps the site's default /og.png.
     const calOg = url.match(/^\/(?:tulostettava-)?kalenteri-(\d+)/);
@@ -366,6 +391,7 @@ const lastmodFor = (p) => {
   return today;
 };
 const urlset = sitemapEntries(currentYear)
+  .filter((e) => isIndexable(e.path))
   .map((e) => {
     const loc = e.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${e.path}`;
     return [
@@ -381,7 +407,7 @@ const urlset = sitemapEntries(currentYear)
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlset}\n</urlset>\n`;
 fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log(
-  `generated sitemap.xml (${sitemapEntries(currentYear).length} urls, lastmod ${today})`,
+  `generated sitemap.xml (${sitemapEntries(currentYear).filter((e) => isIndexable(e.path)).length} indexable urls of ${sitemapEntries(currentYear).length} prerendered, lastmod ${today})`,
 );
 
 // Generate llms-full.txt from the FAQ single-source so AI ingestion always
