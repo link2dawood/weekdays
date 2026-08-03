@@ -9,13 +9,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 - `npm run dev` — start Vite dev server
-- `npm run build` — full production build: client build → SSR build (`entry-server.jsx`) → `node prerender.js`. This is what CI/Docker runs; use it to verify prerendering/SEO output, not just the app.
+- `npm run build` — full production build: client build → SSR build (`entry-server.jsx`) → `node prerender.js`. This is what Vercel runs; use it to verify prerendering/SEO output, not just the app.
 - `npm run build:spa` — client-only build, skips SSR/prerendering (fast path if you only need to check the SPA bundles)
 - `npm run preview` — serve the built `dist/` locally
 - `npm run lint` — ESLint (flat config, `eslint.config.js`)
-- No test suite exists in this repo.
-
-Docker: `docker compose up --build` builds and serves the site at `http://localhost:3005` (same nginx-based image CI/CD produces). `VITE_WEB3FORMS_ACCESS_KEY` can be set via a local `.env` file for the contact form to work.
+- `npm test` — Vitest (`holidays.test.js`, `nameDays.test.js`, `schoolHolidays.test.js`, `sunTimes.test.js` under `src/data/`)
+- `npm run check` / `npm run check:crawl` — `src/cli.js` (Search Console permission check / sitemap submission) and `scripts/check-crawl.js`, both plain-Node, not part of the client bundle
 
 ## Architecture
 
@@ -23,13 +22,15 @@ Docker: `docker compose up --build` builds and serves the site at `http://localh
 - `src/main.jsx` → `App.jsx` (wraps `AppRoutes` in `BrowserRouter`) — normal client hydration.
 - `src/entry-server.jsx` — wraps `AppRoutes` in `StaticRouter`, used only at build time.
 
-`prerender.js` runs after both builds finish: it imports the SSR bundle, calls `render(url)` for every route listed in `src/data/seo.js`'s `routeMeta`, injects the resulting HTML into `dist/<route>/index.html` along with per-route `<title>`, meta description, canonical URL, Open Graph/Twitter tags, and a BreadcrumbList JSON-LD script. It then generates `dist/sitemap.xml` from `sitemapEntries()` and deletes the temporary `dist-server/` SSR bundle so it never ships. This makes static pages (FAQ, about, legal, etc.) fully crawlable without JS, while the client still hydrates into a normal SPA.
+**Routes are single-segment Finnish keyword slugs**, not `/word/:param/:param` — e.g. `/viikko-30-2026`, `/kuukausi-7-2026`, `/vuosi-2026`, `/kalenteri-2026[-alkuvuosi|-loppuvuosi]`, `/tulosta-2026`, `/pyhapaivat-2026`, `/tyopaivat-2026`, `/tulostettava-kalenteri-2026`. React Router can't parse two params inside one path segment, so `AppRoutes.jsx` routes every unmatched single segment to a `/:slug` catch-all (`DynamicSlug`) that regex-dispatches to the right page component; static routes (`/ukk`, `/tietoa-meista`, …) still outrank it. `vercel.json` 301-redirects the old `/week/:week/:year`-style and English routes to these. Old `/sv/*` (Swedish pilot, retired) paths also 301 to their Finnish equivalents there.
 
-**Dynamic routes are intentionally NOT prerendered**: `/year/:year`, `/week/:week/:year`, `/month/:month/:year`, `/print/:year`. These are served by nginx's SPA fallback (`try_files ... /index.html`) and rendered client-side only. Only routes with an entry in `routeMeta` (`src/data/seo.js`) get a static HTML file — adding a new static page means adding it there (and to `sitemapEntries()` if it should appear in the sitemap).
+`prerender.js` runs after both builds finish: it imports the SSR bundle and calls `render(url)` for **every** route in `sitemapEntries()` — not just static pages, but every `/viikko-*`, `/kuukausi-*`, `/vuosi-*`, `/kalenteri-*` etc. across a rolling 2020..currentYear+9 horizon — injecting per-route `<title>`, meta description, canonical URL, Open Graph/Twitter tags, BreadcrumbList JSON-LD, and (for `/ukk`, `/mika-on-viikkonumero`, `/pyhapaivat-*`, and the four calculator pages) FAQPage/Article/Event/HowTo JSON-LD, into `dist/<route>.html` (flat files, not `<route>/index.html`, to avoid directory-index redirect conventions that would conflict with the no-trailing-slash convention `canonicalFor()` declares). It also generates `dist/sitemap.xml`, `dist/llms-full.txt`, `dist/404.html`, and build-time OG PNGs (`@vercel/og`), then deletes the temporary `dist-server/` SSR bundle so it never ships. Pages outside a rolling indexable window (`currentYear-2`..`currentYear+4`) stay prerendered but are marked `noindex` and dropped from the sitemap, so a long tail of near-duplicate year pages doesn't dilute the site's ranking.
 
-**SEO/GEO metadata is centralized in `src/data/seo.js`**: `routeMeta` (per-route title/description/breadcrumb), `canonicalFor()`, and `sitemapEntries()`. `index.html` additionally carries global JSON-LD (`WebSite`/`Organization`/`WebApplication`/`FAQPage` schema.org graph) that should stay in sync with `src/data/faqs.js`.
+**vercel.json has no rewrites/SPA-fallback configured.** Because virtually every reachable route is prerendered to a real file by `prerender.js`, a path outside the prerendered horizon isn't a client-rendered guess — it's a genuine 404 (Vercel's static-output convention of serving `dist/404.html`).
 
-**Date/week logic lives in `src/components/dateUtils.jsx`** — ISO week/year calculations (`isoWeek`, `isoYear`, `weeksInIsoYear`, `mondayOf`), plus Finnish date/weekday formatters (`dShort`, `dWritten`, `dFull`, `formatShort`, `formatLong`, `WD`/`WEEKDAYS`, `M_FULL`, `M_SHORT`). All week-number pages and components should use these rather than reimplementing ISO week math.
+**SEO/GEO metadata is centralized in `src/data/seo.js`**: `routeMeta` (per-route title/description/breadcrumb), `canonicalFor()`, and `sitemapEntries()`. `index.html` additionally carries global JSON-LD (`WebSite`/`Organization`/`WebApplication`/`FAQPage` schema.org graph) that should stay in sync with `src/data/faqs.js`. `CONTENT_UPDATED`/`CONTENT_UPDATED_FI` in `seo.js` is a hand-bumped (not build-time) date used for both the visible "Päivitetty" line and `dateModified` in structured data on evergreen content pages, so the two never disagree.
+
+**Date/week logic lives in `src/components/dateUtils.js`** — ISO week/year calculations (`isoWeek`, `isoYear`, `weeksInIsoYear`, `mondayOf`), plus Finnish date/weekday formatters (`dShort`, `dWritten`, `dFull`, `formatShort`, `formatLong`, `fmtFullFi`, `WD`/`WEEKDAYS`, `M_FULL`, `M_SHORT`). All week-number pages and components should use these rather than reimplementing ISO week math. It's plain `.js` (not `.jsx`) specifically so plain-Node scripts (`prerender.js`, `src/data/seo.js`) can import it directly with an explicit `.js` extension — `src/data/holidays.js` imports it *without* the extension, which only Vite's resolver (not plain Node) can handle, so anything `prerender.js` needs from `holidays.js`-style logic must be duplicated inline (see `prerender.js`'s own `holidaysInYearForPrerender`), not imported.
 
 **Pages vs. components**: `src/pages/*` are route-level screens (one per `AppRoutes.jsx` route); `src/components/*` are shared building blocks (`Navbar`, `Footer`, `Weekcounter`, `WeeklySearch`, `WeeksOfMonth`, `YearsWeek`, `QuickLinks`, `FAQ`, `WeekCard`, `Information`) composed into `Home.jsx` and other pages.
 
@@ -37,9 +38,9 @@ Docker: `docker compose up --build` builds and serves the site at `http://localh
 
 ## Deployment
 
-CI (`.github/workflows/deploy.yml`) builds the Docker image on GitHub Actions and pushes to GHCR on every push to `main`; the deploy job then SSHes into the server to `docker pull` + restart the container — the server never builds anything itself. The `VITE_WEB3FORMS_ACCESS_KEY` build arg is injected from a GitHub secret at build time (Vite bakes `VITE_*` vars into the bundle, so it cannot be supplied at container runtime).
+**Vercel-only** — there is no Docker image, no self-hosted server, and no SSH deploy step; those were retired. Vercel's own GitHub integration builds (`npm run build`) and deploys on every push to `main` (`vercel.json`: `buildCommand`, `outputDirectory: "dist"`, `installCommand: "npm install --include=dev"`). `VITE_WEB3FORMS_ACCESS_KEY` and `SITE_ORIGIN` are configured as Vercel project environment variables (Vite bakes `VITE_*` vars into the bundle at build time, so they can't be supplied at runtime).
 
-`Dockerfile` is a two-stage build: stage 1 (`node:22-alpine`) runs `npm run build`; stage 2 copies only `dist/` into `nginxinc/nginx-unprivileged:1.27-alpine`, serving on port 3005 (rootless, hence >1024). `nginx.conf` sets SPA fallback, immutable caching for fingerprinted `/assets/`, and no-cache for `index.html`/`robots.txt`/`sitemap.xml` so redeploys and SEO updates take effect immediately.
+`.github/workflows/vercel-rebuild.yml` additionally triggers a Vercel deploy hook once a day (cron, plus manual `workflow_dispatch`) so the current-week `<title>`/`<meta description>` baked into the homepage never goes stale between code pushes, then best-effort submits `sitemap.xml` to Search Console (`src/cli.js submit-sitemap`) — carried over from the retired Docker-era `deploy.yml`. `.github/workflows/week-check.yml` independently verifies the *live* site shows the correct ISO week and was rebuilt recently, deliberately run on GitHub's infra (not Vercel) so a wedged build can't silently disable its own alarm.
 
 ## Contact form
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { dWritten } from "../components/dateUtils";
+import { dWritten, isoYear } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { canonicalFor, routeMeta } from "../data/seo";
+import { canonicalFor, routeMeta, CONTENT_UPDATED_FI } from "../data/seo";
 import { holidaysInYear } from "../data/holidays";
 
 function pad(n) {
@@ -60,6 +60,7 @@ const WorkingDaysBetween = () => {
     setTo(toInput(end));
   }, []);
   const r = compute(from, to);
+  const Y_NOW = isoYear(new Date());
 
   return (
     <section className="app">
@@ -129,11 +130,64 @@ const WorkingDaysBetween = () => {
           </>
         )}
       </div>
-
       <p className="note-soft">
         Työpäivä = maanantai–perjantai, joista on vähennetty viralliset
         arkipyhät. Molemmat päivämäärät lasketaan mukaan.
       </p>
+
+      <div className="prose">
+        <p className="note-soft">Sisältö päivitetty {CONTENT_UPDATED_FI}.</p>
+
+        <h2>Esimerkki: joulukuu 2026</h2>
+        <p>
+          Joulukuussa 2026 (1.–31.12., 31 päivää) on{" "}
+          <strong>22 työpäivää</strong>, 8 viikonlopun päivää ja 1 arkipyhä,
+          joka osuu arkipäivälle (Joulupäivä, perjantai 25.12.).
+          Itsenäisyyspäivä (6.12.) osuu sunnuntaille ja Tapaninpäivä (26.12.)
+          lauantaille, joten ne eivät vähennä työpäivien määrää enää erikseen —
+          ne on jo laskettu mukaan viikonloppuun.
+        </p>
+
+        <h2>Jouluaatto ja juhannusaatto eivät vähennä työpäiviä</h2>
+        <p>
+          Jouluaatto ja juhannusaatto eivät ole Suomen lain mukaan virallisia
+          arkipyhiä, vaikka suurin osa työpaikoista on kiinni tai lyhentää
+          työaikaa niinä päivinä. Tämä laskuri noudattaa lain mukaista listaa
+          — jos jompikumpi osuu arkipäivälle, se lasketaan tässä työpäiväksi.
+          Katso koko ero virallisten ja laajasti vietettyjen vapaapäivien
+          välillä <Link to={`/pyhapaivat-${Y_NOW}`}>Suomen pyhäpäivät -sivulta</Link>.
+        </p>
+
+        <h2>Usein kysytyt kysymykset</h2>
+
+        <details open>
+          <summary>Lasketaanko jouluaatto ja juhannusaatto työpäiviksi?</summary>
+          <p>
+            Kyllä. Kumpikaan ei ole Suomen lain mukaan virallinen arkipyhä,
+            vaikka suurin osa työpaikoista on kiinni tai lyhentää työaikaa
+            niinä päivinä. Tämä laskuri noudattaa lain mukaista listaa
+            virallisista arkipyhistä.
+          </p>
+        </details>
+
+        <details>
+          <summary>Lasketaanko alku- ja loppupäivä mukaan?</summary>
+          <p>
+            Kyllä, molemmat syöttämäsi päivämäärät sisältyvät laskentaan.
+          </p>
+        </details>
+
+        <details>
+          <summary>Mistä arkipyhät haetaan?</summary>
+          <p>
+            Suomen 13 virallisesta arkipyhästä, mukaan lukien liikkuvat pyhät
+            kuten pääsiäinen, helatorstai, helluntai ja juhannuspäivä. Koko
+            lista löytyy vuoden{" "}
+            <Link to={`/pyhapaivat-${Y_NOW}`}>pyhäpäivät-sivulta</Link>.
+          </p>
+        </details>
+      </div>
+
       <p>
         Katso myös <Link to="/paivien-erotus">päivien erotus</Link> ja{" "}
         <Link to="/laskurit">kaikki laskurit</Link>.

@@ -1,13 +1,15 @@
-// Post-build prerendering: renders each static route to real HTML and writes it
-// into dist/<route>/index.html. This makes full page text (headings, FAQ,
-// article copy) crawlable by search + AI/generative engines even when they
-// don't run JavaScript — while the client still hydrates into the normal SPA.
+// Post-build prerendering: renders every route in sitemapEntries() (not just
+// static pages, but every /viikko-*, /kuukausi-*, /vuosi-*, /kalenteri-* etc.
+// across the rolling 2020..currentYear+9 horizon) to real HTML and writes it
+// into dist/<route>.html. This makes full page text (headings, FAQ, article
+// copy, per-week/month/year facts) crawlable by search + AI/generative engines
+// even when they don't run JavaScript — while the client still hydrates into
+// the normal SPA. Vercel has no rewrites configured (see vercel.json), so any
+// path outside this prerendered horizon isn't a client-rendered SPA guess —
+// it's a real 404 (Vercel's static-output convention of serving dist/404.html,
+// written near the bottom of this file).
 //
-// No headless browser is used, so the CI/Docker build stays fast and small.
-//
-// Dynamic routes (/year/:year, /week/..., /month/..., /print/:year) are NOT
-// prerendered — nginx's SPA fallback serves index.html and React Router renders
-// them on the client.
+// No headless browser is used, so the build stays fast and small.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -20,9 +22,11 @@ import {
   SITE_URL,
   sitemapEntries,
   breadcrumbTrail,
-  hreflangAlternates,
+  CONTENT_UPDATED,
+  mondayOf,
 } from "./src/data/seo.js";
 import { faqs, faqCategories } from "./src/data/faqs.js";
+import { fmtShortFi } from "./src/components/dateUtils.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "dist");
@@ -142,6 +146,7 @@ function faqScript() {
     "@type": "FAQPage",
     "@id": `${SITE_URL}/ukk#faq`,
     inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
     mainEntity: faqs.map((f) => ({
       "@type": "Question",
       name: f.q,
@@ -155,7 +160,6 @@ function faqScript() {
 // BreadcrumbList is added separately (breadcrumbScript), so it is not repeated
 // here. The FAQ entries mirror the page's visible <details> list exactly.
 function mikaOnViikkonumeroScript() {
-  const modified = new Date().toISOString().slice(0, 10);
   const faq = [
     [
       "Mikä on viikkonumero yhdellä lauseella?",
@@ -196,7 +200,7 @@ function mikaOnViikkonumeroScript() {
           "Viikkonumero on 1–53 välinen luku, joka kertoo vuoden kuluvan viikon. Suomessa noudatetaan ISO 8601 -standardia: viikko alkaa maanantaista ja viikko 1 on aina se, johon 4. tammikuuta osuu.",
         inLanguage: "fi-FI",
         datePublished: "2026-01-01",
-        dateModified: modified,
+        dateModified: CONTENT_UPDATED,
         author: { "@type": "Organization", name: "Viikko Nro", url: `${SITE_URL}/` },
         publisher: {
           "@type": "Organization",
@@ -217,7 +221,284 @@ function mikaOnViikkonumeroScript() {
         "@type": "FAQPage",
         "@id": `${SITE_URL}/mika-on-viikkonumero#faq`,
         inLanguage: "fi-FI",
+        dateModified: CONTENT_UPDATED,
         mainEntity: faq.map(([q, a]) => ({
+          "@type": "Question",
+          name: q,
+          acceptedAnswer: { "@type": "Answer", text: a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// Mirrors src/data/holidays.js's easterSunday/holidaysInYear exactly.
+// Duplicated (not imported) because holidays.js imports dateUtils without a
+// ".js" extension (fine for Vite's bundled React components, unresolvable for
+// plain-Node prerender.js) — same reason seo.js duplicates isoWeek above.
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+function saturdayInWindow(year, month, startDay) {
+  for (let offset = 0; offset < 7; offset++) {
+    const date = new Date(year, month, startDay + offset);
+    if (date.getDay() === 6) return date;
+  }
+  throw new Error(
+    `No Saturday found in the 7-day window starting ${year}-${month + 1}-${startDay} — this should be unreachable.`,
+  );
+}
+function easterSundayForPrerender(year) {
+  const a = year % 19;
+  const b = Math.floor(year / 100);
+  const c = year % 100;
+  const d = Math.floor(b / 4);
+  const e = b % 4;
+  const f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4);
+  const k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month - 1, day);
+}
+function holidaysInYearForPrerender(year) {
+  const easter = easterSundayForPrerender(year);
+  return [
+    { name: "Uudenvuodenpäivä", date: new Date(year, 0, 1), official: true },
+    { name: "Loppiainen", date: new Date(year, 0, 6), official: true },
+    { name: "Pitkäperjantai", date: addDays(easter, -2), official: true },
+    { name: "1. pääsiäispäivä", date: easter, official: true },
+    { name: "2. pääsiäispäivä", date: addDays(easter, 1), official: true },
+    { name: "Vappu", date: new Date(year, 4, 1), official: true },
+    { name: "Helatorstai", date: addDays(easter, 39), official: true },
+    { name: "Helluntai", date: addDays(easter, 49), official: true },
+    {
+      name: "Juhannusaatto",
+      date: addDays(saturdayInWindow(year, 5, 20), -1),
+      official: false,
+    },
+    { name: "Juhannuspäivä", date: saturdayInWindow(year, 5, 20), official: true },
+    { name: "Pyhäinpäivä", date: saturdayInWindow(year, 9, 31), official: true },
+    { name: "Itsenäisyyspäivä", date: new Date(year, 11, 6), official: true },
+    { name: "Jouluaatto", date: new Date(year, 11, 24), official: false },
+    { name: "Joulupäivä", date: new Date(year, 11, 25), official: true },
+    { name: "Tapaninpäivä", date: new Date(year, 11, 26), official: true },
+  ].sort((x, y) => x.date - y.date);
+}
+
+// Event structured data for a year's public holidays, injected only on
+// /pyhapaivat-<year>, whose visible table lists these same holidays with the
+// same dates. "Country" is a valid schema.org Place subtype, so a national
+// holiday can carry a real (if coarse) location without inventing a venue.
+function holidaysEventScript(year) {
+  const ymd = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${SITE_URL}/pyhapaivat-${year}#events`,
+    name: `Suomen pyhäpäivät ${year}`,
+    itemListElement: holidaysInYearForPrerender(year).map((h, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Event",
+        name: h.name,
+        startDate: ymd(h.date),
+        endDate: ymd(h.date),
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        location: { "@type": "Country", name: "Suomi" },
+        description: h.official
+          ? "Suomen virallinen arkipyhä."
+          : "Laajasti vietetty vapaapäivä Suomessa (ei virallinen arkipyhä).",
+      },
+    })),
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// Holidays landing within ISO week `week` of ISO year `isoYearNum`. Mirrors
+// src/data/holidays.js's holidaysInWeek (checks both the Monday's and the
+// Sunday's calendar year, since an ISO week can straddle a year boundary) —
+// duplicated for the same plain-Node reason as holidaysInYearForPrerender.
+function holidaysInWeekForPrerender(isoYearNum, week) {
+  const monday = mondayOf(week, isoYearNum);
+  const sunday = addDays(monday, 6);
+  const years = new Set([monday.getFullYear(), sunday.getFullYear()]);
+  const candidates = [...years].flatMap((y) => holidaysInYearForPrerender(y));
+  return candidates
+    .filter((h) => h.date >= monday && h.date <= sunday)
+    .sort((x, y) => x.date - y.date);
+}
+
+// Per-week FAQPage structured data for the ~835 /viikko-<w>-<y> pages — real,
+// genuinely page-specific Q&As (this week's actual dates and holidays), not a
+// copy-pasted template. Google has narrowed FAQ rich results to mostly
+// authoritative/health/gov sites, so this is a GEO/AI-citation play (answer
+// engines citing the exact page for "what week is 3.8.2026") rather than a
+// rich-snippet bet — consistent with the llms.txt/ai.txt investment already
+// in this repo. Mirrors the visible <details> list added to WeekDays.jsx.
+function weekFaqScript(w, y) {
+  const mo = mondayOf(w, y);
+  const su = addDays(mo, 6);
+  const moStr = fmtShortFi(mo);
+  const suStr = fmtShortFi(su);
+  const officialHolidays = holidaysInWeekForPrerender(y, w).filter((h) => h.official);
+
+  const faq = [
+    [`Mikä viikko on ${moStr}?`, `${moStr} kuuluu viikkoon ${w} vuonna ${y}.`],
+    [
+      `Milloin viikko ${w} vuonna ${y} alkaa ja päättyy?`,
+      `Viikko ${w} vuonna ${y} alkaa maanantaina ${moStr} ja päättyy sunnuntaina ${suStr}.`,
+    ],
+  ];
+  if (officialHolidays.length > 0) {
+    faq.push([
+      `Mitä juhlapäiviä viikolla ${w} vuonna ${y} on?`,
+      `Viikolla ${w} vuonna ${y} vietetään: ${officialHolidays.map((h) => h.name).join(", ")}.`,
+    ]);
+  }
+
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${canonicalFor(`/viikko-${w}-${y}`)}#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: faq.map(([q, a]) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// HowTo + FAQ structured data for the four calculator pages. Each FAQ entry
+// mirrors that page's visible <details> list exactly (same convention as
+// mikaOnViikkonumeroScript above and faqScript for /ukk) — edit the page's
+// JSX and this object together.
+const CALCULATOR_SCHEMA = {
+  "/paivamaara-viikoksi": {
+    howToName: "Näin selvität päivämäärän viikkonumeron",
+    steps: [
+      "Valitse tai kirjoita päivämäärä yläkentässä.",
+      "Työkalu näyttää heti viikkonumeron, viikonpäivän ja koko viikon päivämäärät.",
+      'Avaa "avaa viikko" -linkki nähdäksesi viikon juhlapäivät, nimipäivät ja muut tiedot.',
+    ],
+    faq: [
+      [
+        "Miksi 29.–31. joulukuuta voi kuulua ensi vuoden viikkoon 1?",
+        "ISO 8601 -standardin mukaan vuoden ensimmäinen viikko on se, johon vuoden ensimmäinen torstai osuu. Jos esimerkiksi 1. tammikuuta on torstai, myös sitä edeltävä maanantai (29. joulukuuta) kuuluu jo uuden vuoden viikkoon 1.",
+      ],
+      [
+        "Toimiiko laskuri myös menneille päivämäärille?",
+        'Kyllä, laskuri laskee viikkonumeron mille tahansa päivämäärälle. "Avaa viikko" -linkki vie tarkempiin tietoihin vuosilta 2020–2035; tätä väliä vanhemmat tai uudemmat päivämäärät saavat silti oikean viikkonumeron, mutta ilman omaa tietosivua.',
+      ],
+      [
+        "Mistä standardista viikkonumero lasketaan?",
+        "ISO 8601 -standardista, jota käytetään Suomessa ja koko Euroopassa. Katso tarkempi selitys sivulta Mikä on viikkonumero.",
+      ],
+    ],
+  },
+  "/viikko-paivamaaraksi": {
+    howToName: "Näin selvität viikon alkamis- ja päättymispäivän",
+    steps: [
+      "Syötä viikkonumero (1–53).",
+      "Syötä vuosi.",
+      "Näet heti viikon alkamis- ja päättymispäivän sekä kaikki seitsemän viikonpäivää.",
+    ],
+    faq: [
+      [
+        "Miksi viikko 1 voi alkaa jo edellisenä joulukuuna?",
+        "Koska vuoden ensimmäinen viikko määräytyy vuoden ensimmäisen torstain mukaan, sen maanantai voi olla vielä edellisen kalenterivuoden puolella. Esimerkiksi viikko 1/2026 alkaa maanantaina 29.12.2025.",
+      ],
+      [
+        "Onko joka vuodessa viikko 53?",
+        "Ei. Useimmissa vuosissa on 52 viikkoa; viikko 53 esiintyy vain noin joka viidennessä tai kuudennessa vuodessa. Katso, mitkä vuodet ovat 53 viikon vuosia.",
+      ],
+      [
+        "Mitä tapahtuu, jos syötän viikon, jota kyseisessä vuodessa ei ole?",
+        "Laskuri ei näytä tulosta, koska sellaista viikkoa ei ole olemassa kyseiselle vuodelle. Tarkista ensin, onko vuodessa 52 vai 53 viikkoa.",
+      ],
+    ],
+  },
+  "/tyopaivalaskuri": {
+    howToName: "Näin lasket työpäivät kahden päivämäärän välillä",
+    steps: [
+      "Valitse alkupäivä.",
+      "Valitse loppupäivä.",
+      "Näet heti työpäivien, viikonlopun päivien ja arkipyhien määrän sekä päivien kokonaismäärän.",
+    ],
+    faq: [
+      [
+        "Lasketaanko jouluaatto ja juhannusaatto työpäiviksi?",
+        "Kyllä. Kumpikaan ei ole Suomen lain mukaan virallinen arkipyhä, vaikka suurin osa työpaikoista on kiinni tai lyhentää työaikaa niinä päivinä. Tämä laskuri noudattaa lain mukaista listaa virallisista arkipyhistä.",
+      ],
+      [
+        "Lasketaanko alku- ja loppupäivä mukaan?",
+        "Kyllä, molemmat syöttämäsi päivämäärät sisältyvät laskentaan.",
+      ],
+      [
+        "Mistä arkipyhät haetaan?",
+        "Suomen 13 virallisesta arkipyhästä, mukaan lukien liikkuvat pyhät kuten pääsiäinen, helatorstai, helluntai ja juhannuspäivä. Koko lista löytyy vuoden pyhäpäivät-sivulta.",
+      ],
+    ],
+  },
+  "/paivien-erotus": {
+    howToName: "Näin lasket päivien erotuksen kahden päivämäärän välillä",
+    steps: [
+      "Valitse ensimmäinen päivämäärä.",
+      "Valitse toinen päivämäärä.",
+      "Näet heti päivien ja viikkojen erotuksen.",
+    ],
+    faq: [
+      [
+        "Lasketaanko molemmat päivämäärät mukaan erotukseen?",
+        "Erotus on päivämäärien välinen etäisyys, ei niiden välissä olevien kalenteripäivien lukumäärä molemmat reunat mukaan lukien. Esimerkiksi 1.1. ja 2.1. välissä on 1 päivä.",
+      ],
+      [
+        "Mitä eroa tällä ja työpäivälaskurilla on?",
+        "Tämä laskuri laskee kaikki päivät, myös viikonloput ja arkipyhät. Jos tarvitset vain arkipäivien määrän, käytä työpäivälaskuria.",
+      ],
+      [
+        "Miksi koko kalenterivuoden erotus on 364 eikä 365 päivää?",
+        "Koska erotus lasketaan päivämäärien välisenä etäisyytenä. Esimerkiksi 1.1. ja 31.12. saman vuoden välissä on 364 päivää, vaikka vuodessa on 365 (tai karkausvuonna 366) päivää.",
+      ],
+    ],
+  },
+};
+
+function calculatorScript(url) {
+  const entry = CALCULATOR_SCHEMA[url];
+  if (!entry) return "";
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "HowTo",
+        name: entry.howToName,
+        dateModified: CONTENT_UPDATED,
+        step: entry.steps.map((s, i) => ({
+          "@type": "HowToStep",
+          position: i + 1,
+          text: s,
+        })),
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonicalFor(url)}#faq`,
+        inLanguage: "fi-FI",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: entry.faq.map(([q, a]) => ({
           "@type": "Question",
           name: q,
           acceptedAnswer: { "@type": "Answer", text: a },
@@ -243,6 +524,14 @@ function stripInlineMeta(appHtml) {
     // applyMeta(), so drop the body copy to avoid two canonicals per page.
     .replace(/<link\s+rel="canonical"[^>]*>/g, "");
 }
+
+// Google's SERP snippet truncates titles around ~60 chars and descriptions
+// around ~158 — past these, the visible snippet gets cut mid-word. A
+// truncated title is close to as bad as a wrong one (same failure severity as
+// a duplicate title below); a truncated description still shows a coherent,
+// if shorter, snippet, so that's a warning only.
+const MAX_TITLE_LENGTH = 60;
+const MAX_DESCRIPTION_LENGTH = 158;
 
 let failures = 0;
 const titleSeen = new Map();
@@ -270,6 +559,18 @@ for (const url of routes) {
       console.error(`duplicate <title> "${meta.title}" on both ${dupeOf} and ${url}`);
     }
     titleSeen.set(meta.title, url);
+
+    if (meta.title.length > MAX_TITLE_LENGTH) {
+      failures += 1;
+      console.error(
+        `<title> too long (${meta.title.length} > ${MAX_TITLE_LENGTH} chars) on ${url}: "${meta.title}"`,
+      );
+    }
+    if (description && description.length > MAX_DESCRIPTION_LENGTH) {
+      console.warn(
+        `<meta description> long (${description.length} > ${MAX_DESCRIPTION_LENGTH} chars) on ${url}: "${description}"`,
+      );
+    }
 
     let html = applyMeta(template, {
       title: meta.title,
@@ -308,23 +609,21 @@ for (const url of routes) {
       html = html.replace("</head>", `${mikaOnViikkonumeroScript()}</head>`);
     }
 
-    // hreflang alternates (fi <-> sv) for pages that have a translated twin.
-    const alts = hreflangAlternates(url);
-    if (alts) {
-      const fiPath = alts.find((a) => a.lang === "fi").path;
-      const tags =
-        alts
-          .map(
-            (a) =>
-              `<link rel="alternate" hreflang="${a.lang}" href="${canonicalFor(a.path)}" />`,
-          )
-          .join("\n    ") +
-        `\n    <link rel="alternate" hreflang="x-default" href="${canonicalFor(fiPath)}" />`;
-      html = html.replace("</head>", `${tags}\n  </head>`);
+    const holidaysMatch = url.match(/^\/pyhapaivat-(\d+)$/);
+    if (holidaysMatch) {
+      html = html.replace("</head>", `${holidaysEventScript(+holidaysMatch[1])}</head>`);
     }
-    // Swedish pages declare lang="sv".
-    if (url === "/sv" || url.startsWith("/sv/")) {
-      html = html.replace('<html lang="fi"', '<html lang="sv"');
+
+    const weekMatch = url.match(/^\/viikko-(\d+)-(\d+)$/);
+    if (weekMatch) {
+      html = html.replace(
+        "</head>",
+        `${weekFaqScript(+weekMatch[1], +weekMatch[2])}</head>`,
+      );
+    }
+
+    if (CALCULATOR_SCHEMA[url]) {
+      html = html.replace("</head>", `${calculatorScript(url)}</head>`);
     }
 
     html = html.replace(
@@ -333,10 +632,10 @@ for (const url of routes) {
     );
 
     // Flat files (dist/ukk.html), not dist/ukk/index.html: a real directory
-    // on disk makes nginx auto-redirect the slash-less URL to a trailing-
-    // slash one (its own directory-index convention), which fights the
-    // opposite (no-trailing-slash) convention canonicalFor() declares and
-    // causes a redirect loop against nginx.conf's trailing-slash rule.
+    // on disk invites static hosts to auto-redirect the slash-less URL to a
+    // trailing-slash one (a common directory-index convention), which fights
+    // the opposite (no-trailing-slash) convention canonicalFor() declares and
+    // vercel.json's "trailingSlash": false.
     const outPath =
       url === "/" ? path.join(distDir, "index.html") : path.join(distDir, `${url}.html`);
 

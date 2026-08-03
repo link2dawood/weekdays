@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear, weeksInIsoYear } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { routeMeta } from "../data/seo";
+import { routeMeta, CONTENT_UPDATED_FI } from "../data/seo";
 
 const WhatWeek = () => {
   // Live current week/year, computed in the render body so the prerendered HTML
@@ -48,6 +48,7 @@ const WhatWeek = () => {
           selittää viikkonumeron määritelmän, ISO 8601:n säännöt, laskentatavan
           ja käytännön esimerkit.
         </p>
+        <p className="note-soft">Sisältö päivitetty {CONTENT_UPDATED_FI}.</p>
 
         {/* Quick facts — each bullet independently citable. */}
         <div className="panel">

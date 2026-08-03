@@ -20,11 +20,12 @@ const WEEKDAYS = [
   "Lauantai",
 ];
 
-// Pure function of the selected date string — computed directly in the
-// render body (not an effect), so the default result (today's date) is
-// present in the SSR/prerendered HTML, including its link to that week.
-// An effect-based version would render with no result at all until the
-// client hydrates, exactly like Weekcounter's original "Viikko 0" bug.
+// Pure function of a date string. `selectedDateStr` (the controlled input's
+// value) intentionally starts empty on both server and first client render
+// (see the hydration-safety comment in WeeklySearch below), so `result` below
+// is null until the mount effect fills it in. `todayExample` calls this same
+// function directly with today's date instead, so the section still has real,
+// crawlable text before that effect ever runs.
 function computeResult(selectedDateStr) {
   if (!selectedDateStr) return null;
   const parts = selectedDateStr.split("-");
@@ -69,6 +70,13 @@ const WeeklySearch = () => {
   }, []);
   const result = computeResult(selectedDateStr);
 
+  // Static worked example, computed directly in the render body (not gated
+  // behind the effect above) so it's present in the SSR/prerendered HTML and
+  // for no-JS visitors — otherwise this whole section's crawlable body is a
+  // label and an empty <input>. Once the client hydrates and the effect fills
+  // in selectedDateStr, `result` becomes truthy and replaces this example.
+  const todayExample = computeResult(getFormattedDateInputString(new Date()));
+
   return (
     <>
       <section>
@@ -82,6 +90,20 @@ const WeeklySearch = () => {
             value={selectedDateStr}
             onChange={(e) => setSelectedDateStr(e.target.value)}
           />
+          {!result && todayExample && (
+            <p className="note-soft" id="staticExample">
+              Esimerkiksi <strong>{todayExample.writtenDay}</strong> (
+              {todayExample.weekday.toLowerCase()}) on viikolla{" "}
+              {todayExample.weekNum} — viikko {todayExample.weekNum}/
+              {todayExample.isoYearNum}, {todayExample.rangeText}.{" "}
+              <Link
+                className="open-link"
+                to={`/viikko-${todayExample.weekNum}-${todayExample.isoYearNum}`}
+              >
+                avaa viikko {todayExample.weekNum}
+              </Link>
+            </p>
+          )}
           {result && (
             <div className="result" id="lookupResult">
               <div className="main-text">

@@ -13,7 +13,16 @@ export const SITE_URL = process.env.SITE_ORIGIN || "https://viikkonro.fi";
 // Finnish date formatters live in one place (dateUtils.js). Imported with an
 // explicit .js extension so plain-Node prerender.js can resolve it too (the
 // ISO-week math below stays inline — untouched — per the no-touch rule).
-import { M_GENITIVE } from "../components/dateUtils.js";
+import { M_GENITIVE, fmtFullFi, fmtShortFi, WD_ESSIVE } from "../components/dateUtils.js";
+
+// Fixed date the FAQ/explainer/calculator page COPY (not just computed data)
+// was last substantively edited. Bump both by hand when that prose actually
+// changes — kept fixed rather than build-time "today" so the visible
+// "Päivitetty" line on each page and its dateModified in structured data
+// always agree, and so a date claiming freshness doesn't roll every day just
+// because the site auto-rebuilds while the words on the page haven't changed.
+export const CONTENT_UPDATED = "2026-08-03";
+export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 3));
 
 // Mirrors src/components/dateUtils.jsx's isoWeek/weeksInIsoYear exactly.
 // Duplicated (not imported) because prerender.js runs this file as plain
@@ -38,7 +47,7 @@ function isoYear(date) {
   t.setDate(t.getDate() - day + 3);
   return t.getFullYear();
 }
-function mondayOf(week, year) {
+export function mondayOf(week, year) {
   const jan4 = new Date(year, 0, 4);
   const j = (jan4.getDay() + 6) % 7;
   const firstMon = new Date(year, 0, 4 - j);
@@ -102,8 +111,8 @@ export function printMeta(y) {
 }
 export function holidaysMeta(y) {
   return {
-    title: `Suomen pyhäpäivät ${y} – arkipyhät ja vapaapäivät | Viikko Nro`,
-    description: `Kaikki Suomen viralliset pyhäpäivät ${y}: päivämäärät, viikonpäivät ja viikkonumerot. Uudenvuodenpäivä, pääsiäinen, vappu, juhannus, itsenäisyyspäivä ja joulu.`,
+    title: `Suomen pyhäpäivät ${y} – arkipyhät | Viikko Nro`,
+    description: `Suomen viralliset pyhäpäivät ${y}: päivämäärät, viikonpäivät ja viikkonumerot. Uudenvuodenpäivä, pääsiäinen, vappu, juhannus, itsenäisyyspäivä ja joulu.`,
   };
 }
 export function workingDaysMeta(y) {
@@ -117,72 +126,28 @@ export function workingDaysMeta(y) {
 export function calendarMeta(y, half, print) {
   if (print) {
     return {
-      title: `Tulostettava vuoden ${y} kalenteri – juhlapäivät ja viikot | Viikko Nro`,
+      title: `Tulostettava kalenteri ${y} | Viikko Nro`,
       description: `Tulostettava vuoden ${y} kalenteri A4-koossa. Viikkonumerot, juhlapäivät ja koko vuosi yhdellä sivulla.`,
       robots: "index, follow",
     };
   }
   if (half === 1) {
     return {
-      title: `Vuoden ${y} kalenteri, 1. vuosipuolisko (tammi–kesäkuu) | Viikko Nro`,
+      title: `Kalenteri ${y}, 1. vuosipuolisko | Viikko Nro`,
       description: `Vuoden ${y} kevätpuolen kalenteri: tammikuu–kesäkuu. Viikkonumerot, juhlapäivät ja tulostettava PDF.`,
     };
   }
   if (half === 2) {
     return {
-      title: `Vuoden ${y} kalenteri, 2. vuosipuolisko (heinä–joulukuu) | Viikko Nro`,
+      title: `Kalenteri ${y}, 2. vuosipuolisko | Viikko Nro`,
       description: `Vuoden ${y} syyspuolen kalenteri: heinäkuu–joulukuu. Viikkonumerot, juhlapäivät ja tulostettava PDF.`,
     };
   }
   return {
-    title: `Vuoden ${y} kalenteri – viikkonumerot ja juhlapäivät | Viikko Nro`,
+    title: `Vuoden ${y} kalenteri | Viikko Nro`,
     description: `Vuoden ${y} kalenteri, jossa näkyvät kaikki viikkonumerot ja Suomen juhlapäivät. Ilmainen ja tulostettava, ISO 8601 -standardin mukaan.`,
   };
 }
-
-// --- Swedish (/sv/) pilot meta ---------------------------------------------
-export function svHomeMeta(now) {
-  const w = isoWeek(now);
-  const y = isoYear(now);
-  return {
-    title: `Vecka ${w} – vilken vecka är det nu? | viikkonro.fi`,
-    description: `Just nu är det vecka ${w} år ${y}. Se aktuellt veckonummer och alla veckor enligt ISO 8601. Gratis, snabbt och utan reklam.`,
-  };
-}
-export function svWeekMeta(w, y) {
-  return {
-    title: `Vecka ${w} år ${y} – datum och veckodagar | viikkonro.fi`,
-    description: `Vilka datum har vecka ${w} år ${y}? Se veckans måndag–söndag, röda dagar och veckonummer enligt ISO 8601.`,
-  };
-}
-export function svYearMeta(y) {
-  const total = weeksInIsoYear(y);
-  return {
-    title: `Veckonummer ${y} – alla ${total} veckor | viikkonro.fi`,
-    description: `Alla veckonummer ${y} med start- och slutdatum enligt ISO 8601 samt röda dagar. Gratis veckokalender.`,
-  };
-}
-export function svHolidaysMeta(y) {
-  return {
-    title: `Röda dagar ${y} – helgdagar i Sverige | viikkonro.fi`,
-    description: `Alla röda dagar och helgdagar i Sverige ${y} med datum, veckodag och veckonummer. Nyårsdagen, påsk, midsommar, jul med flera.`,
-  };
-}
-
-// Swedish pilot spans a bounded range while it's validated; widen later.
-const SV_MIN_YEAR = 2024;
-const SV_MAX_YEAR = 2028;
-
-// hreflang alternates for a route: returns [{lang, path}] (fi + sv) when a real
-// translated equivalent exists on both sides, else null. Only emitted when the
-// Swedish page is actually within the prerendered SV range, so hreflang never
-// points at a 404.
-export function hreflangAlternates() {
-  // Swedish pilot retired — the site is Finnish-only, so no hreflang alternates
-  // are emitted on any page. /sv/* is 308-redirected to the Finnish pages.
-  return null;
-}
-export { SV_MIN_YEAR, SV_MAX_YEAR };
 
 // Home page title/description carry the actual current week and date range
 // (what F-04 calls "distinguishing data"), computed the same way at build
@@ -195,18 +160,30 @@ export function homeMeta(now) {
   const mo = mondayOf(week, year);
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
-  const start = formatShort(mo);
-  const end = `${formatShort(su)}${su.getFullYear()}`;
+  // Start date only (not the full start–end range) so the title — with its
+  // "| Viikko Nro" brand suffix — stays within the ~60-char SERP truncation
+  // budget in every week of the year (worst case, a 2-digit day+month week,
+  // is 54 chars); still carries real per-week "distinguishing data" (F-04).
+  const startWithYear = `${formatShort(mo)}${year}`;
+  // The direct-answer sentence: rendered verbatim as the homepage's on-page
+  // lead paragraph (Weekcounter.jsx) AND used to build the meta description
+  // below, so the two can never drift apart.
+  const lead = `Juuri nyt on viikko ${week} vuonna ${year}. Viikko alkaa ${WD_ESSIVE[mo.getDay()]} ${fmtShortFi(mo)} ja päättyy ${WD_ESSIVE[su.getDay()]} ${fmtShortFi(su)}.`;
   return {
-    title: `Viikko ${week} – mikä viikko nyt? (${start}–${end})`,
-    description: `Juuri nyt on viikko ${week} vuonna ${year}. Viikko alkaa ${start} ja päättyy ${end}. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ISO 8601 -standardin mukaan.`,
+    title: `Viikko ${week} – mikä viikko nyt? (${startWithYear}) | Viikko Nro`,
+    // Trailing sentence kept short (not "...näyttää kuluvan viikkonumeron...",
+    // which `lead` already says) so the worst-case week (longest lead, ~106
+    // chars) still lands under the ~158-char description budget.
+    description: `${lead} Ilmainen ISO 8601 -viikkolaskuri.`,
+    lead,
   };
 }
 
 export const routeMeta = {
   "/": {
-    title: "viikkonro.fi | Mikä viikko nyt on?",
+    // Brand-last ("| Viikko Nro"), matching every other page's convention.
     // Replaced at build time with homeMeta(); kept as a safe fallback.
+    title: "Mikä viikko nyt on? | Viikko Nro",
     description:
       "Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
   },
@@ -271,7 +248,7 @@ export const routeMeta = {
     breadcrumb: "Viikosta päivämääräksi",
   },
   "/tyopaivalaskuri": {
-    title: "Työpäivälaskuri – työpäivät kahden päivän välillä | Viikko Nro",
+    title: "Työpäivälaskuri – työpäivien määrä | Viikko Nro",
     description:
       "Laske työpäivien määrä kahden päivämäärän välillä, viikonloput ja Suomen arkipyhät huomioiden. Hyödyksi palkanlaskentaan ja projektien suunnitteluun.",
     breadcrumb: "Työpäivälaskuri",
@@ -365,9 +342,6 @@ export function sitemapEntries(year) {
     });
   }
 
-  // Swedish (/sv/) pilot retired — the site is Finnish-only. No /sv entries are
-  // emitted, so they are neither prerendered nor listed in the sitemap; /sv/*
-  // is 308-redirected to the Finnish equivalents (see vercel.json).
   return entries;
 }
 
@@ -377,7 +351,6 @@ export function sitemapEntries(year) {
 export function metaFor(url) {
   if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
   if (routeMeta[url]) return routeMeta[url];
-  if (url === "/sv") return svHomeMeta(new Date());
   let m;
   if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) return weekMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
@@ -390,9 +363,6 @@ export function metaFor(url) {
   if ((m = url.match(/^\/kalenteri-(\d+)$/))) return calendarMeta(+m[1], null, false);
   if ((m = url.match(/^\/tulostettava-kalenteri-(\d+)$/)))
     return calendarMeta(+m[1], null, true);
-  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) return svWeekMeta(+m[1], +m[2]);
-  if ((m = url.match(/^\/sv\/veckor-(\d+)$/))) return svYearMeta(+m[1]);
-  if ((m = url.match(/^\/sv\/helgdagar-(\d+)$/))) return svHolidaysMeta(+m[1]);
   return null;
 }
 

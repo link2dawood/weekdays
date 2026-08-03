@@ -12,7 +12,7 @@ import {
 // during SSR/prerendering, so the static/no-JS HTML (what F-04's title fix
 // and F-06's correctness monitor both depend on) would otherwise always show
 // "Viikko 0" until the client hydrates.
-const Weekcounter = () => {
+const Weekcounter = ({ lead }) => {
   const now = new Date();
   const weekNow = isoWeek(now);
   const yearNow = isoYear(now);
@@ -47,6 +47,7 @@ const Weekcounter = () => {
         </div>
         <div className="hero">
           <h1>Mikä viikko nyt on?</h1>
+          <p className="lead">{lead}</p>
           <div className="hero-card">
             <div>
               <div className="now-label">Juuri nyt on</div>

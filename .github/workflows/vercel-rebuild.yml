@@ -27,3 +27,32 @@ jobs:
           fi
           curl -fsSL -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
           echo "Triggered Vercel rebuild."
+
+      # Carried over from the retired Docker/Traefik deploy.yml, which used to
+      # run this after the server pulled the new image. Best-effort only: this
+      # must never fail the workflow. Vercel deploys asynchronously in the
+      # background after the hook above, and Google re-crawls known sitemaps
+      # on its own schedule anyway — a missed or slightly-early submission
+      # here is low-stakes (see F-08).
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Submit sitemap to Search Console
+        continue-on-error: true
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+            echo "::warning::GCP_SA_KEY secret not set — skipping Search Console sitemap submission (see F-07)."
+            exit 0
+          fi
+          node src/cli.js submit-sitemap

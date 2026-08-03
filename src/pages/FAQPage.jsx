@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { faqCategories } from "../data/faqs";
 import SEO from "../components/SEO";
-import { routeMeta } from "../data/seo";
+import { routeMeta, CONTENT_UPDATED_FI } from "../data/seo";
 
 const FAQPage = () => {
   const meta = routeMeta["/ukk"];
@@ -18,6 +18,7 @@ const FAQPage = () => {
           Vastauksia yleisimpiin kysymyksiin viikkonumeroista, viikon
           alkamisesta ja ISO 8601 -standardista.
         </p>
+        <p className="note-soft">Sisältö päivitetty {CONTENT_UPDATED_FI}.</p>
 
         {faqCategories.map((category, categoryIndex) => (
           <div key={category.title} className="faq-group">

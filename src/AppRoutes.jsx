@@ -17,10 +17,6 @@ import WeekToDate from "./pages/WeekToDate";
 import WorkingDaysBetween from "./pages/WorkingDaysBetween";
 import DaysBetween from "./pages/DaysBetween";
 import WeeksInYear from "./pages/WeeksInYear";
-import SvHome from "./pages/sv/SvHome";
-import SvWeek from "./pages/sv/SvWeek";
-import SvYear from "./pages/sv/SvYear";
-import SvHolidays from "./pages/sv/SvHolidays";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -55,17 +51,6 @@ const DynamicSlug = () => {
   return <NotFound />;
 };
 
-// Swedish (/sv/) pilot dispatcher — same pattern, Swedish slugs.
-const SvDynamic = () => {
-  const { slug } = useParams();
-  let m;
-  if ((m = slug.match(/^vecka-(\d+)-(\d+)$/)))
-    return <SvWeek week={+m[1]} year={+m[2]} />;
-  if ((m = slug.match(/^veckor-(\d+)$/))) return <SvYear year={+m[1]} />;
-  if ((m = slug.match(/^helgdagar-(\d+)$/))) return <SvHolidays year={+m[1]} />;
-  return <NotFound />;
-};
-
 // Router-agnostic app shell. Wrapped in <BrowserRouter> on the client (App.jsx)
 // and in <StaticRouter> at build time for prerendering (entry-server.jsx).
 const AppRoutes = () => {
@@ -89,8 +74,6 @@ const AppRoutes = () => {
         <Route path="/ota-yhteytta" element={<ContactUs />} />
         <Route path="/tietosuoja" element={<PrivacyPolicy />} />
         <Route path="/kayttoehdot" element={<TermsAndConditions />} />
-        <Route path="/sv" element={<SvHome />} />
-        <Route path="/sv/:slug" element={<SvDynamic />} />
         <Route path="/:slug" element={<DynamicSlug />} />
         <Route path="*" element={<NotFound />} />
         </Routes>

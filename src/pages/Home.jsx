@@ -8,6 +8,7 @@ import FAQ from "../components/FAQ";
 import WeeksOfMonth from "../components/WeeksOfMonth";
 import YearsWeek from "../components/YearsWeek";
 import QuickLinks from "../components/QuickLinks";
+import Information from "../components/Information";
 
 const Home = () => {
   // Computed directly in the render body (not an effect) so it's correct
@@ -18,10 +19,11 @@ const Home = () => {
     <>
       <SEO title={meta.title} description={meta.description} />
       <div className="app">
-        <Weekcounter />
+        <Weekcounter lead={meta.lead} />
         <WeeklySearch />
         <WeeksOfMonth />
         <YearsWeek />
+        <Information />
         <QuickLinks />
         <FAQ />
       </div>

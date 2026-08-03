@@ -4,6 +4,7 @@ import {
   isoWeek,
   isoYear,
   fmtFullFi,
+  fmtShortFi,
   M_GENITIVE,
   mondayOf,
   dFull,
@@ -323,6 +324,36 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
           )}
         </div>
       )}
+
+      <section className="prose">
+        <h2>Usein kysytyt kysymykset</h2>
+        <details open>
+          <summary>Mikä viikko on {fmtShortFi(mo)}?</summary>
+          <p>
+            {fmtShortFi(mo)} kuuluu viikkoon {w} vuonna {y}.
+          </p>
+        </details>
+        <details>
+          <summary>
+            Milloin viikko {w} vuonna {y} alkaa ja päättyy?
+          </summary>
+          <p>
+            Viikko {w} vuonna {y} alkaa maanantaina {fmtShortFi(mo)} ja päättyy
+            sunnuntaina {fmtShortFi(su)}.
+          </p>
+        </details>
+        {officialHolidays.length > 0 && (
+          <details>
+            <summary>
+              Mitä juhlapäiviä viikolla {w} vuonna {y} on?
+            </summary>
+            <p>
+              Viikolla {w} vuonna {y} vietetään:{" "}
+              {officialHolidays.map((h) => h.name).join(", ")}.
+            </p>
+          </details>
+        )}
+      </section>
 
       <section className="related">
         <h2>Katso myös</h2>
