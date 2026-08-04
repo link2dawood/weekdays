@@ -1,6 +1,7 @@
 import { isoYear } from "./dateUtils";
 import { Link } from "react-router-dom";
 import SocialLinks from "./SocialLinks";
+import { CALENDAR_META } from "../data/nameDays";
 
 function Footer() {
   // Automatically outputs the correct year dynamically
@@ -93,6 +94,14 @@ function Footer() {
         <p>&copy; {currentYear} Viikko Nro. Kaikki oikeudet pidätetään.</p>
         <p className="footer-tz">Kansainvälisen ISO 8601 -standardin mukaan</p>
       </div>
+      {CALENDAR_META.attributionRequired && (
+        <p className="footer-data-attribution">
+          {CALENDAR_META.attribution}{" "}
+          <a href={CALENDAR_META.sourceUrl} rel="license external">
+            Aineiston lähde
+          </a>
+        </p>
+      )}
     </footer>
   );
 }

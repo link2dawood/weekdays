@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear } from "./dateUtils";
 
@@ -64,6 +64,16 @@ const Navbar = () => {
           </Link>
           <Link to="/mika-on-viikkonumero" onClick={closeMenu}>
             Tietoa viikoista
+          </Link>
+          <Link
+            className="nav-language"
+            to="/en"
+            lang="en"
+            hrefLang="en"
+            aria-label="English version"
+            onClick={closeMenu}
+          >
+            EN
           </Link>
         </nav>
 

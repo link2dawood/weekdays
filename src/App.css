@@ -140,6 +140,14 @@ img {
   background: rgba(21, 33, 31, 0.05);
 }
 
+.nav .nav-links a.nav-language {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-deep);
+  border: 1px solid rgba(31, 122, 92, 0.28);
+}
+
 .nav .badge {
   font-family: "IBM Plex Mono", monospace;
   font-size: 12.5px;
@@ -1267,6 +1275,20 @@ footer {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.footer-data-attribution {
+  margin: 12px auto 0;
+  max-width: 1200px;
+  padding: 0 24px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer-data-attribution a {
+  color: inherit;
+  text-decoration: underline;
 }
 
 /* Mobile responsive breakpoints strategy */

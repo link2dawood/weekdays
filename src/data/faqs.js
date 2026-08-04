@@ -391,7 +391,7 @@ export const faqCategories = [
     items: [
       {
         q: "Mitkä ovat tämän viikon nimipäivät?",
-        a: "Jokaisen viikon sivulla näkyvät kaikkien seitsemän päivän nimipäivät.",
+        a: "Viikon sivu näyttää saatavilla olevat varmennetut suomalaiset nimipäivät päiväkohtaisesti. Päivä jää ilman nimipäiväriviä, jos varmennettua tietoa ei ole saatavilla.",
       },
       {
         q: "Onko tällä viikolla arkipyhiä?",

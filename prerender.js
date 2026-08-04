@@ -1269,6 +1269,9 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
   const nd = JSON.parse(
     fs.readFileSync(path.join(__dirname, "src/data/nimipaivat.json"), "utf-8"),
   );
+  const ndMeta = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "src/data/nimipaivat.meta.json"), "utf-8"),
+  );
   const missing = [];
   const s = new Date(2024, 0, 1); // leap year → all 366 dates
   for (let i = 0; i < 366; i++) {
@@ -1278,7 +1281,7 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
     const real = (nd[k] ?? []).filter((n) => n && !/^[A-Z]{2,}-\d/.test(n));
     if (real.length === 0) missing.push(k);
   }
-  if (missing.length) {
+  if (!ndMeta.complete && missing.length) {
     console.warn(
       `name-days: ${missing.length}/366 dates lack licensed data (Nimipäivä row hidden). ` +
         `First missing: ${missing.slice(0, 10).join(", ")}${missing.length > 10 ? " …" : ""}`,

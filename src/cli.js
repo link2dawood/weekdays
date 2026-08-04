@@ -66,7 +66,52 @@ async function submitSitemap() {
   console.log(`Submitted ${sitemapUrl} to Search Console for ${SITE_PROPERTY}.`);
 }
 
-const commands = { check, "submit-sitemap": submitSitemap };
+async function inspect() {
+  const year = new Date().getFullYear();
+  const requested = process.argv.slice(3);
+  const paths = requested.length
+    ? requested
+    : [
+        "/",
+        "/ukk",
+        `/kalenteri-${year}`,
+        `/vuosi-${year}`,
+        "/mika-on-viikkonumero",
+        "/en",
+      ];
+  const client = await getClient();
+
+  for (const pathOrUrl of paths) {
+    const inspectionUrl = new URL(pathOrUrl, SITE_URL);
+    if (inspectionUrl.origin !== new URL(SITE_URL).origin) {
+      throw new Error(`Refusing to inspect an URL outside ${SITE_URL}: ${inspectionUrl}`);
+    }
+
+    const res = await client.request({
+      url: "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect",
+      method: "POST",
+      data: {
+        inspectionUrl: inspectionUrl.href,
+        siteUrl: SITE_PROPERTY,
+        languageCode: "fi-FI",
+      },
+    });
+    const status = res.data.inspectionResult?.indexStatusResult ?? {};
+
+    console.log(`\n${inspectionUrl.href}`);
+    console.log(`  Verdict:          ${status.verdict ?? "UNKNOWN"}`);
+    console.log(`  Coverage:         ${status.coverageState ?? "Unavailable"}`);
+    console.log(`  Indexing:         ${status.indexingState ?? "Unavailable"}`);
+    console.log(`  Fetch:            ${status.pageFetchState ?? "Unavailable"}`);
+    console.log(`  Robots:           ${status.robotsTxtState ?? "Unavailable"}`);
+    console.log(`  Last crawl:       ${status.lastCrawlTime ?? "Never/unknown"}`);
+    console.log(`  Declared canon.:  ${status.userCanonical ?? "Unavailable"}`);
+    console.log(`  Google canon.:    ${status.googleCanonical ?? "Unavailable"}`);
+    console.log(`  Known sitemaps:   ${(status.sitemap ?? []).join(", ") || "None reported"}`);
+  }
+}
+
+const commands = { check, inspect, "submit-sitemap": submitSitemap };
 const [, , commandName] = process.argv;
 const run = commands[commandName];
 

@@ -14,15 +14,10 @@
 // values, which shipped to production. Any such value (or an empty/blank one)
 // is now defensively filtered out here so it can never render again.
 import nimipaivat from "./nimipaivat.json" with { type: "json" };
+import calendarMeta from "./nimipaivat.meta.json" with { type: "json" };
 import { mondayOf } from "../components/dateUtils.js";
 
-export const CALENDAR_META = {
-  language: "fi",
-  source: "seed (partial)",
-  edition: null,
-  licensedOn: null,
-  isPlaceholder: false,
-};
+export const CALENDAR_META = { ...calendarMeta, isPlaceholder: false };
 
 function key(date) {
   const mm = String(date.getMonth() + 1).padStart(2, "0");

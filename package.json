@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "node src/cli.js check",
+    "check:index": "node src/cli.js inspect",
     "check:crawl": "node scripts/check-crawl.js",
+    "sync:name-days": "node scripts/sync-name-days.js",
     "test": "vitest run"
   },
   "dependencies": {
