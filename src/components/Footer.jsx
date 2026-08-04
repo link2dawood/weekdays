@@ -51,21 +51,6 @@ function Footer() {
                 Mikä on viikkonumero?
               </Link>
             </li>
-            <li>
-              <Link to="/ukk" onClick={() => window.scrollTo(0, 0)}>
-                Usein kysytyt kysymykset
-              </Link>
-            </li>
-            <li>
-              <Link to="/en" lang="en" onClick={() => window.scrollTo(0, 0)}>
-                English
-              </Link>
-            </li>
-            <li>
-              <Link to="/sv" lang="sv" onClick={() => window.scrollTo(0, 0)}>
-                Svenska
-              </Link>
-            </li>
           </ul>
         </div>
 

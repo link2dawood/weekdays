@@ -1673,6 +1673,37 @@ body:has(.cal-print) footer {
   background: color-mix(in srgb, var(--amber) 30%, transparent);
   font-weight: 700;
 }
+.cal-day.current-week {
+  background: var(--accent-soft);
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  border-radius: 0;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+.cal-day.current-week-start {
+  border-top: 2px solid var(--accent);
+  border-radius: 6px 6px 0 0;
+  padding-top: 0;
+}
+.cal-day.current-week-end {
+  border-bottom: 2px solid var(--accent);
+  border-radius: 0 0 6px 6px;
+  padding-bottom: 0;
+}
+.cal-day.current-week-start.current-week-end {
+  border-radius: 6px;
+}
+.cal-day.current-week.today {
+  background: color-mix(in srgb, var(--accent) 16%, var(--amber) 30%);
+}
+.cal-current-label {
+  color: var(--accent-deep);
+  font: 700 9px "Inter", system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  margin-left: auto;
+  text-transform: uppercase;
+}
 .cal-nimi { margin: 16px 0; font-size: 15px; }
 .cal-seealso { margin-top: 26px; }
 

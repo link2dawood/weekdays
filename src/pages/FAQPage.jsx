@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { faqCategories } from "../data/faqs";
 import SEO from "../components/SEO";

@@ -60,8 +60,8 @@ import {
 // "Päivitetty" line on each page and its dateModified in structured data
 // always agree, and so a date claiming freshness doesn't roll every day just
 // because the site auto-rebuilds while the words on the page haven't changed.
-export const CONTENT_UPDATED = "2026-08-04";
-export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 4));
+export const CONTENT_UPDATED = "2026-08-05";
+export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 5));
 
 // Mirrors src/components/dateUtils.jsx's isoWeek/weeksInIsoYear exactly.
 // Duplicated (not imported) because prerender.js runs this file as plain

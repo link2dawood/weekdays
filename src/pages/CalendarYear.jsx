@@ -42,6 +42,14 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
   });
   const currentYear = Number(todayISO.slice(0, 4));
   const isCurrentYear = y === currentYear;
+  const todayParts = todayISO.split("-").map(Number);
+  const helsinkiToday = new Date(
+    todayParts[0],
+    todayParts[1] - 1,
+    todayParts[2],
+  );
+  const currentWeek = isoWeek(helsinkiToday);
+  const currentWeekYear = isoYear(helsinkiToday);
 
   const monthStart = half === 2 ? 6 : 0;
   const monthEnd = half === 1 ? 6 : 12; // exclusive
@@ -79,10 +87,18 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
       const flag = liputus.get(mmdd);
       const isMon = dow === 1;
       const isToday = `${y}-${mmdd}` === todayISO;
+      const isCurrentWeek =
+        isoWeek(date) === currentWeek && isoYear(date) === currentWeekYear;
+      const startsCurrentWeekSegment = isCurrentWeek && (isMon || d === 1);
+      const endsCurrentWeekSegment =
+        isCurrentWeek && (dow === 0 || d === daysInMonth);
       const cls = ["cal-day"];
       if (dow === 0) cls.push("sun");
       if (dow === 6) cls.push("sat");
       if (holiday) cls.push("hol");
+      if (isCurrentWeek) cls.push("current-week");
+      if (startsCurrentWeekSegment) cls.push("current-week-start");
+      if (endsCurrentWeekSegment) cls.push("current-week-end");
       if (isToday) cls.push("today");
       rows.push(
         <div
@@ -105,6 +121,11 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
               // → week 1 2036): show the number, but don't link a 404.
               <span className="cal-wk">vk {isoWeek(date)}</span>
             ))}
+          {isMon && isCurrentWeek && (
+            <span className="cal-current-label" aria-label="Kuluva viikko">
+              Nyt
+            </span>
+          )}
           {holiday && (
             <span className="cal-hol" title={holiday}>
               {holiday}
@@ -151,14 +172,18 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
             viikkonumerot, päivämäärät ja Suomen juhlapäivät yhdessä näkymässä.
           </strong>{" "}
           Kalenterin voi tulostaa tai tallentaa PDF-muodossa.
-          {isCurrentYear ? " Tämän päivän kohta on korostettu." : ""}
+          {isCurrentYear
+            ? " Kuluva viikko on rajattu vihreällä ja tämä päivä korostettu."
+            : ""}
         </p>
       ) : (
         <p className={print ? "lead print-support" : "lead"}>
           Vuosi {y} sisältää {totalWeeks} viikkoa. Kalenteri noudattaa ISO 8601
           -standardia: viikko alkaa maanantaista ja päättyy sunnuntaihin.
           Juhlapäivät ja viikkonumerot on merkitty.
-          {isCurrentYear ? " Tämän päivän kohta on korostettu." : ""}
+          {isCurrentYear
+            ? " Kuluva viikko on rajattu vihreällä ja tämä päivä korostettu."
+            : ""}
         </p>
       )}
 
