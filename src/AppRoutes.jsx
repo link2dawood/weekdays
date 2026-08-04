@@ -32,13 +32,6 @@ import CurrentMonth from "./pages/CurrentMonth";
 import CurrentYear from "./pages/CurrentYear";
 import WeekdayCalculator from "./pages/WeekdayCalculator";
 import EnglishHome from "./pages/EnglishHome";
-import SwedishHome from "./pages/SwedishHome";
-import SwedishYear from "./pages/SwedishYear";
-import SwedishWeek from "./pages/SwedishWeek";
-import {
-  PRERENDER_MAX_YEAR,
-  PRERENDER_MIN_YEAR,
-} from "./components/dateUtils";
 
 // Finnish dynamic pages use keyword-rich single-segment slugs
 // (/viikko-30-2026, /kuukausi-7-2026, /vuosi-2026, /tulosta-2026). React Router
@@ -69,25 +62,6 @@ const DynamicSlug = () => {
   return <NotFound />;
 };
 
-const SwedishSlug = () => {
-  const { slug } = useParams();
-  let match = slug.match(/^vecka-(\d+)-(\d+)$/);
-  if (match) {
-    const year = Number(match[2]);
-    if (year >= PRERENDER_MIN_YEAR && year <= PRERENDER_MAX_YEAR) {
-      return <SwedishWeek week={Number(match[1])} year={year} />;
-    }
-  }
-  match = slug.match(/^veckor-(\d+)$/);
-  if (match) {
-    const year = Number(match[1]);
-    if (year >= PRERENDER_MIN_YEAR && year <= PRERENDER_MAX_YEAR) {
-      return <SwedishYear year={year} />;
-    }
-  }
-  return <NotFound />;
-};
-
 // Router-agnostic app shell. Wrapped in <BrowserRouter> on the client (App.jsx)
 // and in <StaticRouter> at build time for prerendering (entry-server.jsx).
 const AppRoutes = () => {
@@ -100,8 +74,6 @@ const AppRoutes = () => {
         <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/en" element={<EnglishHome />} />
-        <Route path="/sv" element={<SwedishHome />} />
-        <Route path="/sv/:slug" element={<SwedishSlug />} />
         <Route path="/mika-on-viikkonumero" element={<WhatWeek />} />
         <Route path="/viikko-alkaa-maanantaista" element={<WeekStartsMonday />} />
         <Route path="/kuinka-monta-viikkoa-vuodessa" element={<WeeksInYear />} />

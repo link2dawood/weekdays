@@ -26,7 +26,6 @@ Keskeiset faktat viikkonumeroista Suomessa:
 - [Tietoa meistä](https://viikkonro.fi/tietoa-meista): palvelun esittely
 - [Ota yhteyttä](https://viikkonro.fi/ota-yhteytta): yhteydenottolomake
 - [Week number today – English](https://viikkonro.fi/en): current ISO week number and the dates of week 27 in 2023
-- [Vilken vecka är det nu? – Svenska](https://viikkonro.fi/sv): aktuellt veckonummer samt svenska års- och veckosidor
 
 ## Optional
 

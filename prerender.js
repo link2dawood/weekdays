@@ -67,11 +67,6 @@ import {
   weekdayMeta,
 } from "./src/data/currentDateContent.js";
 import { englishFaqs } from "./src/data/englishContent.js";
-import {
-  swedishHomeFaqs,
-  swedishWeekFaqs,
-  swedishYearFaqs,
-} from "./src/data/swedishContent.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "dist");
@@ -241,79 +236,15 @@ function englishPageScript() {
   return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
 }
 
-function swedishPageScript(url) {
-  let headline = "Vilken vecka är det nu?";
-  let faqsForPage = swedishHomeFaqs;
-  let match = url.match(/^\/sv\/veckor-(\d+)$/);
-  if (match) {
-    headline = "Veckonummer " + match[1];
-    faqsForPage = swedishYearFaqs(Number(match[1]));
-  }
-  match = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/);
-  if (match) {
-    headline = "Vecka " + match[1] + " år " + match[2];
-    faqsForPage = swedishWeekFaqs(Number(match[1]), Number(match[2]));
-  }
-  const canonical = canonicalFor(url);
-  const meta = metaFor(url);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": canonical + "#page",
-        url: canonical,
-        name: headline,
-        description: meta.description,
-        inLanguage: "sv-FI",
-        datePublished: "2026-08-04",
-        dateModified: CONTENT_UPDATED,
-      },
-      {
-        "@type": "FAQPage",
-        "@id": canonical + "#faq",
-        inLanguage: "sv-FI",
-        dateModified: CONTENT_UPDATED,
-        mainEntity: faqsForPage.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: { "@type": "Answer", text: item.a },
-        })),
-      },
-    ],
-  };
-  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
-}
-
 function languageAlternateLinks(url) {
-  let fi;
-  let sv;
-  if (["/", "/en", "/sv"].includes(url)) {
-    fi = "/";
-    sv = "/sv";
+  if (["/", "/en"].includes(url)) {
     return (
-      '<link rel="alternate" hreflang="fi" href="' + canonicalFor(fi) + '" />' +
-      '<link rel="alternate" hreflang="sv-FI" href="' + canonicalFor(sv) + '" />' +
+      '<link rel="alternate" hreflang="fi" href="' + canonicalFor("/") + '" />' +
       '<link rel="alternate" hreflang="en" href="' + canonicalFor("/en") + '" />' +
-      '<link rel="alternate" hreflang="x-default" href="' + canonicalFor(fi) + '" />'
+      '<link rel="alternate" hreflang="x-default" href="' + canonicalFor("/") + '" />'
     );
   }
-  let match = url.match(/^\/(?:vuosi-|sv\/veckor-)(\d+)$/);
-  if (match) {
-    fi = "/vuosi-" + match[1];
-    sv = "/sv/veckor-" + match[1];
-  }
-  match = url.match(/^\/(?:viikko-|sv\/vecka-)(\d+)-(\d+)$/);
-  if (match) {
-    fi = "/viikko-" + match[1] + "-" + match[2];
-    sv = "/sv/vecka-" + match[1] + "-" + match[2];
-  }
-  if (!fi) return "";
-  return (
-    '<link rel="alternate" hreflang="fi" href="' + canonicalFor(fi) + '" />' +
-    '<link rel="alternate" hreflang="sv-FI" href="' + canonicalFor(sv) + '" />' +
-    '<link rel="alternate" hreflang="x-default" href="' + canonicalFor(fi) + '" />'
-  );
+  return "";
 }
 
 function currentDateIntentScript(url) {
@@ -1116,11 +1047,8 @@ for (const url of routes) {
     if (languageLinks) {
       html = html.replace("</head>", languageLinks + "</head>");
     }
-    if (url === "/en" || url.startsWith("/sv")) {
-      html = html.replace(
-        '<html lang="fi">',
-        url === "/en" ? '<html lang="en">' : '<html lang="sv">',
-      );
+    if (url === "/en") {
+      html = html.replace('<html lang="fi">', '<html lang="en">');
     }
 
     // Prune the index to the high-intent window: out-of-window year pages stay
@@ -1152,10 +1080,6 @@ for (const url of routes) {
 
     if (url === "/en") {
       html = html.replace("</head>", englishPageScript() + "</head>");
-    }
-
-    if (url === "/sv" || /^\/sv\/(?:vecka|veckor)-/.test(url)) {
-      html = html.replace("</head>", swedishPageScript(url) + "</head>");
     }
 
     if (["/mika-kuukausi-nyt", "/mika-vuosi-nyt", "/viikonpaiva"].includes(url)) {

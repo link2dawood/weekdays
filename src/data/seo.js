@@ -48,11 +48,6 @@ import {
   weekdayMeta,
 } from "./currentDateContent.js";
 import { englishMeta } from "./englishContent.js";
-import {
-  swedishHomeMeta,
-  swedishWeekMeta,
-  swedishYearMeta,
-} from "./swedishContent.js";
 
 // Fixed date the FAQ/explainer/calculator page COPY (not just computed data)
 // was last substantively edited. Bump both by hand when that prose actually
@@ -266,10 +261,6 @@ export const routeMeta = {
     ...englishMeta(),
     breadcrumb: "English",
   },
-  "/sv": {
-    ...swedishHomeMeta(),
-    breadcrumb: "Svenska",
-  },
   "/mika-on-viikkonumero": {
     title: "Mikä on viikkonumero? ISO 8601 -viikkolaskenta selitettynä",
     description:
@@ -374,7 +365,6 @@ export function sitemapEntries(year) {
   const entries = [
     { path: "/", changefreq: "daily", priority: "1.0" },
     { path: "/en", changefreq: "daily", priority: "0.4" },
-    { path: "/sv", changefreq: "daily", priority: "0.6" },
     { path: "/mika-on-viikkonumero", changefreq: "monthly", priority: "0.8" },
     { path: "/viikko-alkaa-maanantaista", changefreq: "monthly", priority: "0.7" },
     { path: "/kuinka-monta-viikkoa-vuodessa", changefreq: "monthly", priority: "0.8" },
@@ -432,21 +422,11 @@ export function sitemapEntries(year) {
       changefreq: current ? "weekly" : "yearly",
       priority: current ? "0.7" : "0.6",
     });
-    entries.push({
-      path: `/sv/veckor-${y}`,
-      changefreq: current ? "weekly" : "yearly",
-      priority: current ? "0.6" : "0.4",
-    });
     for (let w = 1; w <= weeksInIsoYear(y); w++) {
       entries.push({
         path: `/viikko-${w}-${y}`,
         changefreq: current ? "weekly" : "yearly",
         priority: current ? "0.6" : "0.4",
-      });
-      entries.push({
-        path: `/sv/vecka-${w}-${y}`,
-        changefreq: current ? "weekly" : "yearly",
-        priority: current ? "0.5" : "0.3",
       });
     }
     for (let m = 1; m <= 12; m++) {
@@ -506,7 +486,6 @@ export function sitemapEntries(year) {
 export function metaFor(url) {
   if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
   if (url === "/en") return { ...routeMeta[url], ...englishMeta() };
-  if (url === "/sv") return { ...routeMeta[url], ...swedishHomeMeta() };
   if (url === "/mika-kuukausi-nyt") return { ...routeMeta[url], ...currentMonthMeta() };
   if (url === "/mika-vuosi-nyt") return { ...routeMeta[url], ...currentYearMeta() };
   if (routeMeta[url]) return routeMeta[url];
@@ -515,8 +494,6 @@ export function metaFor(url) {
   if ((m = url.match(/^\/nimipaiva\/([a-z0-9-]+)$/))) return nameDayNameMeta(m[1]);
   if ((m = url.match(/^\/nimipaivat\/(\d{2}-\d{2})$/))) return nameDayDateMeta(m[1]);
   if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) return weekMeta(+m[1], +m[2]);
-  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) return swedishWeekMeta(+m[1], +m[2]);
-  if ((m = url.match(/^\/sv\/veckor-(\d+)$/))) return swedishYearMeta(+m[1]);
   if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/vuosi-(\d+)$/))) return yearMeta(+m[1]);
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
@@ -538,19 +515,6 @@ export function metaFor(url) {
 // each page, including the 3-level trails on week/month pages.
 export function breadcrumbTrail(url) {
   const home = { name: "Etusivu", path: "/" };
-  if (url === "/sv") return [home, { name: "Svenska", path: "/sv" }];
-  let swedishMatch;
-  if ((swedishMatch = url.match(/^\/sv\/veckor-(\d+)$/))) {
-    return [home, { name: "Svenska", path: "/sv" }, { name: `Veckor ${swedishMatch[1]}`, path: url }];
-  }
-  if ((swedishMatch = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) {
-    return [
-      home,
-      { name: "Svenska", path: "/sv" },
-      { name: `Veckor ${swedishMatch[2]}`, path: `/sv/veckor-${swedishMatch[2]}` },
-      { name: `Vecka ${swedishMatch[1]}`, path: url },
-    ];
-  }
   if (routeMeta[url] && routeMeta[url].breadcrumb) {
     return [home, { name: routeMeta[url].breadcrumb, path: url }];
   }

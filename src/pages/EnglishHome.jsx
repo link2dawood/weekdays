@@ -16,7 +16,6 @@ const EnglishHome = () => {
         alternates={[
           { lang: "en", href: canonicalFor("/en") },
           { lang: "fi", href: canonicalFor("/") },
-          { lang: "sv-FI", href: canonicalFor("/sv") },
           { lang: "x-default", href: canonicalFor("/") },
         ]}
       />

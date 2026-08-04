@@ -266,8 +266,8 @@ const WhatWeek = () => {
           <li>
             <strong>Suomi, muu Eurooppa</strong> ja kansainvälinen liike-elämä
             käyttävät ISO 8601:n mukaista viikkoa: alkaa maanantaista, viikko 1
-            sisältää ensimmäisen torstain. Ruotsissa käytetään termiä{" "}
-            <em>veckonummer</em>, Saksassa <em>Kalenderwoche</em>, Ranskassa{" "}
+            sisältää ensimmäisen torstain. Saksassa käytetään termiä{" "}
+            <em>Kalenderwoche</em>, Ranskassa{" "}
             <em>numéro de semaine</em>.
           </li>
           <li>

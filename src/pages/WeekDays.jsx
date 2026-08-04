@@ -200,11 +200,6 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       <SEO
         {...weekMeta(w, y)}
         lang="fi"
-        alternates={[
-          { lang: "fi", href: canonicalFor("/viikko-" + w + "-" + y) },
-          { lang: "sv-FI", href: canonicalFor("/sv/vecka-" + w + "-" + y) },
-          { lang: "x-default", href: canonicalFor("/viikko-" + w + "-" + y) },
-        ]}
         canonical={canonicalFor(`/viikko-${week}-${year}`)}
       />
       <div className="breadcrumb">
