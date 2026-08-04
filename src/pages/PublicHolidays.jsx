@@ -11,6 +11,7 @@ import {
 import SEO from "../components/SEO";
 import { canonicalFor, holidaysMeta } from "../data/seo";
 import { holidaysInYear } from "../data/holidays";
+import { holidaySlugForName } from "../data/holidayPages";
 
 // Finnish public-holidays hub for a year (/pyhapaivat-2026). Content-rich page
 // targeting "pyhäpäivät <vuosi>" searches — a higher-volume query cluster than
@@ -55,9 +56,12 @@ const PublicHolidays = ({ year: pYear } = {}) => {
             {holidays.map((h) => {
               const wk = isoWeek(h.date);
               const wkY = isoYear(h.date);
+              const holidaySlug = holidaySlugForName(h.name);
               return (
                 <tr key={h.name}>
-                  <td>{h.name}</td>
+                  <td>
+                    <Link to={`/pyhat-${year}/${holidaySlug}`}>{h.name}</Link>
+                  </td>
                   <td>{dWritten(h.date)}</td>
                   <td>{getWeekdayName(h.date)}</td>
                   <td>

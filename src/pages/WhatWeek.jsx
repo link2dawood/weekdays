@@ -1,8 +1,12 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { isoWeek, isoYear, weeksInIsoYear } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { routeMeta, CONTENT_UPDATED_FI } from "../data/seo";
+import { whatWeekFaqs } from "../data/isoWeekContent";
+import {
+  canonicalFor,
+  routeMeta,
+  CONTENT_UPDATED_FI,
+} from "../data/seo";
 
 const WhatWeek = () => {
   // Live current week/year, computed in the render body so the prerendered HTML
@@ -15,7 +19,7 @@ const WhatWeek = () => {
 
   return (
     <section className="app">
-      <SEO title={meta.title} description={meta.description} />
+      <SEO {...meta} canonical={canonicalFor("/mika-on-viikkonumero")} />
 
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> /{" "}
@@ -305,6 +309,16 @@ const WhatWeek = () => {
 
         <h2>Aiheeseen liittyviä sivuja</h2>
         <div className="quicklinks">
+          {(Y_NOW === 2026 || Y_NOW === 2027) && (
+            <Link className="ql" to={`/koululomat-${Y_NOW}`}>
+              <b>Koululomat {Y_NOW}</b>
+              <span>Hiihto- ja syyslomat alueittain</span>
+            </Link>
+          )}
+          <Link className="ql" to="/viikko-alkaa-maanantaista">
+            <b>Miksi viikko alkaa maanantaista?</b>
+            <span>Viikon alku ja torstaisääntö selitettynä</span>
+          </Link>
           <Link className="ql" to={`/vuosi-${Y_NOW}`}>
             <b>Vuoden {Y_NOW} viikot</b>
             <span>Kaikki viikkonumerot päivämäärineen</span>
@@ -329,77 +343,12 @@ const WhatWeek = () => {
 
         <h2>Usein kysytyt kysymykset</h2>
 
-        <details open>
-          <summary>Mikä on viikkonumero yhdellä lauseella?</summary>
-          <p>
-            Viikkonumero on 1–53 välinen kokonaisluku, joka kertoo, kuinka mones
-            vuoden viikko on parhaillaan menossa. Suomessa se lasketaan ISO 8601
-            -standardin mukaan.
-          </p>
-        </details>
-
-        <details>
-          <summary>
-            Miksi vuoden ensimmäinen viikko määräytyy torstain mukaan?
-          </summary>
-          <p>
-            Torstai on viikon keskimmäinen arkipäivä. Kun viikon vuosi määräytyy
-            torstain sijainnin mukaan, kalenterivuoden ja viikkovuoden ero jää
-            enintään kolmeksi päiväksi. Vaihtoehtoiset säännöt johtaisivat
-            suurempaan poikkeamaan.
-          </p>
-        </details>
-
-        <details>
-          <summary>Mikä on vk:n ja viikkonumeron ero?</summary>
-          <p>
-            Ei mikään. »Vk» on »viikon» lyhenne. »Vk 30» tarkoittaa samaa kuin
-            »viikko 30» ja »viikkonumero 30».
-          </p>
-        </details>
-
-        <details>
-          <summary>
-            Miksi kaksi eri kalenteria näyttävät eri viikkonumeron samalle
-            päivälle?
-          </summary>
-          <p>
-            Todennäköisin syy on, että toinen kalenteri noudattaa ISO 8601:tä
-            (viikko alkaa maanantaista, viikko 1 sisältää ensimmäisen torstain)
-            ja toinen Yhdysvaltain käytäntöä (viikko alkaa sunnuntaista, viikko 1
-            sisältää 1. tammikuuta). Suomessa käytetään aina ISO-viikkoa.
-          </p>
-        </details>
-
-        <details>
-          <summary>Onko ISO 8601 sama asia kuin viikkonumero?</summary>
-          <p>
-            Ei. ISO 8601 on laaja standardi, joka määrittelee kaikki päivämäärä-
-            ja aikaesitykset (esim. <code>2026-07-20T14:30:00Z</code>).
-            Viikkonumero on yksi standardin osa, määritelty pykälässä 3.2.4.
-          </p>
-        </details>
-
-        <details>
-          <summary>Missä muodossa viikkonumero merkitään?</summary>
-          <p>
-            Suomessa yleisimmin »vk 30» tai »viikko 30». Vuosi lisätään
-            kauttaviivalla tai pilkulla: »viikko 30/2026». ISO-standardimuoto on{" "}
-            <code>2026-W30</code>.
-          </p>
-        </details>
-
-        <details>
-          <summary>
-            Miten viikkonumeron saa näkyviin puhelimessa ja tietokoneella?
-          </summary>
-          <p>
-            Windowsissa: Kalenteri-sovelluksen Asetukset → Kalenteri →
-            Viikkonumerot. macOS:ssa: Calendar → Preferences → Show week numbers.
-            iPhonessa: Kalenteri-sovelluksen Asetukset → »Näytä viikkonumerot».
-            Google Kalenterissa: Asetukset → Näytä viikkonumerot.
-          </p>
-        </details>
+        {whatWeekFaqs.map((item, index) => (
+          <details key={item.q} open={index === 0}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
 
         <p style={{ marginTop: 32 }}>
           <Link className="btn" to={`/vuosi-${Y_NOW}`}>

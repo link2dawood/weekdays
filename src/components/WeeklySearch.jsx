@@ -81,7 +81,7 @@ const WeeklySearch = () => {
     <>
       <section>
         {/* <div className="sec-head">Weekly search</div> */}
-        <h2 id="mh">Tarkista minkä tahansa päivän viikkonumero</h2>
+        <h2 className="mh">Tarkista minkä tahansa päivän viikkonumero</h2>
         <div className="lookup">
           <label htmlFor="dpick">Valitse päivämäärä</label>
           <input

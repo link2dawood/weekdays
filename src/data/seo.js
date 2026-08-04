@@ -13,7 +13,46 @@ export const SITE_URL = process.env.SITE_ORIGIN || "https://viikkonro.fi";
 // Finnish date formatters live in one place (dateUtils.js). Imported with an
 // explicit .js extension so plain-Node prerender.js can resolve it too (the
 // ISO-week math below stays inline — untouched — per the no-touch rule).
-import { M_GENITIVE, fmtFullFi, fmtShortFi, WD_ESSIVE } from "../components/dateUtils.js";
+import {
+  M_GENITIVE,
+  fmtFullFi,
+  fmtRangeCompactFi,
+  fmtShortFi,
+  WD_ESSIVE,
+} from "../components/dateUtils.js";
+import {
+  HOLIDAY_DEFINITIONS,
+  holidayPageFor,
+  holidayPageMeta,
+} from "./holidayPages.js";
+import {
+  nameDayDateKeys,
+  nameDayNames,
+} from "./nameDays.js";
+import {
+  nameDayDateMeta,
+  nameDayDatePage,
+  nameDayNameMeta,
+  nameDayNamePage,
+  todayNameDayMeta,
+  todayNameDayPage,
+} from "./nameDayPages.js";
+import {
+  schoolHolidayMeta,
+  schoolHolidayPage,
+  schoolHolidayYears,
+} from "./schoolHolidayPages.js";
+import {
+  currentMonthMeta,
+  currentYearMeta,
+  weekdayMeta,
+} from "./currentDateContent.js";
+import { englishMeta } from "./englishContent.js";
+import {
+  swedishHomeMeta,
+  swedishWeekMeta,
+  swedishYearMeta,
+} from "./swedishContent.js";
 
 // Fixed date the FAQ/explainer/calculator page COPY (not just computed data)
 // was last substantively edited. Bump both by hand when that prose actually
@@ -21,8 +60,8 @@ import { M_GENITIVE, fmtFullFi, fmtShortFi, WD_ESSIVE } from "../components/date
 // "Päivitetty" line on each page and its dateModified in structured data
 // always agree, and so a date claiming freshness doesn't roll every day just
 // because the site auto-rebuilds while the words on the page haven't changed.
-export const CONTENT_UPDATED = "2026-08-03";
-export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 3));
+export const CONTENT_UPDATED = "2026-08-04";
+export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 4));
 
 // Mirrors src/components/dateUtils.jsx's isoWeek/weeksInIsoYear exactly.
 // Duplicated (not imported) because prerender.js runs this file as plain
@@ -84,29 +123,37 @@ export function weekMeta(w, y) {
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
   return {
-    title: `Viikko ${w} vuonna ${y} – ${formatShort(mo)}–${formatShort(su)}${su.getFullYear()} | Viikko Nro`,
+    title: `Viikko ${w} (vk ${w}, vko ${w}) · ${fmtRangeCompactFi(mo, su)} | Viikko Nro`,
     // Short dates (fmtFullFi ran ~190 chars → truncated in SERPs). ~148 chars
     // keeps every keyword term within Google's snippet limit.
     description: `Viikko ${w} vuonna ${y} alkaa maanantaina ${formatShort(mo)} ja päättyy sunnuntaina ${formatShort(su)}${su.getFullYear()}. Katso päivämäärät, juhla- ja nimipäivät sekä tulostettava kalenteri.`,
   };
 }
 export function monthMeta(m, y) {
+  // Genitive + "viikot" + year, IN THAT ORDER ("Kesäkuun viikot 2026") —
+  // matches how people actually search ("kesäkuun viikot",
+  // "heinäkuun viikot 2026") as a literal contiguous phrase. Year-before-viikot
+  // ("Kesäkuun 2026 viikot") looks similar but doesn't match either query, since
+  // "2026" then breaks up the "kesäkuun viikot" substring. The old nominative
+  // "Kesäkuu 2026 – ... kalenteri" title never contained the phrase at all.
+  const genitiveCap = M_GENITIVE[m - 1].replace(/^./, (c) => c.toUpperCase());
   return {
-    title: `${M_FULL[m - 1]} ${y} – viikkonumerot ja kalenteri | Viikko Nro`,
-    description: `${M_GENITIVE[m - 1].replace(/^./, (c) => c.toUpperCase())} ${y} viikkonumerot, päivämäärät, juhlapäivät ja nimipäivät. Tulostettava kuukausikalenteri viikkonumeroilla ISO 8601 -standardin mukaan.`,
+    title: `${genitiveCap} viikot ${y} – viikkonumerot | Viikko Nro`,
+    description: `${genitiveCap} ${y} viikkonumerot, päivämäärät, juhlapäivät ja nimipäivät. Tulostettava kuukausikalenteri viikkonumeroilla ISO 8601 -standardin mukaan.`,
   };
 }
 export function yearMeta(y) {
   const total = weeksInIsoYear(y);
   return {
-    title: `Viikkonumerot ${y} – kaikki ${total} viikkoa | Viikko Nro`,
-    description: `Vuoden ${y} kaikki ${total} viikkonumeroa alkamis- ja päättymispäivineen, juhlapäivät sekä tulostettava viikkokalenteri (PDF) ISO 8601 -standardin mukaan.`,
+    title: `Viikkonumerot ${y} — kaikki ${total} viikkoa päivämäärineen`,
+    description: `Katso viikkonumerot ${y}: kaikki ${total} viikkoa päivämäärineen. Selaa viikkoja, juhlapäiviä ja nimipäiviä tai avaa tulostettava viikkokalenteri.`,
   };
 }
 export function printMeta(y) {
+  const total = weeksInIsoYear(y);
   return {
-    title: `Tulostettava viikkokalenteri ${y} (PDF) | Viikko Nro`,
-    description: `Tulosta tai tallenna vuoden ${y} viikkokalenteri PDF-muodossa: kaikki viikkonumerot, päivämäärät ja juhlapäivät yhdellä A4-sivulla. Ilmainen.`,
+    title: `Viikot PDF ${y} – tulostettava viikkolista | Viikko Nro`,
+    description: `Tulosta vuoden ${y} kaikki ${total} ISO-viikkoa päivämäärineen tai tallenna viikkolista PDF-muodossa. Lataa tiedot myös Excel-yhteensopivana CSV-tiedostona.`,
   };
 }
 export function holidaysMeta(y) {
@@ -125,9 +172,10 @@ export function workingDaysMeta(y) {
 // Full-year calendar pages. `half` = null | 1 | 2; `print` = print-optimized.
 export function calendarMeta(y, half, print) {
   if (print) {
+    const total = weeksInIsoYear(y);
     return {
-      title: `Tulostettava kalenteri ${y} | Viikko Nro`,
-      description: `Tulostettava vuoden ${y} kalenteri A4-koossa. Viikkonumerot, juhlapäivät ja koko vuosi yhdellä sivulla.`,
+      title: `Tulostettava viikkokalenteri ${y} (PDF) | Viikko Nro`,
+      description: `Tulostettava viikkokalenteri ${y} A4-vaakamuodossa: kaikki ${total} viikkoa, päivämäärät ja juhlapäivät. Tulosta, tallenna PDF tai lataa Excel-yhteensopiva CSV.`,
       robots: "index, follow",
     };
   }
@@ -143,10 +191,39 @@ export function calendarMeta(y, half, print) {
       description: `Vuoden ${y} syyspuolen kalenteri: heinäkuu–joulukuu. Viikkonumerot, juhlapäivät ja tulostettava PDF.`,
     };
   }
+  const total = weeksInIsoYear(y);
   return {
-    title: `Vuoden ${y} kalenteri | Viikko Nro`,
-    description: `Vuoden ${y} kalenteri, jossa näkyvät kaikki viikkonumerot ja Suomen juhlapäivät. Ilmainen ja tulostettava, ISO 8601 -standardin mukaan.`,
+    title: `Viikkokalenteri ${y} – ${total} viikkoa ja PDF | Viikko Nro`,
+    description: `Avaa viikkokalenteri ${y}: kaikki ${total} viikkoa, viikkonumerot ja juhlapäivät. Tulosta kalenteri tai tallenna se PDF-muodossa yhdellä painikkeella.`,
   };
+}
+
+// Shared by CalendarYear.jsx and prerender.js so the visible calendar FAQ and
+// its FAQPage JSON-LD always contain exactly the same questions and answers.
+export function calendarFaqs(y) {
+  const total = weeksInIsoYear(y);
+  return [
+    {
+      q: `Mikä on viikkokalenteri ${y} yhdellä lauseella?`,
+      a: `Viikkokalenteri ${y} näyttää vuoden kaikki ${total} ISO-viikkoa, päivämäärät, viikkonumerot ja Suomen juhlapäivät yhdessä näkymässä.`,
+    },
+    {
+      q: `Kuinka monta viikkoa vuodessa ${y} on?`,
+      a: `Vuodessa ${y} on ${total} ISO-viikkoa. Viikko alkaa maanantaina ja päättyy sunnuntaina.`,
+    },
+    {
+      q: `Miten viikkokalenteri ${y} tulostetaan tai tallennetaan PDF-muodossa?`,
+      a: `Paina kalenterin Tulosta / tallenna PDF -painiketta ja valitse selaimen tulostusikkunasta tulostin tai PDF-tallennus. Kalenteri sovitetaan A4-vaakasivulle.`,
+    },
+    {
+      q: `Mitä viikkonäkymä ${y} näyttää?`,
+      a: `Viikkonäkymä näyttää jokaisen kuukauden päivät, maanantaisin alkavat viikkonumerot sekä Suomen juhla- ja liputuspäivät. Viikkonumerosta voi avata viikon oman sivun.`,
+    },
+    {
+      q: `Voiko viikkokalenterista avata yksittäisen viikon päivämäärät?`,
+      a: `Kyllä. Napsauta kalenterissa maanantain vieressä näkyvää viikkonumeroa, niin saat viikon kaikki seitsemän päivämäärää sekä juhla- ja nimipäivät.`,
+    },
+  ];
 }
 
 // Home page title/description carry the actual current week and date range
@@ -160,21 +237,19 @@ export function homeMeta(now) {
   const mo = mondayOf(week, year);
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
-  // Start date only (not the full start–end range) so the title — with its
-  // "| Viikko Nro" brand suffix — stays within the ~60-char SERP truncation
-  // budget in every week of the year (worst case, a 2-digit day+month week,
-  // is 54 chars); still carries real per-week "distinguishing data" (F-04).
-  const startWithYear = `${formatShort(mo)}${year}`;
-  // The direct-answer sentence: rendered verbatim as the homepage's on-page
-  // lead paragraph (Weekcounter.jsx) AND used to build the meta description
-  // below, so the two can never drift apart.
-  const lead = `Juuri nyt on viikko ${week} vuonna ${year}. Viikko alkaa ${WD_ESSIVE[mo.getDay()]} ${fmtShortFi(mo)} ja päättyy ${WD_ESSIVE[su.getDay()]} ${fmtShortFi(su)}.`;
+  // The live week and compact start date distinguish every weekly build while
+  // leaving room for both the exact head query and the full "viikkonumero"
+  // keyword. Even a two-digit week/date remains below 60 characters.
+  const startDate = formatShort(mo);
+  // The direct-answer sentence rendered as the homepage's on-page lead
+  // paragraph (Weekcounter.jsx). The meta description below targets the exact
+  // head query while drawing its dates from these same computed values.
+  const lead = `Juuri nyt on viikko ${week} (viikkonumero ${week}) vuonna ${year}. Viikko alkaa ${WD_ESSIVE[mo.getDay()]} ${fmtShortFi(mo)} ja päättyy ${WD_ESSIVE[su.getDay()]} ${fmtShortFi(su)}.`;
   return {
-    title: `Viikko ${week} – mikä viikko nyt? (${startWithYear}) | Viikko Nro`,
-    // Trailing sentence kept short (not "...näyttää kuluvan viikkonumeron...",
-    // which `lead` already says) so the worst-case week (longest lead, ~106
-    // chars) still lands under the ~158-char description budget.
-    description: `${lead} Ilmainen ISO 8601 -viikkolaskuri.`,
+    title: `Mikä viikko nyt on? Viikkonumero ${week} (${startDate}) | Viikko Nro`,
+    // Lead with the short-query term while retaining "viikko", "kuluva viikko"
+    // and "viikon numero" naturally inside the 140–160-character budget.
+    description: `Katso viikkonumero heti: nyt on viikko ${week} vuonna ${year}. Kuluva viikko alkaa ${WD_ESSIVE[mo.getDay()]} ${formatShort(mo)} ja päättyy ${WD_ESSIVE[su.getDay()]} ${formatShort(su)} Tarkista muun päivän viikon numero.`,
     lead,
   };
 }
@@ -183,9 +258,17 @@ export const routeMeta = {
   "/": {
     // Brand-last ("| Viikko Nro"), matching every other page's convention.
     // Replaced at build time with homeMeta(); kept as a safe fallback.
-    title: "Mikä viikko nyt on? | Viikko Nro",
+    title: "Mikä viikko nyt on? Viikkonumero | Viikko Nro",
     description:
-      "Katso heti mikä viikko nyt on. Ilmainen viikkolaskuri näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan.",
+      "Katso viikkonumero heti ja selvitä mikä viikko nyt on. Viikkolaskuri näyttää kuluvan viikon sekä minkä tahansa päivämäärän viikon numeron ISO 8601:n mukaan.",
+  },
+  "/en": {
+    ...englishMeta(),
+    breadcrumb: "English",
+  },
+  "/sv": {
+    ...swedishHomeMeta(),
+    breadcrumb: "Svenska",
   },
   "/mika-on-viikkonumero": {
     title: "Mikä on viikkonumero? ISO 8601 -viikkolaskenta selitettynä",
@@ -193,11 +276,29 @@ export const routeMeta = {
       "Viikkonumero on 1–53 välinen luku vuoden kuluvasta viikosta. Suomessa noudatetaan ISO 8601:tä: viikko alkaa maanantaista, 4. tammikuuta on aina viikolla 1.",
     breadcrumb: "Mikä on viikkonumero",
   },
+  "/viikko-alkaa-maanantaista": {
+    title: "Viikko alkaa maanantaista – ISO 8601 -sääntö | Viikko Nro",
+    description:
+      "Lue, miksi viikko alkaa maanantaista Suomessa. ISO 8601 määrää viikon ensimmäiseksi päiväksi maanantain ja viikon 1 ensimmäisen torstain perusteella.",
+    breadcrumb: "Viikko alkaa maanantaista",
+  },
   "/kuinka-monta-viikkoa-vuodessa": {
     title: "Kuinka monta viikkoa vuodessa on? 52 vai 53 | Viikko Nro",
     description:
-      "Vuodessa on 52 tai 53 viikkoa. Katso milloin vuodessa on 53 viikkoa ja mitkä vuodet – kuten 2020, 2026 ja 2032 – ovat 53 viikon vuosia.",
+      "Katso, montako viikkoa vuodessa on: tavallisesti 52, joskus 53. Vuonna 2026 on 53 viikkoa. Lue ISO 8601 -sääntö ja tarkista 53 viikon vuodet.",
     breadcrumb: "Viikkoja vuodessa",
+  },
+  "/mika-kuukausi-nyt": {
+    ...currentMonthMeta(),
+    breadcrumb: "Mikä kuukausi nyt on",
+  },
+  "/mika-vuosi-nyt": {
+    ...currentYearMeta(),
+    breadcrumb: "Mikä vuosi nyt on",
+  },
+  "/viikonpaiva": {
+    ...weekdayMeta,
+    breadcrumb: "Viikonpäivälaskuri",
   },
   "/ukk": {
     title: "Usein kysytyt kysymykset viikkonumeroista | Viikko Nro",
@@ -272,8 +373,14 @@ export function canonicalFor(path) {
 export function sitemapEntries(year) {
   const entries = [
     { path: "/", changefreq: "daily", priority: "1.0" },
+    { path: "/en", changefreq: "daily", priority: "0.4" },
+    { path: "/sv", changefreq: "daily", priority: "0.6" },
     { path: "/mika-on-viikkonumero", changefreq: "monthly", priority: "0.8" },
+    { path: "/viikko-alkaa-maanantaista", changefreq: "monthly", priority: "0.7" },
     { path: "/kuinka-monta-viikkoa-vuodessa", changefreq: "monthly", priority: "0.8" },
+    { path: "/mika-kuukausi-nyt", changefreq: "daily", priority: "0.8" },
+    { path: "/mika-vuosi-nyt", changefreq: "daily", priority: "0.8" },
+    { path: "/viikonpaiva", changefreq: "monthly", priority: "0.7" },
     { path: "/ukk", changefreq: "monthly", priority: "0.8" },
     { path: "/laskurit", changefreq: "monthly", priority: "0.7" },
     { path: "/paivamaara-viikoksi", changefreq: "monthly", priority: "0.7" },
@@ -285,6 +392,34 @@ export function sitemapEntries(year) {
     { path: "/tietosuoja", changefreq: "yearly", priority: "0.3" },
     { path: "/kayttoehdot", changefreq: "yearly", priority: "0.3" },
   ];
+  for (const schoolYear of schoolHolidayYears) {
+    entries.push({
+      path: `/koululomat-${schoolYear}`,
+      changefreq: schoolYear >= year ? "monthly" : "yearly",
+      priority: schoolYear >= year ? "0.8" : "0.6",
+    });
+  }
+  for (const item of nameDayNames()) {
+    entries.push({
+      path: `/nimipaiva/${item.slug}`,
+      changefreq: "yearly",
+      priority: "0.6",
+    });
+  }
+  for (const dateKey of nameDayDateKeys()) {
+    entries.push({
+      path: `/nimipaivat/${dateKey}`,
+      changefreq: "yearly",
+      priority: "0.5",
+    });
+  }
+  if (todayNameDayPage().available) {
+    entries.push({
+      path: "/nimipaivat/tanaan",
+      changefreq: "daily",
+      priority: "0.8",
+    });
+  }
   // Historical floor 2020 (matches the year-picker's YEAR_MIN) through a rolling
   // +9-year horizon (≈2035 today). Every week/month/year page across that span
   // is prerendered and indexable; the top edge auto-advances on each rebuild, so
@@ -297,11 +432,21 @@ export function sitemapEntries(year) {
       changefreq: current ? "weekly" : "yearly",
       priority: current ? "0.7" : "0.6",
     });
+    entries.push({
+      path: `/sv/veckor-${y}`,
+      changefreq: current ? "weekly" : "yearly",
+      priority: current ? "0.6" : "0.4",
+    });
     for (let w = 1; w <= weeksInIsoYear(y); w++) {
       entries.push({
         path: `/viikko-${w}-${y}`,
         changefreq: current ? "weekly" : "yearly",
         priority: current ? "0.6" : "0.4",
+      });
+      entries.push({
+        path: `/sv/vecka-${w}-${y}`,
+        changefreq: current ? "weekly" : "yearly",
+        priority: current ? "0.5" : "0.3",
       });
     }
     for (let m = 1; m <= 12; m++) {
@@ -321,9 +466,19 @@ export function sitemapEntries(year) {
       changefreq: current ? "monthly" : "yearly",
       priority: current ? "0.7" : "0.5",
     });
+    entries.push({
+      path: `/tulosta-${y}`,
+      changefreq: current ? "monthly" : "yearly",
+      priority: current ? "0.7" : "0.5",
+    });
+    for (const holiday of HOLIDAY_DEFINITIONS) {
+      entries.push({
+        path: `/pyhat-${y}/${holiday.slug}`,
+        changefreq: current ? "monthly" : "yearly",
+        priority: current ? "0.7" : "0.5",
+      });
+    }
   }
-  entries.push({ path: `/tulosta-${year}`, changefreq: "yearly", priority: "0.5" });
-
   // Full-year calendar pages: 2020 .. year+9 (rolling) × {full, half 1, half 2,
   // print}. Auto-advances every rebuild so the indexed set never freezes.
   for (let cy = 2020; cy <= year + 9; cy++) {
@@ -350,14 +505,26 @@ export function sitemapEntries(year) {
 // dynamic page (week/month/year/print). Returns null for routes not prerendered.
 export function metaFor(url) {
   if (url === "/") return { ...routeMeta["/"], ...homeMeta(new Date()) };
+  if (url === "/en") return { ...routeMeta[url], ...englishMeta() };
+  if (url === "/sv") return { ...routeMeta[url], ...swedishHomeMeta() };
+  if (url === "/mika-kuukausi-nyt") return { ...routeMeta[url], ...currentMonthMeta() };
+  if (url === "/mika-vuosi-nyt") return { ...routeMeta[url], ...currentYearMeta() };
   if (routeMeta[url]) return routeMeta[url];
   let m;
+  if (url === "/nimipaivat/tanaan") return todayNameDayMeta();
+  if ((m = url.match(/^\/nimipaiva\/([a-z0-9-]+)$/))) return nameDayNameMeta(m[1]);
+  if ((m = url.match(/^\/nimipaivat\/(\d{2}-\d{2})$/))) return nameDayDateMeta(m[1]);
   if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) return weekMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) return swedishWeekMeta(+m[1], +m[2]);
+  if ((m = url.match(/^\/sv\/veckor-(\d+)$/))) return swedishYearMeta(+m[1]);
   if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) return monthMeta(+m[1], +m[2]);
   if ((m = url.match(/^\/vuosi-(\d+)$/))) return yearMeta(+m[1]);
   if ((m = url.match(/^\/tulosta-(\d+)$/))) return printMeta(+m[1]);
   if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) return holidaysMeta(+m[1]);
+  if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/)))
+    return holidayPageMeta(+m[1], m[2]);
   if ((m = url.match(/^\/tyopaivat-(\d+)$/))) return workingDaysMeta(+m[1]);
+  if ((m = url.match(/^\/koululomat-(\d+)$/))) return schoolHolidayMeta(+m[1]);
   if ((m = url.match(/^\/kalenteri-(\d+)-(alkuvuosi|loppuvuosi)$/)))
     return calendarMeta(+m[1], m[2] === "alkuvuosi" ? 1 : 2, false);
   if ((m = url.match(/^\/kalenteri-(\d+)$/))) return calendarMeta(+m[1], null, false);
@@ -371,10 +538,36 @@ export function metaFor(url) {
 // each page, including the 3-level trails on week/month pages.
 export function breadcrumbTrail(url) {
   const home = { name: "Etusivu", path: "/" };
+  if (url === "/sv") return [home, { name: "Svenska", path: "/sv" }];
+  let swedishMatch;
+  if ((swedishMatch = url.match(/^\/sv\/veckor-(\d+)$/))) {
+    return [home, { name: "Svenska", path: "/sv" }, { name: `Veckor ${swedishMatch[1]}`, path: url }];
+  }
+  if ((swedishMatch = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/))) {
+    return [
+      home,
+      { name: "Svenska", path: "/sv" },
+      { name: `Veckor ${swedishMatch[2]}`, path: `/sv/veckor-${swedishMatch[2]}` },
+      { name: `Vecka ${swedishMatch[1]}`, path: url },
+    ];
+  }
   if (routeMeta[url] && routeMeta[url].breadcrumb) {
     return [home, { name: routeMeta[url].breadcrumb, path: url }];
   }
   let m;
+  if (url === "/nimipaivat/tanaan") {
+    return [home, { name: "Nimipäivä tänään", path: url }];
+  }
+  if ((m = url.match(/^\/nimipaiva\/([a-z0-9-]+)$/))) {
+    const page = nameDayNamePage(m[1]);
+    if (!page) return null;
+    return [home, { name: "Nimipäivät", path: "/nimipaivat/tanaan" }, { name: page.name, path: url }];
+  }
+  if ((m = url.match(/^\/nimipaivat\/(\d{2}-\d{2})$/))) {
+    const page = nameDayDatePage(m[1]);
+    if (!page) return null;
+    return [home, { name: "Nimipäivät", path: "/nimipaivat/tanaan" }, { name: fmtFullFi(page.date), path: url }];
+  }
   if ((m = url.match(/^\/vuosi-(\d+)$/))) {
     return [home, { name: `Viikot ${m[1]}`, path: url }];
   }
@@ -402,12 +595,26 @@ export function breadcrumbTrail(url) {
       { name: `Pyhäpäivät ${m[1]}`, path: url },
     ];
   }
+  if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/))) {
+    const page = holidayPageFor(+m[1], m[2]);
+    if (!page) return null;
+    return [
+      home,
+      { name: `Pyhäpäivät ${m[1]}`, path: `/pyhapaivat-${m[1]}` },
+      { name: page.displayName, path: url },
+    ];
+  }
   if ((m = url.match(/^\/tyopaivat-(\d+)$/))) {
     return [
       home,
       { name: `Viikot ${m[1]}`, path: `/vuosi-${m[1]}` },
       { name: `Työpäivät ${m[1]}`, path: url },
     ];
+  }
+  if ((m = url.match(/^\/koululomat-(\d+)$/))) {
+    const page = schoolHolidayPage(+m[1]);
+    if (!page) return null;
+    return [home, { name: `Koululomat ${m[1]}`, path: url }];
   }
   const kalenteri = { name: "Kalenteri", path: `/kalenteri-${isoYear(new Date())}` };
   if ((m = url.match(/^\/kalenteri-(\d+)(?:-([12]))?$/))) {

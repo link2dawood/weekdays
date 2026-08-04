@@ -13,8 +13,8 @@
 // Legacy note: earlier this file generated synthetic "PLACEHOLDER-MM-DD"
 // values, which shipped to production. Any such value (or an empty/blank one)
 // is now defensively filtered out here so it can never render again.
-import nimipaivat from "./nimipaivat.json";
-import { mondayOf } from "../components/dateUtils";
+import nimipaivat from "./nimipaivat.json" with { type: "json" };
+import { mondayOf } from "../components/dateUtils.js";
 
 export const CALENDAR_META = {
   language: "fi",
@@ -71,4 +71,74 @@ export function missingNameDayDates() {
     if (realNames(nimipaivat[key(d)]).length === 0) missing.push(key(d));
   }
   return missing;
+}
+
+// Holiday labels can appear in the calendar source but must not generate
+// personal-name landing pages. Keep this separate from realNames(): existing
+// week views may still show a calendar label such as Uudenvuodenpäivä.
+const NON_PERSONAL_NAMES = new Set(["Uudenvuodenpäivä"]);
+
+export function nameDaySlug(name) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function personalNameDayEntries() {
+  return Object.entries(nimipaivat)
+    .map(([dateKey, names]) => ({
+      dateKey,
+      names: realNames(names).filter((name) => !NON_PERSONAL_NAMES.has(name)),
+    }))
+    .filter((entry) => entry.names.length > 0)
+    .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+}
+
+export function nameDayDateKeys() {
+  return personalNameDayEntries().map((entry) => entry.dateKey);
+}
+
+export function nameDayNames() {
+  const records = new Map();
+  for (const entry of personalNameDayEntries()) {
+    for (const name of entry.names) {
+      const slug = nameDaySlug(name);
+      const existing = records.get(slug);
+      if (existing && existing.name !== name) {
+        throw new Error(`Nimipäivän osoitetörmäys: ${existing.name} ja ${name}`);
+      }
+      if (existing) existing.dateKeys.push(entry.dateKey);
+      else records.set(slug, { name, slug, dateKeys: [entry.dateKey] });
+    }
+  }
+  return [...records.values()].sort((a, b) => a.name.localeCompare(b.name, "fi"));
+}
+
+export function nameDayForSlug(slug) {
+  return nameDayNames().find((entry) => entry.slug === slug) ?? null;
+}
+
+export function hasNameDayPage(name) {
+  return nameDayForSlug(nameDaySlug(name))?.name === name;
+}
+
+export function nameDaysForDateKey(dateKey) {
+  return (
+    personalNameDayEntries().find((entry) => entry.dateKey === dateKey)?.names ?? []
+  );
+}
+
+export function dateFromNameDayKey(dateKey, year) {
+  const match = dateKey.match(/^(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return null;
+  }
+  return date;
 }

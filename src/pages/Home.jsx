@@ -1,7 +1,6 @@
-import React from "react";
 import "../App.css";
 import SEO from "../components/SEO";
-import { homeMeta } from "../data/seo";
+import { canonicalFor, homeMeta } from "../data/seo";
 import Weekcounter from "../components/Weekcounter";
 import WeeklySearch from "../components/WeeklySearch";
 import FAQ from "../components/FAQ";
@@ -17,7 +16,18 @@ const Home = () => {
   const meta = homeMeta(new Date());
   return (
     <>
-      <SEO title={meta.title} description={meta.description} />
+      <SEO
+        title={meta.title}
+        description={meta.description}
+        canonical={canonicalFor("/")}
+        lang="fi"
+        alternates={[
+          { lang: "fi", href: canonicalFor("/") },
+          { lang: "en", href: canonicalFor("/en") },
+          { lang: "sv-FI", href: canonicalFor("/sv") },
+          { lang: "x-default", href: canonicalFor("/") },
+        ]}
+      />
       <div className="app">
         <Weekcounter lead={meta.lead} />
         <WeeklySearch />

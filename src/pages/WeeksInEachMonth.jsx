@@ -52,6 +52,11 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
   };
 
   const weeks = getMonthWeeks(y, mi);
+  // Genitive, capitalized, in "{genitive} viikot {year}" order ("Kesäkuun
+  // viikot 2026") — matches how people actually search ("kesäkuun viikot",
+  // "heinäkuun viikot 2026") as a literal contiguous phrase, and matches
+  // monthMeta()'s title in seo.js, so the H1/lead and <title> never disagree.
+  const genitiveCap = M_GENITIVE[mi].replace(/^./, (c) => c.toUpperCase());
 
   var prevM = m - 1,
     prevY = y;
@@ -77,12 +82,14 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
         <Link to={`/vuosi-${year}`}>Viikot {year}</Link> / {M_FULL[mi]}
       </div>
       <h1 id="mh">
-        Viikot – {M_FULL[mi]} {year}{" "}
+        {genitiveCap} viikot {year}
       </h1>
       <p className="lead">
-        Nämä viikkonumerot kuuluvat {M_GENITIVE[mi]} {year} kalenteriin. Osa
-        viikoista
-        voi jatkua viereiseen kuukauteen.
+        <strong>
+          {genitiveCap} viikot {year}.
+        </strong>{" "}
+        Tässä kaikki {weeks.length} viikkoa, jotka kuuluvat {M_GENITIVE[mi]}{" "}
+        {year} kalenteriin. Osa viikoista voi jatkua viereiseen kuukauteen.
       </p>
       <div className="grid">
         {weeks.map((w) => (

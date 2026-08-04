@@ -1,12 +1,10 @@
-import React from "react";
-import { isoWeek, isoYear } from "./dateUtils";
+import { isoYear } from "./dateUtils";
 import { Link } from "react-router-dom";
 import SocialLinks from "./SocialLinks";
 
 function Footer() {
   // Automatically outputs the correct year dynamically
   var NOW = new Date(),
-    W_NOW = isoWeek(NOW),
     Y_NOW = isoYear(NOW);
   const currentYear = Y_NOW;
 
@@ -56,6 +54,16 @@ function Footer() {
             <li>
               <Link to="/ukk" onClick={() => window.scrollTo(0, 0)}>
                 Usein kysytyt kysymykset
+              </Link>
+            </li>
+            <li>
+              <Link to="/en" lang="en" onClick={() => window.scrollTo(0, 0)}>
+                English
+              </Link>
+            </li>
+            <li>
+              <Link to="/sv" lang="sv" onClick={() => window.scrollTo(0, 0)}>
+                Svenska
               </Link>
             </li>
           </ul>

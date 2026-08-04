@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import {
   isoWeek,
@@ -18,9 +17,10 @@ import {
 import SEO from "../components/SEO";
 import { canonicalFor, weekMeta } from "../data/seo";
 import { holidaysInWeek } from "../data/holidays";
-import { nameDaysForWeek } from "../data/nameDays";
-import { schoolHolidaysInWeek } from "../data/schoolHolidays";
+import { hasNameDayPage, nameDaySlug, nameDaysForWeek } from "../data/nameDays";
+import { schoolHolidayPeriodsInWeek } from "../data/schoolHolidayPages";
 import { sunTimesForWeek, formatHelsinkiTime, HELSINKI } from "../data/sunTimes";
+import { dateKeyFor } from "../data/nameDayPages";
 
 function sameDay(a, b) {
   return (
@@ -38,7 +38,7 @@ const SCHOOL_PERIOD_LABELS = {
 };
 
 function schoolPeriodLabel(p) {
-  const region = p.type === "hiihtoloma" ? ` (${p.regionName})` : "";
+  const region = p.regionName ? ` (${p.regionName})` : "";
   const estimate = p.estimated ? " (arvioitu ajankohta)" : "";
   return `${SCHOOL_PERIOD_LABELS[p.type]}${region}${estimate}`;
 }
@@ -69,9 +69,6 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
     return <Navigate to={`/viikko-${clamped}-${y}`} replace />;
   }
 
-  const NOW = new Date();
-  const W_NOW = isoWeek(NOW);
-  const Y_NOW = isoYear(NOW);
   const mo = mondayOf(w, y);
   const su = new Date(mo);
   su.setDate(mo.getDate() + 6);
@@ -154,7 +151,7 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   // to each day explicitly instead of by index.
   const weekNameDays = nameDaysForWeek(y, w);
   const weekHolidays = holidaysInWeek(y, w);
-  const weekSchoolPeriods = schoolHolidaysInWeek(y, w);
+  const weekSchoolPeriods = schoolHolidayPeriodsInWeek(y, w);
   const weekSunTimes = sunTimesForWeek(y, w, HELSINKI);
 
   const days = [...Array(7)].map((_, i) => {
@@ -202,6 +199,12 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
     <section className="app">
       <SEO
         {...weekMeta(w, y)}
+        lang="fi"
+        alternates={[
+          { lang: "fi", href: canonicalFor("/viikko-" + w + "-" + y) },
+          { lang: "sv-FI", href: canonicalFor("/sv/vecka-" + w + "-" + y) },
+          { lang: "x-default", href: canonicalFor("/viikko-" + w + "-" + y) },
+        ]}
         canonical={canonicalFor(`/viikko-${week}-${year}`)}
       />
       <div className="breadcrumb">
@@ -243,7 +246,8 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       )}
       {weekSchoolPeriods.length > 0 && (
         <p className="lead">
-          Koululoma tällä viikolla: {weekSchoolPeriods.map(schoolPeriodLabel).join(", ")}.
+          Koululoma tällä viikolla: {weekSchoolPeriods.map(schoolPeriodLabel).join(", ")}.{" "}
+          <Link to={`/koululomat-${y}`}>Katso koululomat {y} alueittain</Link>.
         </p>
       )}
 
@@ -254,7 +258,11 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
             <div key={i} className={`day ${day.isWeekend ? "weekend" : ""}`}>
               <div className="day-head">
                 <span className="wd">{WD[day.date.getDay()]}</span>
-                <span className="dt">{dFull(day.date)}</span>
+                <span className="dt">
+                  {day.names.some(hasNameDayPage) ? (
+                    <Link to={`/nimipaivat/${dateKeyFor(day.date)}`}>{dFull(day.date)}</Link>
+                  ) : dFull(day.date)}
+                </span>
               </div>
               <div className="day-extra">
                 <div>
@@ -264,7 +272,14 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
                 {day.names.length > 0 && (
                   <div>
                     {day.names.length === 1 ? "Nimipäivä" : "Nimipäivät"}:{" "}
-                    {day.names.join(", ")}
+                    {day.names.map((name, nameIndex) => (
+                      <span key={name}>
+                        {nameIndex > 0 && ", "}
+                        {hasNameDayPage(name) ? (
+                          <Link to={`/nimipaiva/${nameDaySlug(name)}`}>{name}</Link>
+                        ) : name}
+                      </span>
+                    ))}
                   </div>
                 )}
                 {day.holidays.map((h) => (
@@ -274,16 +289,16 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
                   </div>
                 ))}
                 {day.schoolPeriods.map((p) => (
-                  <div key={p.type + (p.region || "")}>{schoolPeriodLabel(p)}</div>
+                  <div key={p.type + p.week}>{schoolPeriodLabel(p)}</div>
                 ))}
                 <div>
                   {day.sun.polarNight
                     ? "Aurinko ei nouse Helsingissä tänään (kaamos)."
                     : day.sun.polarDay
                       ? "Aurinko ei laske Helsingissä tänään (yötön yö)."
-                      : `Aurinko Helsingissä: ${formatHelsinkiTime(day.sun.sunrise)}–${formatHelsinkiTime(day.sun.sunset)} (${Math.floor(day.sun.daylightMinutes / 60)} h ${day.sun.daylightMinutes % 60} min valoisaa${
+                      : `Aurinko Helsingissä: ${formatHelsinkiTime(day.sun.sunrise)}–${formatHelsinkiTime(day.sun.sunset)} (${Math.floor(day.sun.daylightMinutes / 60)} h ${day.sun.daylightMinutes % 60} min valoisaa${
                           day.sun.deltaMinutesFromPreviousDay !== 0
-                            ? `, ${day.sun.deltaMinutesFromPreviousDay > 0 ? "+" : "−"}${Math.abs(day.sun.deltaMinutesFromPreviousDay)} min edelliseen päivään verrattuna`
+                            ? `, ${day.sun.deltaMinutesFromPreviousDay > 0 ? "+" : "−"}${Math.abs(day.sun.deltaMinutesFromPreviousDay)} min edelliseen päivään verrattuna`
                             : ""
                         })`}
                 </div>

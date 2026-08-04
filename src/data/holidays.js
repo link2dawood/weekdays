@@ -19,7 +19,7 @@
 // Saturday 31 October — both the earliest possible Saturday in their
 // windows that year.
 
-import { mondayOf } from "../components/dateUtils";
+import { mondayOf } from "../components/dateUtils.js";
 
 function addDays(date, n) {
   const d = new Date(date);

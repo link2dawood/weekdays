@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route, useParams } from "react-router-dom";
 import Home from "./pages/Home";
 import YearCalendar from "./pages/YearCalendar";
@@ -7,6 +6,7 @@ import FAQPage from "./pages/FAQPage";
 import WeekDays from "./pages/WeekDays";
 import WeeksInEachMonth from "./pages/WeeksInEachMonth";
 import WhatWeek from "./pages/WhatWeek";
+import WeekStartsMonday from "./pages/WeekStartsMonday";
 import PrintCalendar from "./pages/PrintCalendar";
 import PublicHolidays from "./pages/PublicHolidays";
 import WorkingDays from "./pages/WorkingDays";
@@ -23,6 +23,22 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
 import Footer from "./components/Footer";
+import NamedHoliday from "./pages/NamedHoliday";
+import NameDayName from "./pages/NameDayName";
+import NameDaysDate from "./pages/NameDaysDate";
+import NameDaysToday from "./pages/NameDaysToday";
+import SchoolHolidays from "./pages/SchoolHolidays";
+import CurrentMonth from "./pages/CurrentMonth";
+import CurrentYear from "./pages/CurrentYear";
+import WeekdayCalculator from "./pages/WeekdayCalculator";
+import EnglishHome from "./pages/EnglishHome";
+import SwedishHome from "./pages/SwedishHome";
+import SwedishYear from "./pages/SwedishYear";
+import SwedishWeek from "./pages/SwedishWeek";
+import {
+  PRERENDER_MAX_YEAR,
+  PRERENDER_MIN_YEAR,
+} from "./components/dateUtils";
 
 // Finnish dynamic pages use keyword-rich single-segment slugs
 // (/viikko-30-2026, /kuukausi-7-2026, /vuosi-2026, /tulosta-2026). React Router
@@ -42,12 +58,33 @@ const DynamicSlug = () => {
   if ((m = slug.match(/^pyhapaivat-(\d+)$/)))
     return <PublicHolidays year={+m[1]} />;
   if ((m = slug.match(/^tyopaivat-(\d+)$/))) return <WorkingDays year={+m[1]} />;
+  if ((m = slug.match(/^koululomat-(\d+)$/)))
+    return <SchoolHolidays year={+m[1]} />;
   if ((m = slug.match(/^kalenteri-(\d+)-(alkuvuosi|loppuvuosi)$/)))
     return <CalendarYear year={+m[1]} half={m[2] === "alkuvuosi" ? 1 : 2} />;
   if ((m = slug.match(/^kalenteri-(\d+)$/)))
     return <CalendarYear year={+m[1]} />;
   if ((m = slug.match(/^tulostettava-kalenteri-(\d+)$/)))
     return <CalendarYear year={+m[1]} print />;
+  return <NotFound />;
+};
+
+const SwedishSlug = () => {
+  const { slug } = useParams();
+  let match = slug.match(/^vecka-(\d+)-(\d+)$/);
+  if (match) {
+    const year = Number(match[2]);
+    if (year >= PRERENDER_MIN_YEAR && year <= PRERENDER_MAX_YEAR) {
+      return <SwedishWeek week={Number(match[1])} year={year} />;
+    }
+  }
+  match = slug.match(/^veckor-(\d+)$/);
+  if (match) {
+    const year = Number(match[1]);
+    if (year >= PRERENDER_MIN_YEAR && year <= PRERENDER_MAX_YEAR) {
+      return <SwedishYear year={year} />;
+    }
+  }
   return <NotFound />;
 };
 
@@ -62,8 +99,15 @@ const AppRoutes = () => {
       <main id="main">
         <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/en" element={<EnglishHome />} />
+        <Route path="/sv" element={<SwedishHome />} />
+        <Route path="/sv/:slug" element={<SwedishSlug />} />
         <Route path="/mika-on-viikkonumero" element={<WhatWeek />} />
+        <Route path="/viikko-alkaa-maanantaista" element={<WeekStartsMonday />} />
         <Route path="/kuinka-monta-viikkoa-vuodessa" element={<WeeksInYear />} />
+        <Route path="/mika-kuukausi-nyt" element={<CurrentMonth />} />
+        <Route path="/mika-vuosi-nyt" element={<CurrentYear />} />
+        <Route path="/viikonpaiva" element={<WeekdayCalculator />} />
         <Route path="/ukk" element={<FAQPage />} />
         <Route path="/laskurit" element={<Calculators />} />
         <Route path="/paivamaara-viikoksi" element={<DateToWeek />} />
@@ -74,6 +118,10 @@ const AppRoutes = () => {
         <Route path="/ota-yhteytta" element={<ContactUs />} />
         <Route path="/tietosuoja" element={<PrivacyPolicy />} />
         <Route path="/kayttoehdot" element={<TermsAndConditions />} />
+        <Route path="/nimipaivat/tanaan" element={<NameDaysToday />} />
+        <Route path="/nimipaiva/:name" element={<NameDayName />} />
+        <Route path="/nimipaivat/:monthDay" element={<NameDaysDate />} />
+        <Route path="/:holidayYear/:holidaySlug" element={<NamedHoliday />} />
         <Route path="/:slug" element={<DynamicSlug />} />
         <Route path="*" element={<NotFound />} />
         </Routes>

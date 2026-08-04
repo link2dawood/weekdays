@@ -216,6 +216,18 @@ export function fmtDayHeadingFi(date) {
 export function fmtShortFi(date) {
   return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`;
 }
+// Compact range for metadata: "20.–26.7.2026", "29.6.–5.7.2026", or
+// "29.12.2025–4.1.2026" when the range crosses a calendar-year boundary.
+export function fmtRangeCompactFi(mo, su) {
+  const sameYear = mo.getFullYear() === su.getFullYear();
+  if (sameYear && mo.getMonth() === su.getMonth()) {
+    return `${mo.getDate()}.–${su.getDate()}.${su.getMonth() + 1}.${su.getFullYear()}`;
+  }
+  if (sameYear) {
+    return `${mo.getDate()}.${mo.getMonth() + 1}.–${su.getDate()}.${su.getMonth() + 1}.${su.getFullYear()}`;
+  }
+  return `${fmtShortFi(mo)}–${fmtShortFi(su)}`;
+}
 // Range: "20.–26. heinäkuuta 2026" (same month); "29.6.–5.7.2026" (same year,
 // different months); "29.12.2026–4.1.2027" (spanning a year boundary).
 export function fmtRangeFi(mo, su) {

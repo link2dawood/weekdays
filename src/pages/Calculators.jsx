@@ -1,9 +1,13 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import { canonicalFor, routeMeta } from "../data/seo";
 
 const TOOLS = [
+  {
+    to: "/viikonpaiva",
+    name: "Viikonpäivälaskuri",
+    desc: "Syötä päivämäärä ja selvitä, mikä viikonpäivä se oli tai tulee olemaan.",
+  },
   {
     to: "/paivamaara-viikoksi",
     name: "Päivämäärästä viikkonumeroon",

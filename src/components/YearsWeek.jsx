@@ -28,6 +28,7 @@ const YearsWeek = () => {
               key={`v-${year}`}
               to={`/vuosi-${year}`}
               className={`pill ${year === Y_NOW ? "active" : ""}`}
+              aria-label={`Viikkonumerot ${year}`}
               onClick={() => window.scrollTo(0, 0)}
             >
               {year}
@@ -42,6 +43,7 @@ const YearsWeek = () => {
               key={`k-${year}`}
               to={`/kalenteri-${year}`}
               className={`pill ${year === Y_NOW ? "active" : ""}`}
+              aria-label={`Vuoden ${year} kalenteri`}
               onClick={() => window.scrollTo(0, 0)}
             >
               {year}

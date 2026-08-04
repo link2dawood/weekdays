@@ -1,9 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
-import { isoWeek, isoYear } from "./dateUtils";
+import { isoYear } from "./dateUtils";
 const QuickLinks = () => {
   const NOW = new Date();
-  const W_NOW = isoWeek(NOW);
   const Y_NOW = isoYear(NOW);
   return (
     <>
@@ -41,6 +39,30 @@ const QuickLinks = () => {
           >
             <b>Työpäivät {Y_NOW}</b>
             <span>Montako työpäivää vuodessa</span>
+          </Link>
+          <Link
+            className="ql"
+            to="/mika-kuukausi-nyt"
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Mikä kuukausi nyt on?</b>
+            <span>Nykyinen kuukausi numerona ja kalenterina</span>
+          </Link>
+          <Link
+            className="ql"
+            to="/mika-vuosi-nyt"
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Mikä vuosi nyt on?</b>
+            <span>Vuoden tiedot ja eteneminen</span>
+          </Link>
+          <Link
+            className="ql"
+            to="/viikonpaiva"
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            <b>Mikä viikonpäivä oli?</b>
+            <span>Tarkista minkä tahansa päivämäärän viikonpäivä</span>
           </Link>
           <Link
             className="ql"

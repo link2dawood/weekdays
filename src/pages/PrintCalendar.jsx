@@ -1,4 +1,3 @@
-import React from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   isoWeek,
@@ -6,16 +5,19 @@ import {
   weeksInIsoYear,
   mondayOf,
   dFull,
+  PRERENDER_MIN_YEAR as YEAR_MIN,
+  PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { canonicalFor, printMeta } from "../data/seo";
+import {
+  downloadCalendarCsv,
+  printListFaqs,
+} from "../data/printCalendarContent";
 
 const PrintCalendar = ({ year: pYear } = {}) => {
   const params = useParams();
   const selectedYear = Number(pYear ?? params.year);
-
-  const YEAR_MIN = 2020,
-    YEAR_MAX = 2035;
 
   const years = [];
   for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
@@ -27,6 +29,7 @@ const PrintCalendar = ({ year: pYear } = {}) => {
   const Y_NOW = isoYear(NOW);
 
   const total = weeksInIsoYear(selectedYear);
+  const faqs = printListFaqs(selectedYear);
 
   const weeks = Array.from({ length: total }, (_, i) => i + 1);
 
@@ -40,12 +43,25 @@ const PrintCalendar = ({ year: pYear } = {}) => {
         <Link to="/">Etusivu</Link> / Tulostettava {selectedYear}
       </div>
 
-      <h1>Tulostettava viikkokalenteri {selectedYear}</h1>
+      <h1>Viikot PDF {selectedYear} – tulostettava viikkolista</h1>
 
       <p className="lead">
-        Kaikki vuoden {selectedYear} viikot ja päivämäärät. Tulosta tai tallenna
-        PDF-tiedostona.
+        <strong>
+          Tulostettava viikkolista {selectedYear} sisältää vuoden kaikki {total}
+          {" "}ISO-viikkoa sekä niiden alkamis- ja päättymispäivät.
+        </strong>{" "}
+        Tulosta lista, tallenna se PDF-muodossa tai lataa tiedot
+        Excel-yhteensopivana CSV-tiedostona.
       </p>
+      <div className="panel noprint">
+        <div className="now-label">Tulostettavat viikot lyhyesti</div>
+        <ul>
+          <li><strong>Vuosi:</strong> {selectedYear}</li>
+          <li><strong>Viikkoja:</strong> {total}</li>
+          <li><strong>Viikon alku:</strong> maanantai</li>
+          <li><strong>Muodot:</strong> tuloste, PDF ja Excel-yhteensopiva CSV</li>
+        </ul>
+      </div>
       <div className="noprint">
         <div className="pills">
           {years.map((y) => (
@@ -58,9 +74,16 @@ const PrintCalendar = ({ year: pYear } = {}) => {
             </Link>
           ))}
         </div>
-        <p>
+        <p className="print-actions">
           <button className="btn" onClick={() => window.print()}>
             Tulosta / tallenna PDF
+          </button>
+          {" "}
+          <button
+            className="btn"
+            onClick={() => downloadCalendarCsv(selectedYear)}
+          >
+            Lataa Excel-CSV
           </button>
         </p>
       </div>
@@ -94,6 +117,34 @@ const PrintCalendar = ({ year: pYear } = {}) => {
           })}
         </tbody>
       </table>
+
+      <div className="prose noprint">
+        <h2>Viikot PDF- tai Excel-muodossa</h2>
+        <p>
+          PDF sopii tulostamiseen ja jakamiseen. CSV sisältää vuoden jokaisen
+          päivämäärän, viikonpäivän, ISO-viikon, viikkovuoden sekä juhla- ja
+          liputuspäivät, ja sen voi avata Excelissä.
+        </p>
+        <p>
+          Jos tarvitset kuukausinäkymän, avaa{" "}
+          <Link to={"/tulostettava-kalenteri-" + selectedYear}>
+            tulostettava viikkokalenteri {selectedYear}
+          </Link>
+          . Tavallinen selattava näkymä löytyy sivulta{" "}
+          <Link to={"/kalenteri-" + selectedYear}>
+            viikkokalenteri {selectedYear}
+          </Link>
+          .
+        </p>
+
+        <h2>Usein kysytyt kysymykset</h2>
+        {faqs.map((item, index) => (
+          <details key={item.q} open={index === 0}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
     </section>
   );
 };

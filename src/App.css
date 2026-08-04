@@ -663,7 +663,8 @@ details:last-of-type {
   border-bottom: 1px solid var(--line);
 }
 /* Sections */
-#mh {
+#mh,
+.mh {
   padding-top: 30px;
 }
 
@@ -1348,6 +1349,7 @@ footer {
   footer,
   .breadcrumb,
   .noprint,
+  .print-support,
   .cal-page .pills,
   .cal-page .cal-nimi,
   .cal-page .cal-seealso {
@@ -1455,6 +1457,13 @@ body:has(.cal-print) footer {
   background: #fff;
   color: #000;
   border: 1px solid #000;
+}
+
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
 
 /* ---- Data tables + stat boxes (holiday / working-day hub pages) ---- */

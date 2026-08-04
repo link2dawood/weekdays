@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
   isoWeek,
@@ -10,8 +9,13 @@ import {
 } from "../components/dateUtils";
 import { getJuhlapaivat, getLiputuspaivat } from "../data/juhlapaivat";
 import nimipaivat from "../data/nimipaivat.json";
+import { hasNameDayPage, nameDaySlug } from "../data/nameDays";
 import SEO from "../components/SEO";
-import { canonicalFor, calendarMeta } from "../data/seo";
+import { calendarFaqs, canonicalFor, calendarMeta } from "../data/seo";
+import {
+  downloadCalendarCsv,
+  printableCalendarFaqs,
+} from "../data/printCalendarContent";
 
 // Year horizon (YEAR_MIN/YEAR_MAX) is imported from dateUtils so the pills,
 // cross-links, and every page's prev/next nav share one rolling source of truth.
@@ -27,6 +31,8 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
   const juhla = getJuhlapaivat(y);
   const liputus = getLiputuspaivat(y);
   const totalWeeks = weeksInIsoYear(y);
+  const faqs = !half && !print ? calendarFaqs(y) : [];
+  const printFaqs = print ? printableCalendarFaqs(y) : [];
 
   // "Today" in Europe/Helsinki. Server-rendered at build (the same current-date
   // pattern Home.jsx uses); the daily rebuild keeps it fresh and hydration
@@ -132,14 +138,69 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
         {halfLabel}
       </div>
 
-      <h1>Vuoden {y} kalenteri{halfLabel}</h1>
+      <h1>
+        {print
+          ? `Tulostettava viikkokalenteri ${y}`
+          : `Viikkokalenteri ${y}${halfLabel}`}
+      </h1>
 
-      <p className="lead">
-        Vuosi {y} sisältää {totalWeeks} viikkoa. Kalenteri noudattaa ISO 8601
-        -standardia: viikko alkaa maanantaista ja päättyy sunnuntaihin.
-        Juhlapäivät ja viikkonumerot on merkitty.
-        {isCurrentYear ? " Tämän päivän kohta on korostettu." : ""}
-      </p>
+      {!half && !print ? (
+        <p className="lead">
+          <strong>
+            Viikkokalenteri {y} näyttää vuoden kaikki {totalWeeks} viikkoa,
+            viikkonumerot, päivämäärät ja Suomen juhlapäivät yhdessä näkymässä.
+          </strong>{" "}
+          Kalenterin voi tulostaa tai tallentaa PDF-muodossa.
+          {isCurrentYear ? " Tämän päivän kohta on korostettu." : ""}
+        </p>
+      ) : (
+        <p className={print ? "lead print-support" : "lead"}>
+          Vuosi {y} sisältää {totalWeeks} viikkoa. Kalenteri noudattaa ISO 8601
+          -standardia: viikko alkaa maanantaista ja päättyy sunnuntaihin.
+          Juhlapäivät ja viikkonumerot on merkitty.
+          {isCurrentYear ? " Tämän päivän kohta on korostettu." : ""}
+        </p>
+      )}
+
+      {print && (
+        <section className="print-support">
+          <div className="panel">
+            <div className="now-label">Tulostettava kalenteri lyhyesti</div>
+            <ul>
+              <li><strong>Muoto:</strong> yksi A4-vaakasivu.</li>
+              <li><strong>Sisältö:</strong> 12 kuukautta ja {totalWeeks} ISO-viikkoa.</li>
+              <li><strong>Merkinnät:</strong> Suomen juhla- ja liputuspäivät.</li>
+              <li><strong>Tallennus:</strong> PDF tai Excel-yhteensopiva CSV.</li>
+            </ul>
+          </div>
+          <p className="print-actions">
+            <button className="btn" onClick={() => window.print()}>
+              Tulosta / tallenna PDF
+            </button>
+            {" "}
+            <button className="btn" onClick={() => downloadCalendarCsv(y)}>
+              Lataa Excel-CSV
+            </button>
+            {" "}
+            <Link className="btn" to={"/kalenteri-" + y}>
+              Avaa selattava kalenteri
+            </Link>
+          </p>
+        </section>
+      )}
+
+      {!half && !print && (
+        <div className="panel noprint">
+          <div className="now-label">Viikkokalenteri {y} lyhyesti</div>
+          <ul className="clean">
+            <li>Vuodessa {y} on {totalWeeks} ISO-viikkoa.</li>
+            <li>Kalenterissa näkyvät kaikki 12 kuukautta ja viikkonumerot.</li>
+            <li>Viikko alkaa maanantaina ja päättyy sunnuntaina.</li>
+            <li>Suomen juhla- ja liputuspäivät on merkitty päivien yhteyteen.</li>
+            <li>Kalenterin voi tulostaa tai tallentaa PDF-muodossa.</li>
+          </ul>
+        </div>
+      )}
 
       <div className="pills">
         {years.map((yy) => (
@@ -177,7 +238,17 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
 
       {todayNames.length > 0 && (
         <p className="cal-nimi">
-          Tänään on nimipäivä: <strong>{todayNames.join(", ")}</strong>
+          Tänään on nimipäivä:{" "}
+          <strong>
+            {todayNames.map((name, index) => (
+              <span key={name}>
+                {index > 0 && ", "}
+                {hasNameDayPage(name) ? (
+                  <Link to={`/nimipaiva/${nameDaySlug(name)}`}>{name}</Link>
+                ) : name}
+              </span>
+            ))}
+          </strong>
         </p>
       )}
 
@@ -185,7 +256,64 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
         <button className="btn" onClick={() => window.print()}>
           Tulosta / tallenna PDF
         </button>
+        {!half && (
+          <>
+            {" "}
+            <button className="btn" onClick={() => downloadCalendarCsv(y)}>
+              Lataa Excel-CSV
+            </button>
+          </>
+        )}
       </p>
+
+      {!half && !print && (
+        <section className="prose noprint">
+          <h2>Miten viikkokalenteria {y} käytetään?</h2>
+          <ol>
+            <li>Etsi kuukausi ja päivämäärä koko vuoden viikkonäkymästä.</li>
+            <li>
+              Avaa viikkonumerosta viikon tarkat päivämäärät, juhlapäivät ja
+              nimipäivät. Esimerkiksi{" "}
+              <Link to={`/viikko-1-${y}`}>viikko 1/{y}</Link>.
+            </li>
+            <li>
+              Katso kaikki <Link to={`/vuosi-${y}`}>vuoden {y} viikkonumerot</Link>{" "}
+              luettelona tai avaa{" "}
+              <Link to={`/tulostettava-kalenteri-${y}`}>
+                tulostettava A4-kalenteri
+              </Link>.
+            </li>
+            <li>Tulosta näkymä tai tallenna se PDF-tiedostoksi painikkeesta.</li>
+          </ol>
+
+          <h2>Usein kysytyt kysymykset viikkokalenterista {y}</h2>
+          {faqs.map((item, index) => (
+            <details key={item.q} open={index === 0}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </section>
+      )}
+
+      {print && (
+        <section className="prose print-support">
+          <h2>Kalenteri PDF- ja Excel-muodossa</h2>
+          <p>
+            Tulostuspainike avaa selaimen tulostusikkunan, jossa kalenterin voi
+            tulostaa tai tallentaa PDF-tiedostoksi. CSV-lataus sisältää vuoden
+            päivämäärät, ISO-viikot sekä juhla- ja liputuspäivät Exceliä,
+            Numbersia ja Google Sheetsia varten.
+          </p>
+          <h2>Usein kysytyt kysymykset</h2>
+          {printFaqs.map((item, index) => (
+            <details key={item.q} open={index === 0}>
+              <summary>{item.q}</summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </section>
+      )}
 
       <div className="cal-seealso">
         <h2 id="mh">Katso myös</h2>
@@ -199,6 +327,11 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
           <li>
             <Link to={`/tyopaivat-${y}`}>Työpäivät ja arkipäivät {y}</Link>
           </li>
+          {(y === 2026 || y === 2027) && (
+            <li>
+              <Link to={`/koululomat-${y}`}>Koululomat {y} alueittain</Link>
+            </li>
+          )}
           <li>
             <Link to={`/tulosta-${y}`}>Tulostettava viikkolista {y}</Link>
           </li>

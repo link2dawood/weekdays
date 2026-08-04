@@ -80,7 +80,6 @@ const Weekcounter = ({ lead }) => {
                   <i key={item.weekNum} className={item.className}></i>
                 ))}
               </div>
-              <div className="comb" id="comb" aria-hidden="true"></div>
               <div className="comb-foot">
                 <span id="pct">{pct}% vuodesta kulunut</span>
                 <span>52/53 viikkoa</span>

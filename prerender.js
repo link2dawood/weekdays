@@ -22,11 +22,56 @@ import {
   SITE_URL,
   sitemapEntries,
   breadcrumbTrail,
+  calendarFaqs,
+  calendarMeta,
   CONTENT_UPDATED,
   mondayOf,
 } from "./src/data/seo.js";
 import { faqs, faqCategories } from "./src/data/faqs.js";
 import { fmtShortFi } from "./src/components/dateUtils.js";
+import { holidaysInYear } from "./src/data/holidays.js";
+import {
+  holidayFaqs,
+  holidayPageFor,
+  holidayPageMeta,
+} from "./src/data/holidayPages.js";
+import {
+  nameDayDateMeta,
+  nameDayDatePage,
+  nameDayFaqs,
+  nameDayNameMeta,
+  nameDayNamePage,
+  todayNameDayMeta,
+  todayNameDayPage,
+} from "./src/data/nameDayPages.js";
+import { weeksInYearFaqs } from "./src/data/weeksInYearContent.js";
+import {
+  whatWeekFaqs,
+  weekStartsMondayFaqs,
+} from "./src/data/isoWeekContent.js";
+import {
+  printableCalendarFaqs,
+  printListFaqs,
+} from "./src/data/printCalendarContent.js";
+import {
+  SCHOOL_HOLIDAY_SOURCES,
+  schoolHolidayFaqs,
+  schoolHolidayPage,
+} from "./src/data/schoolHolidayPages.js";
+import {
+  currentMonthFaqs,
+  currentMonthMeta,
+  currentYearFaqs,
+  currentYearMeta,
+  weekdayFaqs,
+  weekdayMeta,
+} from "./src/data/currentDateContent.js";
+import { englishFaqs } from "./src/data/englishContent.js";
+import {
+  swedishHomeFaqs,
+  swedishWeekFaqs,
+  swedishYearFaqs,
+} from "./src/data/swedishContent.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "dist");
@@ -38,7 +83,11 @@ const serverDir = path.resolve(__dirname, "dist-server");
 // home shell and treated ~200 URLs as duplicates of the homepage. Rendering
 // them gives each unique, indexable HTML that matches its sitemap entry.
 const currentYear = new Date().getFullYear();
-const routes = sitemapEntries(currentYear).map((e) => e.path);
+const sitemapRoutes = sitemapEntries(currentYear).map((e) => e.path);
+// Keep the honest noindex fallback available even while today's date is not
+// covered by the partial seed. It joins the sitemap automatically once the
+// authorized full dataset supplies names for the current date.
+const routes = [...new Set([...sitemapRoutes, "/nimipaivat/tanaan"])];
 
 // Indexable window: keep the high-intent recent + near-future years in Google's
 // index and noindex the long tail, so ~1,100 near-identical template pages
@@ -49,6 +98,10 @@ const routes = sitemapEntries(currentYear).map((e) => e.path);
 const INDEX_MIN_YEAR = currentYear - 2;
 const INDEX_MAX_YEAR = currentYear + 4;
 const isIndexable = (p) => {
+  // Named-holiday pages are the deliberately expanded content cluster: all
+  // 15 holidays across the complete 2020..current+9 publishing horizon are
+  // indexable and included in the sitemap.
+  if (/^\/pyhat-\d{4}\/[a-z0-9-]+$/.test(p)) return true;
   const m = p.match(/-(\d{4})(?:-(?:alkuvuosi|loppuvuosi))?$/);
   if (!m) return true; // static pages have no year → always indexable
   const y = Number(m[1]);
@@ -156,61 +209,213 @@ function faqScript() {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+function englishPageScript() {
+  const url = canonicalFor("/en");
+  const meta = metaFor("/en");
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url + "#page",
+        url,
+        name: "What is the current week number?",
+        description: meta.description,
+        inLanguage: "en",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+      },
+      {
+        "@type": "FAQPage",
+        "@id": url + "#faq",
+        inLanguage: "en",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: englishFaqs.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
+}
+
+function swedishPageScript(url) {
+  let headline = "Vilken vecka är det nu?";
+  let faqsForPage = swedishHomeFaqs;
+  let match = url.match(/^\/sv\/veckor-(\d+)$/);
+  if (match) {
+    headline = "Veckonummer " + match[1];
+    faqsForPage = swedishYearFaqs(Number(match[1]));
+  }
+  match = url.match(/^\/sv\/vecka-(\d+)-(\d+)$/);
+  if (match) {
+    headline = "Vecka " + match[1] + " år " + match[2];
+    faqsForPage = swedishWeekFaqs(Number(match[1]), Number(match[2]));
+  }
+  const canonical = canonicalFor(url);
+  const meta = metaFor(url);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": canonical + "#page",
+        url: canonical,
+        name: headline,
+        description: meta.description,
+        inLanguage: "sv-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+      },
+      {
+        "@type": "FAQPage",
+        "@id": canonical + "#faq",
+        inLanguage: "sv-FI",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faqsForPage.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
+}
+
+function languageAlternateLinks(url) {
+  let fi;
+  let sv;
+  if (["/", "/en", "/sv"].includes(url)) {
+    fi = "/";
+    sv = "/sv";
+    return (
+      '<link rel="alternate" hreflang="fi" href="' + canonicalFor(fi) + '" />' +
+      '<link rel="alternate" hreflang="sv-FI" href="' + canonicalFor(sv) + '" />' +
+      '<link rel="alternate" hreflang="en" href="' + canonicalFor("/en") + '" />' +
+      '<link rel="alternate" hreflang="x-default" href="' + canonicalFor(fi) + '" />'
+    );
+  }
+  let match = url.match(/^\/(?:vuosi-|sv\/veckor-)(\d+)$/);
+  if (match) {
+    fi = "/vuosi-" + match[1];
+    sv = "/sv/veckor-" + match[1];
+  }
+  match = url.match(/^\/(?:viikko-|sv\/vecka-)(\d+)-(\d+)$/);
+  if (match) {
+    fi = "/viikko-" + match[1] + "-" + match[2];
+    sv = "/sv/vecka-" + match[1] + "-" + match[2];
+  }
+  if (!fi) return "";
+  return (
+    '<link rel="alternate" hreflang="fi" href="' + canonicalFor(fi) + '" />' +
+    '<link rel="alternate" hreflang="sv-FI" href="' + canonicalFor(sv) + '" />' +
+    '<link rel="alternate" hreflang="x-default" href="' + canonicalFor(fi) + '" />'
+  );
+}
+
+function currentDateIntentScript(url) {
+  const now = new Date();
+  const configs = {
+    "/mika-kuukausi-nyt": {
+      headline: "Mikä kuukausi nyt on?",
+      meta: currentMonthMeta(now),
+      faq: currentMonthFaqs(now),
+    },
+    "/mika-vuosi-nyt": {
+      headline: "Mikä vuosi nyt on?",
+      meta: currentYearMeta(now),
+      faq: currentYearFaqs(now),
+    },
+    "/viikonpaiva": {
+      headline: "Mikä viikonpäivä oli?",
+      meta: weekdayMeta,
+      faq: weekdayFaqs,
+      steps: [
+        "Valitse päivämäärä kentästä.",
+        "Lue tuloksesta viikonpäivä suomeksi.",
+        "Tarkista samalla päivän ISO-viikkonumero ja viikkovuosi.",
+      ],
+    },
+  };
+  const config = configs[url];
+  if (!config) return "";
+  const canonical = canonicalFor(url);
+  const graph = [
+    {
+      "@type": "WebPage",
+      "@id": canonical + "#page",
+      url: canonical,
+      name: config.headline,
+      description: config.meta.description,
+      inLanguage: "fi-FI",
+      datePublished: "2026-08-04",
+      dateModified: CONTENT_UPDATED,
+    },
+    {
+      "@type": "Article",
+      "@id": canonical + "#article",
+      headline: config.headline,
+      description: config.meta.description,
+      inLanguage: "fi-FI",
+      datePublished: "2026-08-04",
+      dateModified: CONTENT_UPDATED,
+      author: { "@id": SITE_URL + "/#organization" },
+      publisher: { "@id": SITE_URL + "/#organization" },
+      mainEntityOfPage: { "@id": canonical + "#page" },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": canonical + "#faq",
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: config.faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ];
+  if (config.steps) {
+    graph.push({
+      "@type": "HowTo",
+      "@id": canonical + "#howto",
+      name: "Näin selvität päivämäärän viikonpäivän",
+      dateModified: CONTENT_UPDATED,
+      step: config.steps.map((item, index) => ({
+        "@type": "HowToStep",
+        position: index + 1,
+        text: item,
+      })),
+    });
+  }
+  const data = { "@context": "https://schema.org", "@graph": graph };
+  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
+}
+
 // Article + FAQPage structured data for the /mika-on-viikkonumero explainer.
 // BreadcrumbList is added separately (breadcrumbScript), so it is not repeated
 // here. The FAQ entries mirror the page's visible <details> list exactly.
 function mikaOnViikkonumeroScript() {
-  const faq = [
-    [
-      "Mikä on viikkonumero yhdellä lauseella?",
-      "Viikkonumero on 1–53 välinen kokonaisluku, joka kertoo, kuinka mones vuoden viikko on parhaillaan menossa. Suomessa se lasketaan ISO 8601 -standardin mukaan.",
-    ],
-    [
-      "Miksi vuoden ensimmäinen viikko määräytyy torstain mukaan?",
-      "Torstai on viikon keskimmäinen arkipäivä. Kun viikon vuosi määräytyy torstain sijainnin mukaan, kalenterivuoden ja viikkovuoden ero jää enintään kolmeksi päiväksi.",
-    ],
-    [
-      "Mikä on vk:n ja viikkonumeron ero?",
-      "Ei mikään. Vk on viikon lyhenne. Vk 30 tarkoittaa samaa kuin viikko 30 tai viikkonumero 30.",
-    ],
-    [
-      "Miksi kaksi eri kalenteria näyttävät eri viikkonumeron samalle päivälle?",
-      "Toinen kalenteri noudattaa todennäköisesti ISO 8601 -standardia ja toinen Yhdysvaltain käytäntöä, jossa viikko alkaa sunnuntaista ja viikko 1 sisältää 1. tammikuuta. Suomessa käytetään aina ISO-viikkoa.",
-    ],
-    [
-      "Onko ISO 8601 sama asia kuin viikkonumero?",
-      "Ei. ISO 8601 on laaja standardi, joka määrittelee kaikki päivämäärä- ja aikaesitykset. Viikkonumero on yksi standardin osa, määritelty pykälässä 3.2.4.",
-    ],
-    [
-      "Missä muodossa viikkonumero merkitään?",
-      "Suomessa yleisimmin vk 30 tai viikko 30. Vuosi lisätään kauttaviivalla tai pilkulla, esim. viikko 30/2026. ISO-standardimuoto on 2026-W30.",
-    ],
-    [
-      "Miten viikkonumeron saa näkyviin puhelimessa ja tietokoneella?",
-      "Windowsissa Kalenteri-sovelluksen asetuksista, macOS:ssa Calendar → Preferences, iPhonessa Kalenteri → Asetukset → Näytä viikkonumerot, Google Kalenterissa asetuksista.",
-    ],
-  ];
+  const faq = whatWeekFaqs;
+  const url = canonicalFor("/mika-on-viikkonumero");
+  const meta = metaFor("/mika-on-viikkonumero");
   const data = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Article",
+        "@id": `${url}#article`,
         headline: "Mikä on viikkonumero? ISO 8601 -viikkolaskenta selitettynä",
-        description:
-          "Viikkonumero on 1–53 välinen luku, joka kertoo vuoden kuluvan viikon. Suomessa noudatetaan ISO 8601 -standardia: viikko alkaa maanantaista ja viikko 1 on aina se, johon 4. tammikuuta osuu.",
+        description: meta.description,
         inLanguage: "fi-FI",
         datePublished: "2026-01-01",
         dateModified: CONTENT_UPDATED,
-        author: { "@type": "Organization", name: "Viikko Nro", url: `${SITE_URL}/` },
-        publisher: {
-          "@type": "Organization",
-          name: "Viikko Nro",
-          logo: {
-            "@type": "ImageObject",
-            url: `${SITE_URL}/logo-horizontal.svg`,
-          },
-        },
-        mainEntityOfPage: `${SITE_URL}/mika-on-viikkonumero`,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: { "@id": `${url}#page` },
         about: [
           { "@type": "Thing", name: "ISO 8601" },
           { "@type": "Thing", name: "Viikkonumero" },
@@ -218,14 +423,26 @@ function mikaOnViikkonumeroScript() {
         ],
       },
       {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-01-01",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        mainEntity: { "@id": `${url}#article` },
+      },
+      {
         "@type": "FAQPage",
         "@id": `${SITE_URL}/mika-on-viikkonumero#faq`,
         inLanguage: "fi-FI",
         dateModified: CONTENT_UPDATED,
-        mainEntity: faq.map(([q, a]) => ({
+        mainEntity: faq.map((item) => ({
           "@type": "Question",
-          name: q,
-          acceptedAnswer: { "@type": "Answer", text: a },
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
     ],
@@ -233,64 +450,223 @@ function mikaOnViikkonumeroScript() {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
-// Mirrors src/data/holidays.js's easterSunday/holidaysInYear exactly.
-// Duplicated (not imported) because holidays.js imports dateUtils without a
-// ".js" extension (fine for Vite's bundled React components, unresolvable for
-// plain-Node prerender.js) — same reason seo.js duplicates isoWeek above.
+function weekStartsMondayScript() {
+  const path = "/viikko-alkaa-maanantaista";
+  const url = canonicalFor(path);
+  const meta = metaFor(path);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: "Miksi viikko alkaa maanantaista?",
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: { "@id": `${url}#page` },
+        about: [
+          { "@type": "Thing", name: "ISO 8601" },
+          { "@type": "Thing", name: "Viikon ensimmäinen päivä" },
+          { "@type": "Thing", name: "ISO-viikkovuosi" },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        mainEntity: { "@id": `${url}#article` },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: weekStartsMondayFaqs.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+function printIntentScript(pathname) {
+  const listMatch = pathname.match(/^\/tulosta-(\d+)$/);
+  const calendarMatch = pathname.match(/^\/tulostettava-kalenteri-(\d+)$/);
+  if (!listMatch && !calendarMatch) return "";
+
+  const year = Number((listMatch || calendarMatch)[1]);
+  const faqsForPage = listMatch
+    ? printListFaqs(year)
+    : printableCalendarFaqs(year);
+  const url = canonicalFor(pathname);
+  const meta = metaFor(pathname);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        mainEntity: { "@id": `${url}#faq` },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faqsForPage.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+function schoolHolidayScript(year) {
+  const pathname = `/koululomat-${year}`;
+  const url = canonicalFor(pathname);
+  const meta = metaFor(pathname);
+  const page = schoolHolidayPage(year);
+  if (!meta || !page) return "";
+  const faq = schoolHolidayFaqs(year);
+  const citations = page.sourceKeys.map(
+    (key) => SCHOOL_HOLIDAY_SOURCES[key].url,
+  );
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: `Koululomat ${year} – hiihto- ja syyslomat`,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: { "@id": `${url}#page` },
+        citation: citations,
+        about: [
+          { "@type": "Thing", name: `Koululomat ${year}` },
+          { "@type": "Thing", name: "Hiihtoloma" },
+          { "@type": "Thing", name: "Syysloma" },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        mainEntity: { "@id": `${url}#article` },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// Article + FAQPage data for the expanded weeks-per-year explainer. FAQs are
+// shared with the visible page so schema and rendered answers stay identical.
+function weeksInYearScript() {
+  const url = canonicalFor("/kuinka-monta-viikkoa-vuodessa");
+  const meta = metaFor("/kuinka-monta-viikkoa-vuodessa");
+  const faq = weeksInYearFaqs(currentYear);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "@id": `${url}#article`,
+        headline: "Kuinka monta viikkoa vuodessa on?",
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-01-01",
+        dateModified: CONTENT_UPDATED,
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntityOfPage: { "@id": `${url}#page` },
+        about: [
+          { "@type": "Thing", name: "ISO 8601" },
+          { "@type": "Thing", name: "Viikkovuosi" },
+          { "@type": "Thing", name: "Viikko 53" },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-01-01",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        mainEntity: { "@id": `${url}#article` },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-01-01",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
 function addDays(date, n) {
   const d = new Date(date);
   d.setDate(d.getDate() + n);
   return d;
-}
-function saturdayInWindow(year, month, startDay) {
-  for (let offset = 0; offset < 7; offset++) {
-    const date = new Date(year, month, startDay + offset);
-    if (date.getDay() === 6) return date;
-  }
-  throw new Error(
-    `No Saturday found in the 7-day window starting ${year}-${month + 1}-${startDay} — this should be unreachable.`,
-  );
-}
-function easterSundayForPrerender(year) {
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const month = Math.floor((h + l - 7 * m + 114) / 31);
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
-}
-function holidaysInYearForPrerender(year) {
-  const easter = easterSundayForPrerender(year);
-  return [
-    { name: "Uudenvuodenpäivä", date: new Date(year, 0, 1), official: true },
-    { name: "Loppiainen", date: new Date(year, 0, 6), official: true },
-    { name: "Pitkäperjantai", date: addDays(easter, -2), official: true },
-    { name: "1. pääsiäispäivä", date: easter, official: true },
-    { name: "2. pääsiäispäivä", date: addDays(easter, 1), official: true },
-    { name: "Vappu", date: new Date(year, 4, 1), official: true },
-    { name: "Helatorstai", date: addDays(easter, 39), official: true },
-    { name: "Helluntai", date: addDays(easter, 49), official: true },
-    {
-      name: "Juhannusaatto",
-      date: addDays(saturdayInWindow(year, 5, 20), -1),
-      official: false,
-    },
-    { name: "Juhannuspäivä", date: saturdayInWindow(year, 5, 20), official: true },
-    { name: "Pyhäinpäivä", date: saturdayInWindow(year, 9, 31), official: true },
-    { name: "Itsenäisyyspäivä", date: new Date(year, 11, 6), official: true },
-    { name: "Jouluaatto", date: new Date(year, 11, 24), official: false },
-    { name: "Joulupäivä", date: new Date(year, 11, 25), official: true },
-    { name: "Tapaninpäivä", date: new Date(year, 11, 26), official: true },
-  ].sort((x, y) => x.date - y.date);
 }
 
 // Event structured data for a year's public holidays, injected only on
@@ -305,7 +681,7 @@ function holidaysEventScript(year) {
     "@type": "ItemList",
     "@id": `${SITE_URL}/pyhapaivat-${year}#events`,
     name: `Suomen pyhäpäivät ${year}`,
-    itemListElement: holidaysInYearForPrerender(year).map((h, i) => ({
+    itemListElement: holidaysInYear(year).map((h, i) => ({
       "@type": "ListItem",
       position: i + 1,
       item: {
@@ -325,15 +701,12 @@ function holidaysEventScript(year) {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
-// Holidays landing within ISO week `week` of ISO year `isoYearNum`. Mirrors
-// src/data/holidays.js's holidaysInWeek (checks both the Monday's and the
-// Sunday's calendar year, since an ISO week can straddle a year boundary) —
-// duplicated for the same plain-Node reason as holidaysInYearForPrerender.
+// Holidays landing within ISO week `week` of ISO year `isoYearNum`.
 function holidaysInWeekForPrerender(isoYearNum, week) {
   const monday = mondayOf(week, isoYearNum);
   const sunday = addDays(monday, 6);
   const years = new Set([monday.getFullYear(), sunday.getFullYear()]);
-  const candidates = [...years].flatMap((y) => holidaysInYearForPrerender(y));
+  const candidates = [...years].flatMap((y) => holidaysInYear(y));
   return candidates
     .filter((h) => h.date >= monday && h.date <= sunday)
     .sort((x, y) => x.date - y.date);
@@ -378,6 +751,164 @@ function weekFaqScript(w, y) {
       name: q,
       acceptedAnswer: { "@type": "Answer", text: a },
     })),
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// CollectionPage + FAQPage data for the full /kalenteri-<year> landing pages.
+// The FAQ entries come from the same source as the visible <details> list.
+function calendarPageScript(year) {
+  const url = canonicalFor(`/kalenteri-${year}`);
+  const meta = calendarMeta(year, null, false);
+  const faq = calendarFaqs(year);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-03",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: 12,
+          itemListElement: Array.from({ length: 12 }, (_, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: canonicalFor(`/kuukausi-${index + 1}-${year}`),
+          })),
+        },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-03",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+// WebPage + Event + FAQPage data for each named-holiday landing page. The
+// visible content, metadata and schema all use holidayPages.js, so dates and
+// answers cannot drift between the three representations.
+function namedHolidayScript(year, slug) {
+  const page = holidayPageFor(year, slug);
+  if (!page) return "";
+  const meta = holidayPageMeta(year, slug);
+  const faq = holidayFaqs(page);
+  const date = `${page.date.getFullYear()}-${String(page.date.getMonth() + 1).padStart(2, "0")}-${String(page.date.getDate()).padStart(2, "0")}`;
+  const url = canonicalFor(page.path);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${url}#page`,
+        url,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-03",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        mainEntity: { "@id": `${url}#event` },
+      },
+      {
+        "@type": "Event",
+        "@id": `${url}#event`,
+        name: `${page.displayName} ${page.year}`,
+        description: meta.description,
+        startDate: date,
+        endDate: date,
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        location: { "@type": "Country", name: "Suomi" },
+        url,
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-03",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
+function nameDayPageScript(url) {
+  let page;
+  let meta;
+  let type;
+  let match;
+  if (url === "/nimipaivat/tanaan") {
+    page = todayNameDayPage();
+    meta = todayNameDayMeta();
+    type = "today";
+  } else if ((match = url.match(/^\/nimipaiva\/([a-z0-9-]+)$/))) {
+    page = nameDayNamePage(match[1]);
+    meta = nameDayNameMeta(match[1]);
+    type = "name";
+  } else if ((match = url.match(/^\/nimipaivat\/(\d{2}-\d{2})$/))) {
+    page = nameDayDatePage(match[1]);
+    meta = nameDayDateMeta(match[1]);
+    type = "date";
+  }
+  if (!page || !meta) return "";
+  const faq = nameDayFaqs(page, type);
+  const canonical = canonicalFor(url);
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${canonical}#page`,
+        url: canonical,
+        name: meta.title,
+        description: meta.description,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        author: { "@id": `${SITE_URL}/#organization` },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${canonical}#faq`,
+        inLanguage: "fi-FI",
+        datePublished: "2026-08-04",
+        dateModified: CONTENT_UPDATED,
+        mainEntity: faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+    ],
   };
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
@@ -522,7 +1053,10 @@ function stripInlineMeta(appHtml) {
     // <SEO> also renders a <link rel="canonical"> via Helmet, which lands
     // inline in the SSR body; the authoritative one is written into <head> by
     // applyMeta(), so drop the body copy to avoid two canonicals per page.
-    .replace(/<link\s+rel="canonical"[^>]*>/g, "");
+    .replace(/<link\s+rel="canonical"[^>]*>/g, "")
+    // Language alternates are injected into <head> for the Finnish and English
+    // landing pages below; remove Helmet's SSR body copies.
+    .replace(/<link\b[^>]*\brel="alternate"[^>]*>/g, "");
 }
 
 // Google's SERP snippet truncates titles around ~60 chars and descriptions
@@ -578,10 +1112,21 @@ for (const url of routes) {
       url: canonical,
     });
 
+    const languageLinks = languageAlternateLinks(url);
+    if (languageLinks) {
+      html = html.replace("</head>", languageLinks + "</head>");
+    }
+    if (url === "/en" || url.startsWith("/sv")) {
+      html = html.replace(
+        '<html lang="fi">',
+        url === "/en" ? '<html lang="en">' : '<html lang="sv">',
+      );
+    }
+
     // Prune the index to the high-intent window: out-of-window year pages stay
     // prerendered (navigable) but are noindexed (flip the template's default
     // index,follow) and dropped from the sitemap below.
-    if (!isIndexable(url)) {
+    if (!isIndexable(url) || meta.robots?.startsWith("noindex")) {
       html = html.replace(
         'content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"',
         'content="noindex, follow"',
@@ -605,8 +1150,40 @@ for (const url of routes) {
       html = html.replace("</head>", `${faqScript()}</head>`);
     }
 
+    if (url === "/en") {
+      html = html.replace("</head>", englishPageScript() + "</head>");
+    }
+
+    if (url === "/sv" || /^\/sv\/(?:vecka|veckor)-/.test(url)) {
+      html = html.replace("</head>", swedishPageScript(url) + "</head>");
+    }
+
+    if (["/mika-kuukausi-nyt", "/mika-vuosi-nyt", "/viikonpaiva"].includes(url)) {
+      html = html.replace("</head>", currentDateIntentScript(url) + "</head>");
+    }
+
     if (url === "/mika-on-viikkonumero") {
       html = html.replace("</head>", `${mikaOnViikkonumeroScript()}</head>`);
+    }
+
+    if (url === "/viikko-alkaa-maanantaista") {
+      html = html.replace("</head>", `${weekStartsMondayScript()}</head>`);
+    }
+
+    if (/^\/(?:tulosta-|tulostettava-kalenteri-)\d+$/.test(url)) {
+      html = html.replace("</head>", `${printIntentScript(url)}</head>`);
+    }
+
+    const schoolHolidayMatch = url.match(/^\/koululomat-(\d+)$/);
+    if (schoolHolidayMatch) {
+      html = html.replace(
+        "</head>",
+        `${schoolHolidayScript(Number(schoolHolidayMatch[1]))}</head>`,
+      );
+    }
+
+    if (url === "/kuinka-monta-viikkoa-vuodessa") {
+      html = html.replace("</head>", `${weeksInYearScript()}</head>`);
     }
 
     const holidaysMatch = url.match(/^\/pyhapaivat-(\d+)$/);
@@ -614,11 +1191,31 @@ for (const url of routes) {
       html = html.replace("</head>", `${holidaysEventScript(+holidaysMatch[1])}</head>`);
     }
 
+    const namedHolidayMatch = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/);
+    if (namedHolidayMatch) {
+      html = html.replace(
+        "</head>",
+        `${namedHolidayScript(+namedHolidayMatch[1], namedHolidayMatch[2])}</head>`,
+      );
+    }
+
+    if (/^\/nimipaiva(?:t)?\//.test(url)) {
+      html = html.replace("</head>", `${nameDayPageScript(url)}</head>`);
+    }
+
     const weekMatch = url.match(/^\/viikko-(\d+)-(\d+)$/);
     if (weekMatch) {
       html = html.replace(
         "</head>",
         `${weekFaqScript(+weekMatch[1], +weekMatch[2])}</head>`,
+      );
+    }
+
+    const calendarMatch = url.match(/^\/kalenteri-(\d+)$/);
+    if (calendarMatch) {
+      html = html.replace(
+        "</head>",
+        `${calendarPageScript(+calendarMatch[1])}</head>`,
       );
     }
 
@@ -678,14 +1275,15 @@ try {
 
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
 // (currentYear is defined above, alongside the prerender route list.)
-const today = new Date().toISOString().slice(0, 10);
+const sitemapDate = todayNameDayPage().date;
+const today = `${sitemapDate.getFullYear()}-${String(sitemapDate.getMonth() + 1).padStart(2, "0")}-${String(sitemapDate.getDate()).padStart(2, "0")}`;
 // Per-URL <lastmod>: a page describing a finalized past year (its week/date
 // content can never change again) is frozen to that year's end — an honest
 // "stable, old" signal that keeps crawl budget off the deep archive. The
 // homepage, current/future-year pages, and editable static pages use the build
 // date. Self-maintaining: the boundary moves automatically as currentYear rolls.
 const lastmodFor = (p) => {
-  const m = p.match(/-(\d{4})(?:-[12])?$/);
+  const m = p.match(/-(\d{4})(?:-[12])?(?:\/[a-z0-9-]+)?$/);
   if (m && Number(m[1]) < currentYear) return `${m[1]}-12-31`;
   return today;
 };

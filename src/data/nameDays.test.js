@@ -4,6 +4,13 @@ import {
   nameDaysForDate,
   nameDaysForWeek,
   missingNameDayDates,
+  dateFromNameDayKey,
+  hasNameDayPage,
+  nameDayDateKeys,
+  nameDayForSlug,
+  nameDayNames,
+  nameDaySlug,
+  nameDaysForDateKey,
 } from "./nameDays";
 
 // Tests the ENGINE (lookup, week iteration, leap handling) and the hard
@@ -69,5 +76,29 @@ describe("coverage diagnostics", () => {
     const missing = missingNameDayDates();
     expect(missing.length).toBe(363); // 3 of 366 seeded
     expect(missing).not.toContain("01-02");
+  });
+});
+
+describe("SEO page records", () => {
+  it("generates pages only for personal names in the verified seed", () => {
+    expect(nameDayNames().map((item) => item.slug)).toEqual([
+      "aapeli",
+      "elmer",
+      "elmeri",
+    ]);
+    expect(nameDayDateKeys()).toEqual(["01-02", "01-03"]);
+    expect(hasNameDayPage("Uudenvuodenpäivä")).toBe(false);
+  });
+
+  it("normalizes Finnish names into stable ASCII slugs", () => {
+    expect(nameDaySlug("Päivö")).toBe("paivo");
+    expect(nameDayForSlug("aapeli")?.dateKeys).toEqual(["01-02"]);
+    expect(nameDaysForDateKey("01-03")).toEqual(["Elmeri", "Elmer"]);
+  });
+
+  it("validates calendar date keys", () => {
+    expect(dateFromNameDayKey("01-02", 2026)?.getDate()).toBe(2);
+    expect(dateFromNameDayKey("02-29", 2026)).toBeNull();
+    expect(dateFromNameDayKey("13-01", 2026)).toBeNull();
   });
 });

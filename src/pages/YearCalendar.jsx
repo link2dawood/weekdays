@@ -1,4 +1,3 @@
-import React from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   isoWeek,
@@ -59,6 +58,12 @@ const YearCalendar = ({ year: pYear } = {}) => {
     <section className="app">
       <SEO
         {...yearMeta(selectedYear)}
+        lang="fi"
+        alternates={[
+          { lang: "fi", href: canonicalFor("/vuosi-" + selectedYear) },
+          { lang: "sv-FI", href: canonicalFor("/sv/veckor-" + selectedYear) },
+          { lang: "x-default", href: canonicalFor("/vuosi-" + selectedYear) },
+        ]}
         canonical={canonicalFor(`/vuosi-${year}`)}
       />
       <div className="breadcrumb">

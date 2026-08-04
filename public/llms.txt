@@ -13,11 +13,20 @@ Keskeiset faktat viikkonumeroista Suomessa:
 
 - [Etusivu – Mikä viikko nyt on?](https://viikkonro.fi/): kuluva viikkonumero ja minkä tahansa päivän viikkohaku
 - [Mikä on viikkonumero?](https://viikkonro.fi/mika-on-viikkonumero): viikkonumeron ja ISO 8601 -standardin selitys
+- [Miksi viikko alkaa maanantaista?](https://viikkonro.fi/viikko-alkaa-maanantaista): viikon alku, torstaisääntö ja vuodenvaihteen ISO-viikot
 - [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/kuinka-monta-viikkoa-vuodessa): 52 vai 53 viikkoa ja miksi
+- [Mikä kuukausi nyt on?](https://viikkonro.fi/mika-kuukausi-nyt): nykyinen kuukausi, kuukauden numero, päivien määrä ja viikot
+- [Mikä vuosi nyt on?](https://viikkonro.fi/mika-vuosi-nyt): nykyinen vuosi, päivien ja ISO-viikkojen määrä sekä vuoden eteneminen
+- [Mikä viikonpäivä oli?](https://viikkonro.fi/viikonpaiva): jaettava viikonpäivälaskuri mille tahansa päivämäärälle
 - [Usein kysytyt kysymykset](https://viikkonro.fi/ukk): kattavat vastaukset viikkonumeroista
-- [Tulostettava viikkokalenteri](https://viikkonro.fi/tulosta-2026): koko vuoden viikot ja päivämäärät
+- [Viikot PDF 2026](https://viikkonro.fi/tulosta-2026): tulostettava viikkolista ja Excel-yhteensopiva CSV
+- [Tulostettava viikkokalenteri 2026](https://viikkonro.fi/tulostettava-kalenteri-2026): A4-kalenteri, PDF-tallennus ja Excel-yhteensopiva CSV
+- [Koululomat 2026](https://viikkonro.fi/koululomat-2026): hiihto- ja syyslomat kaupungeittain, viralliset lähteet
+- [Koululomat 2027](https://viikkonro.fi/koululomat-2027): talvilomaviikot 8–10 ja vahvistetut aluekohtaiset ajat
 - [Tietoa meistä](https://viikkonro.fi/tietoa-meista): palvelun esittely
 - [Ota yhteyttä](https://viikkonro.fi/ota-yhteytta): yhteydenottolomake
+- [Week number today – English](https://viikkonro.fi/en): current ISO week number and the dates of week 27 in 2023
+- [Vilken vecka är det nu? – Svenska](https://viikkonro.fi/sv): aktuellt veckonummer samt svenska års- och veckosidor
 
 ## Optional
 
