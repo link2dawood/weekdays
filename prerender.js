@@ -27,8 +27,15 @@ import {
   CONTENT_UPDATED,
   mondayOf,
 } from "./src/data/seo.js";
-import { faqs, faqCategories } from "./src/data/faqs.js";
-import { fmtShortFi } from "./src/components/dateUtils.js";
+import { faqs, faqCategories, featuredFaqs } from "./src/data/faqs.js";
+import {
+  fmtShortFi,
+  isoWeek,
+  isoYear,
+  weeksInIsoYear,
+  PRERENDER_MIN_YEAR,
+  PRERENDER_MAX_YEAR,
+} from "./src/components/dateUtils.js";
 import { holidaysInYear } from "./src/data/holidays.js";
 import {
   holidayFaqs,
@@ -204,6 +211,25 @@ function faqScript() {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+// The homepage renders only the curated featured questions. Keep this as a
+// separate FAQPage entity so its structured data matches exactly what users
+// can expand on that page instead of claiming all /ukk answers are present.
+function homepageFaqScript() {
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: featuredFaqs.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
 function englishPageScript() {
   const url = canonicalFor("/en");
   const meta = metaFor("/en");
@@ -374,6 +400,24 @@ function mikaOnViikkonumeroScript() {
           "@type": "Question",
           name: item.q,
           acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      {
+        "@type": "HowTo",
+        "@id": `${url}#howto`,
+        name: "Näin lasket viikkonumeron käsin",
+        description:
+          "Kolmen vaiheen menetelmä päivämäärän ISO 8601 -viikkonumeron laskemiseen.",
+        inLanguage: "fi-FI",
+        mainEntityOfPage: { "@id": `${url}#page` },
+        step: [
+          "Etsi tarkasteltavan päivän sisältävän viikon torstai.",
+          "Katso, mihin vuoteen torstai kuuluu – se on ISO-viikkovuosi.",
+          "Laske, kuinka mones torstai se on kyseisenä vuonna – se on viikkonumero.",
+        ].map((text, index) => ({
+          "@type": "HowToStep",
+          position: index + 1,
+          text,
         })),
       },
     ],
@@ -734,6 +778,74 @@ function calendarPageScript(year) {
   return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
+// Year and month pages are directories of week pages, so CollectionPage with
+// an ItemList describes their visible linked grids more accurately than a
+// generic WebPage. Full calendar pages have their own richer function above.
+function weekCollectionScript(pathname) {
+  let match = pathname.match(/^\/vuosi-(\d+)$/);
+  let urls;
+  let collectionName;
+
+  if (match) {
+    const year = Number(match[1]);
+    collectionName = `Viikkonumerot ${year}`;
+    urls = Array.from(
+      { length: weeksInIsoYear(year) },
+      (_, index) => canonicalFor(`/viikko-${index + 1}-${year}`),
+    );
+  } else {
+    match = pathname.match(/^\/kuukausi-(\d+)-(\d+)$/);
+    if (!match) return "";
+    const month = Number(match[1]);
+    const year = Number(match[2]);
+    const seen = new Set();
+    urls = [];
+    const days = new Date(year, month, 0).getDate();
+    for (let day = 1; day <= days; day += 1) {
+      const date = new Date(year, month - 1, day);
+      const weekYear = isoYear(date);
+      const week = isoWeek(date);
+      const key = `${weekYear}-${week}`;
+      if (
+        seen.has(key) ||
+        weekYear < PRERENDER_MIN_YEAR ||
+        weekYear > PRERENDER_MAX_YEAR
+      ) {
+        continue;
+      }
+      seen.add(key);
+      urls.push(canonicalFor(`/viikko-${week}-${weekYear}`));
+    }
+    collectionName = metaFor(pathname).title;
+  }
+
+  const canonical = canonicalFor(pathname);
+  const meta = metaFor(pathname);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${canonical}#page`,
+    url: canonical,
+    name: collectionName,
+    description: meta.description,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    author: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: urls.length,
+      itemListElement: urls.map((url, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url,
+      })),
+    },
+  };
+  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+}
+
 // WebPage + Event + FAQPage data for each named-holiday landing page. The
 // visible content, metadata and schema all use holidayPages.js, so dates and
 // answers cannot drift between the three representations.
@@ -1078,6 +1190,10 @@ for (const url of routes) {
       html = html.replace("</head>", `${faqScript()}</head>`);
     }
 
+    if (url === "/") {
+      html = html.replace("</head>", `${homepageFaqScript()}</head>`);
+    }
+
     if (url === "/en") {
       html = html.replace("</head>", englishPageScript() + "</head>");
     }
@@ -1141,6 +1257,10 @@ for (const url of routes) {
         "</head>",
         `${calendarPageScript(+calendarMatch[1])}</head>`,
       );
+    }
+
+    if (/^\/(?:vuosi-\d+|kuukausi-\d+-\d+)$/.test(url)) {
+      html = html.replace("</head>", `${weekCollectionScript(url)}</head>`);
     }
 
     if (CALCULATOR_SCHEMA[url]) {
