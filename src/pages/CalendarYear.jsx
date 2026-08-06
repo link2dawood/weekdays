@@ -16,6 +16,7 @@ import {
   downloadCalendarCsv,
   printableCalendarFaqs,
 } from "../data/printCalendarContent";
+import { CONFIDENCE, pageConfidenceTier } from "../data/schoolHolidayPages";
 
 // Year horizon (YEAR_MIN/YEAR_MAX) is imported from dateUtils so the pills,
 // cross-links, and every page's prev/next nav share one rolling source of truth.
@@ -132,7 +133,12 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
             </span>
           )}
           {flag && (
-            <span className="cal-flag" title={flag} role="img" aria-label={flag}>
+            <span
+              className="cal-flag"
+              title={flag.join(" / ")}
+              role="img"
+              aria-label={flag.join(" / ")}
+            >
               🇫🇮
             </span>
           )}
@@ -155,8 +161,8 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
 
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> /{" "}
-        <Link to={`/kalenteri-${currentYear}`}>Kalenteri</Link> / {y}
-        {halfLabel}
+        <Link to={`/kalenteri-${currentYear}`}>Kalenteri</Link> /{" "}
+        {print ? `Tulostettava ${y}` : `${y}${halfLabel}`}
       </div>
 
       <h1>
@@ -352,7 +358,10 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
           <li>
             <Link to={`/tyopaivat-${y}`}>Työpäivät ja arkipäivät {y}</Link>
           </li>
-          {(y === 2026 || y === 2027) && (
+          {/* STEP 6: link only to a CONFIRMED school-holiday page — never a
+              hardcoded year check, so this can't drift out of sync with the
+              actual confidence tier. */}
+          {pageConfidenceTier(y) === CONFIDENCE.CONFIRMED && (
             <li>
               <Link to={`/koululomat-${y}`}>Koululomat {y} alueittain</Link>
             </li>

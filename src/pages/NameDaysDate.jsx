@@ -21,7 +21,8 @@ const NameDaysDate = () => {
     <section className="app">
       <SEO {...meta} canonical={canonicalFor(page.path)} />
       <div className="breadcrumb">
-        <Link to="/">Etusivu</Link> / Nimipäivät / {fmtFullFi(page.date)}
+        <Link to="/">Etusivu</Link> /{" "}
+        <Link to="/nimipaivat/tanaan">Nimipäivät</Link> / {fmtFullFi(page.date)}
       </div>
       <h1>Nimipäivät {fmtFullFi(page.date)}</h1>
       <div className="prose">

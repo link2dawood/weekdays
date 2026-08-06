@@ -3,6 +3,9 @@ import {
   fmtShortFi,
   isoWeek,
   isoYear,
+  M_GENITIVE,
+  PRERENDER_MIN_YEAR,
+  PRERENDER_MAX_YEAR,
   WD,
   WD_ESSIVE,
 } from "../components/dateUtils.js";
@@ -143,6 +146,24 @@ export function holidaySlugForName(name) {
   return BY_SOURCE_NAME.get(name)?.slug ?? null;
 }
 
+// Path for linking a holiday MENTION (e.g. on a week page) to its dedicated
+// page — or null when it shouldn't be linked. `date` is the holiday's own
+// calendar date, not necessarily the caller's page year: a week can straddle
+// a year boundary (ISO week 1 often starts in late December), so the correct
+// year for the link is always the holiday's own date, not the week's ISO
+// year. Bounds-checked against the prerendered horizon so a boundary week can
+// never link a page that would 404 — the same discipline WeekDays.jsx's
+// monthLink already applies to month links. Works uniformly for fixed dates
+// (Vappu) and movable ones (pääsiäinen, juhannus, pyhäinpäivä): both resolve
+// through the same holidaysInYear()-derived date, so there's no special case.
+export function holidayLinkPath(name, date) {
+  const slug = holidaySlugForName(name);
+  if (!slug) return null;
+  const year = date.getFullYear();
+  if (year < PRERENDER_MIN_YEAR || year > PRERENDER_MAX_YEAR) return null;
+  return `/pyhat-${year}/${slug}`;
+}
+
 export function holidayPageFor(year, slug) {
   const y = Number(year);
   const definition = BY_SLUG.get(slug);
@@ -158,9 +179,36 @@ export function holidayPageFor(year, slug) {
     official: holiday.official,
     week: isoWeek(holiday.date),
     weekYear: isoYear(holiday.date),
+    month: holiday.date.getMonth() + 1,
     weekday: WD[holiday.date.getDay()],
     weekdayEssive: WD_ESSIVE[holiday.date.getDay()],
     path: `/pyhat-${y}/${slug}`,
+  };
+}
+
+// Reusable Holiday -> Week/Month/Year cross-links (bidirectional linking
+// system). Takes a resolved holidayPageFor() page and returns the three
+// paths plus contextual (not "click here") anchor text, so NamedHoliday.jsx
+// and prerender.js's structured-data `mentions` build from the exact same
+// source instead of each re-deriving the URLs by hand. The reverse
+// direction (a week/month page linking back to a holiday it contains) is
+// handled by holidayLinkPath() below, which takes a bare name+date rather
+// than a resolved page — the two aren't merged into one function because
+// they serve different call shapes, not because of overlapping logic.
+export function holidayWeekLinks(page) {
+  return {
+    week: {
+      path: `/viikko-${page.week}-${page.weekYear}`,
+      label: `viikko ${page.week}`,
+    },
+    month: {
+      path: `/kuukausi-${page.month}-${page.year}`,
+      label: `${M_GENITIVE[page.month - 1]} ${page.year}`,
+    },
+    year: {
+      path: `/vuosi-${page.year}`,
+      label: `vuoden ${page.year} viikkonumerot`,
+    },
   };
 }
 

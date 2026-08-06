@@ -1,0 +1,31 @@
+name: Dependency audit
+
+# Read-only visibility into known-vulnerable dependencies. Deliberately
+# decoupled from vercel-rebuild.yml / week-check.yml — it never gates or
+# triggers a deploy, so a red run here costs nothing except the default
+# GitHub failed-scheduled-run email (same alerting model week-check.yml
+# already relies on), not a blocked release.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-fund
+
+      - name: Audit for high/critical advisories
+        run: npm audit --audit-level=high

@@ -76,10 +76,14 @@ export function getJuhlapaivat(year) {
   ]);
 }
 
-// Flag days → Map("MM-DD" -> name). Rendered as a small marker, not a holiday
-// highlight. Mother's Day = 2nd Sunday of May, Father's Day = 2nd Sunday of Nov.
+// Flag days → Map("MM-DD" -> name[]). Mother's Day = 2nd Sunday of May,
+// Father's Day = 2nd Sunday of Nov — both movable, so in some years they land
+// on the same calendar date as one of the 12 fixed-date flag days (e.g.
+// Äitienpäivä and Eurooppa-päivä both fall on 9 May in 2027). The value is an
+// array (not a single name) specifically so that collision doesn't silently
+// drop one of the two real flag days for that date.
 export function getLiputuspaivat(year) {
-  return new Map([
+  const entries = [
     ["02-05", "J. L. Runebergin päivä"],
     ["02-28", "Kalevalan päivä"],
     ["03-19", "Minna Canthin päivä"],
@@ -94,5 +98,11 @@ export function getLiputuspaivat(year) {
     ["10-24", "YK:n päivä"],
     ["11-06", "Ruotsalaisuuden päivä"],
     ["12-08", "Jean Sibeliuksen päivä"],
-  ]);
+  ];
+  const map = new Map();
+  for (const [mmdd, name] of entries) {
+    if (!map.has(mmdd)) map.set(mmdd, []);
+    map.get(mmdd).push(name);
+  }
+  return map;
 }

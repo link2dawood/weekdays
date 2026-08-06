@@ -41,6 +41,19 @@ export function quarterOf(date) {
   return Math.floor(date.getMonth() / 3) + 1;
 }
 
+// Meteorological season (not astronomical) by month index, keyed off the same
+// Dec/Jan–Feb, Mar–May, Jun–Aug, Sep–Nov boundaries WeekDays.jsx has always
+// used for its "viikko ajoittuu ___" sentence. Centralized here (rather than
+// duplicated per case-form) so the Finnish prose forms and the public JSON
+// feeds' English "season" field can never disagree on where a month falls.
+export function seasonIndexOf(monthIndex) {
+  if (monthIndex === 11 || monthIndex <= 1) return 0;
+  if (monthIndex <= 4) return 1;
+  if (monthIndex <= 7) return 2;
+  return 3;
+}
+export var SEASON_KEYS_EN = ["winter", "spring", "summer", "autumn"];
+
 export function mondayOf(week, year) {
   var jan4 = new Date(year, 0, 4);
   var j = (jan4.getDay() + 6) % 7;
@@ -105,6 +118,24 @@ export var M_SHORT = [
   "marras",
   "joulu",
 ];
+// ASCII (diacritic-free) URL slugs for M_FULL, e.g. "/tyopaivat-kesakuu-2026".
+// A separate array rather than stripping M_FULL/M_SHORT at call sites, so
+// every route that needs a month-name slug (routing, sitemap, metadata)
+// resolves the exact same 12 strings.
+export var M_SLUG = [
+  "tammikuu",
+  "helmikuu",
+  "maaliskuu",
+  "huhtikuu",
+  "toukokuu",
+  "kesakuu",
+  "heinakuu",
+  "elokuu",
+  "syyskuu",
+  "lokakuu",
+  "marraskuu",
+  "joulukuu",
+];
 
 // Prerendered year horizon, shared by every year-series page and its prev/next
 // navigation. Mirrors prerender.js exactly: floor 2020, rolling ceiling =
@@ -114,6 +145,37 @@ export var M_SHORT = [
 // fallback. Evaluated once at module load; the daily rebuild keeps it current.
 export const PRERENDER_MIN_YEAR = 2020;
 export const PRERENDER_MAX_YEAR = new Date().getFullYear() + 9;
+
+// Centralized route-parameter validation — every year/week/month/quarter
+// page renders NotFound through these rather than repeating ad hoc bounds
+// checks per file. Each takes the raw (string or number) route param and
+// returns a boolean; none throw, so a malformed value (NaN, "", a huge
+// digit string) just fails validation instead of propagating into date
+// math as Invalid Date.
+export function validateYear(year) {
+  const y = Number(year);
+  return Number.isInteger(y) && y >= PRERENDER_MIN_YEAR && y <= PRERENDER_MAX_YEAR;
+}
+
+export function validateMonth(month) {
+  const m = Number(month);
+  return Number.isInteger(m) && m >= 1 && m <= 12;
+}
+
+export function validateQuarter(quarter) {
+  const q = Number(quarter);
+  return Number.isInteger(q) && q >= 1 && q <= 4;
+}
+
+// Deliberately does NOT also validate `year` — callers that want a clamp-
+// and-redirect UX for an out-of-range week (see WeekDays.jsx) need the year
+// to already be known-valid before they can compute weeksInIsoYear(year) at
+// all, so they call validateYear() first, separately.
+export function validateWeek(week, year) {
+  const w = Number(week);
+  if (!Number.isInteger(w)) return false;
+  return w >= 1 && w <= weeksInIsoYear(Number(year));
+}
 // Kept as thin aliases to the canonical Finnish formatter (fmtFullFi) so every
 // existing caller renders correct Finnish ("20. heinäkuuta 2026") without each
 // call site having to be found and changed.
@@ -198,6 +260,25 @@ export const M_PARTITIVE = [
   "lokakuuta",
   "marraskuuta",
   "joulukuuta",
+];
+// Month inessive ("tammikuussa" = "in January"), lowercase. Every Finnish
+// month name ends in "-kuu" (back-vowel stem), so the inessive is always
+// "-kuu" + "ssa" — regular, not a second independent fact to source — but
+// spelled out as its own array (matching M_GENITIVE/M_PARTITIVE above)
+// rather than derived by string concatenation at each call site.
+export const M_INESSIVE = [
+  "tammikuussa",
+  "helmikuussa",
+  "maaliskuussa",
+  "huhtikuussa",
+  "toukokuussa",
+  "kesäkuussa",
+  "heinäkuussa",
+  "elokuussa",
+  "syyskuussa",
+  "lokakuussa",
+  "marraskuussa",
+  "joulukuussa",
 ];
 
 // "20. heinäkuuta 2026"

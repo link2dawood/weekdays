@@ -1,3 +1,5 @@
+@import "./fonts.css";
+
 :root {
   --paper: #e7eceb;
   --card: #f5f8f7;
@@ -35,7 +37,7 @@ body {
     ),
     var(--paper);
   color: var(--ink);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", "Inter Fallback", system-ui, sans-serif;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -52,7 +54,7 @@ img {
   padding: 0 0px;
 }
 .mono {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
 }
 .app {
   max-width: var(--maxw);
@@ -79,7 +81,7 @@ img {
 }
 
 /* .brand {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.02em;
@@ -141,7 +143,7 @@ img {
 }
 
 .nav .nav-links a.nav-language {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12px;
   font-weight: 600;
   color: var(--accent-deep);
@@ -149,7 +151,7 @@ img {
 }
 
 .nav .badge {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   font-weight: 600;
   color: #fff;
@@ -247,7 +249,7 @@ img {
 }
 
 .breadcrumb {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   color: var(--ink-soft);
   margin: 26px 0 6px;
@@ -260,7 +262,7 @@ img {
   text-decoration: underline;
 }
 h1 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 800;
   font-size: clamp(30px, 6vw, 54px);
   line-height: 1.03;
@@ -268,14 +270,14 @@ h1 {
   margin: 0.1em 0 0.3em;
 }
 h2 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: clamp(21px, 3.4vw, 29px);
   letter-spacing: -0.015em;
   margin: 34px 0 14px;
 }
 .eyebrow {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -312,7 +314,7 @@ section {
   margin-top: 8px;
 }
 .now-label {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -320,7 +322,7 @@ section {
   margin-bottom: 6px;
 }
 .week-big {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 800;
   font-size: clamp(66px, 16vw, 140px);
   line-height: 0.82;
@@ -336,13 +338,13 @@ section {
   letter-spacing: 0.02em;
 }
 .meta .date {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: clamp(15px, 2.6vw, 18px);
   font-weight: 500;
   margin-top: 16px;
 }
 .meta .range {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 14px;
   color: var(--ink-soft);
   margin-top: 4px;
@@ -352,7 +354,7 @@ section {
   padding-left: 28px;
 }
 .progress-head {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   color: var(--ink-soft);
   display: flex;
@@ -388,7 +390,7 @@ section {
 }
 .comb-foot {
   margin-top: 11px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   color: var(--ink-soft);
   display: flex;
@@ -402,7 +404,7 @@ section {
 }
 label.fld {
   display: block;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -410,7 +412,7 @@ label.fld {
   margin-bottom: 10px;
 }
 input[type="date"] {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 17px;
   color: var(--ink);
   background: #fff;
@@ -431,13 +433,13 @@ input[type="date"]:focus-visible {
   font-size: clamp(16px, 3vw, 20px);
 }
 .result .num {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 800;
   color: var(--accent-deep);
   font-size: 1.3em;
 }
 .result .sub {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13.5px;
   color: var(--ink-soft);
   margin-top: 6px;
@@ -464,12 +466,12 @@ input[type="date"]:focus-visible {
   transform: translateY(-2px);
 }
 .wk .n {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: 22px;
 }
 .wk .r {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 2px;
@@ -507,7 +509,7 @@ input[type="date"]:focus-visible {
   font-weight: 600;
 }
 .day .dt {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   color: var(--ink-soft);
   white-space: nowrap;
@@ -527,7 +529,7 @@ input[type="date"]:focus-visible {
   margin: 14px 0;
 }
 .pill {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   text-decoration: none;
   padding: 6px 12px;
@@ -557,7 +559,7 @@ input[type="date"]:focus-visible {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 14px 16px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13.5px;
 }
 .prevnext a:hover {
@@ -611,7 +613,7 @@ input[type="date"]:focus-visible {
   border-color: var(--accent);
 }
 .ql b {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: 17px;
   display: block;
@@ -626,7 +628,7 @@ input[type="date"]:focus-visible {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 14px;
 }
 .ptable th,
@@ -663,6 +665,22 @@ input[type="date"]:focus-visible {
 .prose li {
   margin: 6px 0;
 }
+.quick-facts dl {
+  margin: 0 0 16px;
+  padding: 0;
+}
+.quick-facts .qf-row {
+  display: flex;
+  gap: 4px;
+  margin: 6px 0;
+}
+.quick-facts dt,
+.quick-facts dd {
+  margin: 0;
+}
+.quick-facts dt::after {
+  content: ":";
+}
 details {
   border-top: 1px solid var(--line);
   padding: 17px 0;
@@ -677,7 +695,7 @@ details:last-of-type {
 }
 
 .sec-head {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -685,7 +703,7 @@ details:last-of-type {
   margin-bottom: 14px;
 }
 h2 {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: clamp(24px, 4vw, 34px);
   letter-spacing: -0.015em;
@@ -703,7 +721,7 @@ h2 {
 }
 .lookup label {
   display: block;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -711,7 +729,7 @@ h2 {
   margin-bottom: 10px;
 }
 input[type="date"] {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 17px;
   color: var(--ink);
   background: #fff;
@@ -732,13 +750,13 @@ input[type="date"]:focus-visible {
   font-size: clamp(17px, 3vw, 21px);
 }
 .result .num {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 800;
   color: var(--accent-deep);
   font-size: 1.35em;
 }
 .result .sub {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 14px;
   color: var(--ink-soft);
   margin-top: 6px;
@@ -757,12 +775,12 @@ input[type="date"]:focus-visible {
   padding: 14px 16px;
 }
 .wk .n {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: 24px;
 }
 .wk .r {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 2px;
@@ -782,7 +800,7 @@ input[type="date"]:focus-visible {
   margin: 14px 0;
 }
 .pill {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   text-decoration: none;
   padding: 6px 12px;
@@ -820,7 +838,7 @@ input[type="date"]:focus-visible {
   border-color: var(--accent);
 }
 .ql b {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: 17px;
   display: block;
@@ -852,12 +870,12 @@ input[type="date"]:focus-visible {
   transform: translateY(-2px);
 }
 .wk .n {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 700;
   font-size: 22px;
 }
 .wk .r {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 13px;
   color: var(--ink-soft);
   margin-top: 2px;
@@ -873,7 +891,7 @@ input[type="date"]:focus-visible {
   width: 100%;
   border-collapse: collapse;
   margin-top: 8px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 14px;
 }
 .ptable th,
@@ -912,7 +930,7 @@ details:last-of-type {
   border-bottom: 1px solid var(--line);
 }
 summary {
-  font-family: "Bricolage Grotesque", sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", sans-serif;
   font-weight: 600;
   font-size: 18px;
   cursor: pointer;
@@ -1547,6 +1565,26 @@ body:has(.cal-print) footer {
   background: rgba(224, 162, 59, 0.16);
   color: #8a6414;
 }
+.confidence-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.confidence-confirmed {
+  background: rgba(58, 145, 96, 0.16);
+  color: #276b45;
+}
+.confidence-estimated {
+  background: rgba(224, 162, 59, 0.16);
+  color: #8a6414;
+}
+.confidence-unknown {
+  background: rgba(120, 120, 120, 0.14);
+  color: #5a5a5a;
+}
 .stat-row {
   display: flex;
   flex-wrap: wrap;
@@ -1640,7 +1678,7 @@ body:has(.cal-print) footer {
 }
 .cal-month-h {
   display: block;
-  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-family: "Bricolage Grotesque", "Bricolage Grotesque Fallback", system-ui, sans-serif;
   font-weight: 700;
   font-size: 15px;
   color: var(--ink);
@@ -1659,7 +1697,7 @@ body:has(.cal-print) footer {
   padding: 1px 4px;
   border-radius: 4px;
   min-height: 20px;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace, monospace;
   font-size: 12px;
   line-height: 1.5;
 }
@@ -1668,7 +1706,8 @@ body:has(.cal-print) footer {
 .cal-wk {
   background: var(--accent);
   color: #fff;
-  font: 500 11px "IBM Plex Mono", ui-monospace, monospace;
+  font: 500 11px "IBM Plex Mono", "IBM Plex Mono Fallback", ui-monospace,
+    monospace;
   padding: 2px 6px;
   border-radius: 6px;
   text-decoration: none;
@@ -1676,7 +1715,7 @@ body:has(.cal-print) footer {
 }
 .cal-wk:hover { background: var(--accent-deep); }
 .cal-hol {
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", "Inter Fallback", system-ui, sans-serif;
   color: var(--accent-deep);
   font-weight: 500;
   font-size: 12px;
@@ -1721,7 +1760,7 @@ body:has(.cal-print) footer {
 }
 .cal-current-label {
   color: var(--accent-deep);
-  font: 700 9px "Inter", system-ui, sans-serif;
+  font: 700 9px "Inter", "Inter Fallback", system-ui, sans-serif;
   letter-spacing: 0.08em;
   margin-left: auto;
   text-transform: uppercase;

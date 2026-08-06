@@ -7,6 +7,7 @@ import {
   routeMeta,
   CONTENT_UPDATED_FI,
 } from "../data/seo";
+import { CONFIDENCE, pageConfidenceTier } from "../data/schoolHolidayPages";
 
 const WhatWeek = () => {
   // Live current week/year, computed in the render body so the prerendered HTML
@@ -274,7 +275,12 @@ const WhatWeek = () => {
             <strong>Yhdysvallat ja Kanada</strong> käyttävät yleensä omaa
             käytäntöään, jossa viikko alkaa sunnuntaista ja viikko 1 sisältää 1.
             tammikuuta. Sama päivä saattaa siis kuulua eri viikkonumeroon
-            Yhdysvaltain ja ISO-viikon välillä.
+            Yhdysvaltain ja ISO-viikon välillä. Katso oikeilla päivämäärillä
+            laskettu{" "}
+            <Link to="/suomi-vs-usa-viikkonumerot">
+              vertailu Suomen ja Yhdysvaltain viikkonumeroista
+            </Link>
+            .
           </li>
           <li>
             <strong>Lähi-itä</strong> — osassa maita työviikko alkaa sunnuntaista
@@ -309,7 +315,7 @@ const WhatWeek = () => {
 
         <h2>Aiheeseen liittyviä sivuja</h2>
         <div className="quicklinks">
-          {(Y_NOW === 2026 || Y_NOW === 2027) && (
+          {pageConfidenceTier(Y_NOW) === CONFIDENCE.CONFIRMED && (
             <Link className="ql" to={`/koululomat-${Y_NOW}`}>
               <b>Koululomat {Y_NOW}</b>
               <span>Hiihto- ja syyslomat alueittain</span>
@@ -318,6 +324,10 @@ const WhatWeek = () => {
           <Link className="ql" to="/viikko-alkaa-maanantaista">
             <b>Miksi viikko alkaa maanantaista?</b>
             <span>Viikon alku ja torstaisääntö selitettynä</span>
+          </Link>
+          <Link className="ql" to="/suomi-vs-usa-viikkonumerot">
+            <b>Suomi vs. USA</b>
+            <span>Miksi viikkonumero eroaa — oikeat esimerkit</span>
           </Link>
           <Link className="ql" to={`/vuosi-${Y_NOW}`}>
             <b>Vuoden {Y_NOW} viikot</b>

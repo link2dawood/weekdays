@@ -5,16 +5,22 @@ import {
   dShort,
   mondayOf,
   M_FULL,
+  validateYear,
   PRERENDER_MIN_YEAR as YEAR_MIN,
   PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
-import { canonicalFor, yearMeta } from "../data/seo";
+import QuickFacts from "../components/QuickFacts";
+import { canonicalFor, yearFaqs, yearMeta, yearStats } from "../data/seo";
+import { CONFIDENCE, pageConfidenceTier } from "../data/schoolHolidayPages";
+import NotFound from "./NotFound";
 
 const YearCalendar = ({ year: pYear } = {}) => {
   const params = useParams();
   const year = pYear ?? params.year;
   const selectedYear = Number(year);
+
+  if (!validateYear(selectedYear)) return <NotFound />;
 
   const years = [];
   for (let y = YEAR_MIN; y <= YEAR_MAX; y++) {
@@ -33,6 +39,12 @@ const YearCalendar = ({ year: pYear } = {}) => {
     { length: weeksInIsoYear(selectedYear) },
     (_, i) => i + 1,
   );
+
+  // Shared with prerender.js's yearFaqNodes() (FAQPage JSON-LD) so the
+  // visible FAQ and the schema can't drift — same discipline as
+  // monthFaqs()/workingDaysFaqs().
+  const faqs = yearFaqs(selectedYear);
+  const stats = yearStats(selectedYear);
 
   function WeekCard({ w, y }) {
     const mo = mondayOf(w, y);
@@ -72,6 +84,23 @@ const YearCalendar = ({ year: pYear } = {}) => {
         viikkoa nähdäksesi sen päivämäärät.
       </p>
 
+      <QuickFacts
+        facts={[
+          { label: "Vuosi", value: selectedYear },
+          { label: "Viikkoja", value: stats.weekCount },
+          {
+            label: "Ensimmäinen viikko",
+            value: `viikko ${stats.firstWeek} (${stats.firstWeekYear})`,
+          },
+          {
+            label: "Viimeinen viikko",
+            value: `viikko ${stats.lastWeek} (${stats.lastWeekYear})`,
+          },
+          { label: "Työpäiviä", value: stats.working },
+          { label: "Arkipyhiä", value: stats.officialHolidayCount },
+        ]}
+      />
+
       <div className="pills">
         {years.map((y) => (
           <Link
@@ -97,6 +126,14 @@ const YearCalendar = ({ year: pYear } = {}) => {
           </Link>
         ))}
       </div>
+      <h2>Vuosineljännekset {year}</h2>
+      <div className="pills">
+        {[1, 2, 3, 4].map((q) => (
+          <Link key={q} className="pill" to={`/q${q}-${year}`}>
+            Q{q} {year}
+          </Link>
+        ))}
+      </div>
       <div className="prevnext">
         {selectedYear - 1 >= YEAR_MIN && (
           <Link to={`/vuosi-${selectedYear - 1}`}>
@@ -109,6 +146,16 @@ const YearCalendar = ({ year: pYear } = {}) => {
           </Link>
         )}
       </div>
+      <section className="prose">
+        <h2>Usein kysytyt kysymykset</h2>
+        {faqs.map((item, index) => (
+          <details key={item.q} open={index === 0}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </section>
+
       <p>
         <Link
           to={`/tulosta-${year}`}
@@ -119,8 +166,22 @@ const YearCalendar = ({ year: pYear } = {}) => {
         </Link>
       </p>
       <p className="hub-links">
-        Katso myös <Link to={`/pyhapaivat-${year}`}>pyhäpäivät {year}</Link> ja{" "}
-        <Link to={`/tyopaivat-${year}`}>työpäivät {year}</Link>.
+        Katso myös <Link to={`/pyhapaivat-${year}`}>pyhäpäivät {year}</Link>,{" "}
+        <Link to={`/liputuspaivat-${year}`}>liputuspäivät {year}</Link>,{" "}
+        <Link to={`/tyopaivat-${year}`}>työpäivät {year}</Link>
+        {/* STEP 6: Year Page → Confirmed School Holiday Page only. */}
+        {pageConfidenceTier(selectedYear) === CONFIDENCE.CONFIRMED && (
+          <>
+            ,{" "}
+            <Link to={`/koululomat-${year}`}>koululomat {year}</Link>
+          </>
+        )}{" "}
+        ja{" "}
+        <Link to="/kuinka-monta-viikkoa-vuodessa">
+          miksi vuodessa on {weeks.length === 53 ? "tänä vuonna" : "joskus"} 53
+          viikkoa
+        </Link>
+        .
       </p>
     </section>
   );

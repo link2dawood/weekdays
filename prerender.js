@@ -26,21 +26,38 @@ import {
   calendarMeta,
   CONTENT_UPDATED,
   mondayOf,
+  monthFaqs,
+  monthlyWorkingDayFaqs,
+  monthStats,
+  quarterFaqs,
+  quarterStats,
+  workingDaysFaqs,
+  yearFaqs,
+  yearStats,
 } from "./src/data/seo.js";
 import { faqs, faqCategories, featuredFaqs } from "./src/data/faqs.js";
 import {
   fmtShortFi,
+  getWeekdayName,
   isoWeek,
   isoYear,
+  quarterOf,
+  seasonIndexOf,
+  SEASON_KEYS_EN,
   weeksInIsoYear,
+  M_FULL,
+  M_SLUG,
   PRERENDER_MIN_YEAR,
   PRERENDER_MAX_YEAR,
 } from "./src/components/dateUtils.js";
 import { holidaysInYear } from "./src/data/holidays.js";
+import { flagDayFaqs, flagDaysInYear } from "./src/data/flagDayPages.js";
 import {
   holidayFaqs,
+  holidayLinkPath,
   holidayPageFor,
   holidayPageMeta,
+  holidayWeekLinks,
 } from "./src/data/holidayPages.js";
 import {
   nameDayDateMeta,
@@ -56,6 +73,7 @@ import {
   whatWeekFaqs,
   weekStartsMondayFaqs,
 } from "./src/data/isoWeekContent.js";
+import { finlandVsUsaFaqs } from "./src/data/finlandVsUsaContent.js";
 import {
   printableCalendarFaqs,
   printListFaqs,
@@ -111,6 +129,18 @@ const isIndexable = (p) => {
 };
 
 let template = fs.readFileSync(path.join(distDir, "index.html"), "utf-8");
+
+// The three site-wide entities are authored in index.html, but every
+// prerendered page needs them in the same graph as its page entity. Extracting
+// them avoids maintaining a second copy while leaving one JSON-LD block per
+// generated document.
+const globalJsonLdMatch = template.match(
+  /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+);
+if (!globalJsonLdMatch) throw new Error("global JSON-LD graph missing from index.html");
+const globalJsonLd = JSON.parse(globalJsonLdMatch[1]);
+const globalJsonLdNodes = globalJsonLd["@graph"];
+template = template.replace(globalJsonLdMatch[0], "");
 
 // Inline the render-blocking stylesheet into <head> so the first paint doesn't
 // wait on a separate CSS request — every prerendered page ships its styles
@@ -175,14 +205,198 @@ function applyMeta(html, { title, description, url }) {
     );
 }
 
-// BreadcrumbList structured data mirroring the visible "Etusivu / …" trail.
-// Skipped for the homepage (a breadcrumb to itself adds nothing).
-function breadcrumbScript(url) {
+// Every page node points back to the shared site and publisher entities, so a
+// parser can traverse the document graph without guessing entity identity.
+function pageNode(url, type = "WebPage", extra = {}) {
+  const canonical = canonicalFor(url);
   const trail = breadcrumbTrail(url);
-  if (!trail || trail.length < 2) return "";
+  return {
+    "@type": type,
+    "@id": `${canonical}#webpage`,
+    url: canonical,
+    name: metaFor(url).title.replace(/\s*\|\s*Viikko Nro$/, ""),
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    inLanguage: "fi-FI",
+    ...(trail && trail.length >= 2 ? { breadcrumb: { "@id": `${canonical}#breadcrumb` } } : {}),
+    ...extra,
+  };
+}
+
+// Speakable targets ONLY the single rendered sentence that states the page's
+// direct answer, via the ".answer-sentence" class added around that exact
+// text in the matching JSX (WeekDays.jsx, WorkingDays.jsx; named-holiday
+// pages are handled inline in namedHolidayNodes, which builds its own
+// WebPage node above). Scoped to just these two URL shapes rather than the
+// generic fallback pageNode() every page gets, because month/year/calendar
+// pages don't have one unambiguous single-sentence answer the way these do.
+function speakableExtra(url) {
+  if (
+    /^\/viikko-\d+-\d+$/.test(url) ||
+    /^\/tyopaivat-\d+$/.test(url)
+  ) {
+    return {
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".answer-sentence"],
+      },
+    };
+  }
+  return {};
+}
+
+// Week -> Holiday structured-data links (the other half of the bidirectional
+// linking system — namedHolidayNodes() above handles Holiday -> Week/Month).
+// Reuses holidaysInWeekForPrerender() (already computed for weekFaqNodes())
+// and holidayLinkPath() (already used by WeekDays.jsx's visible holiday
+// mentions), so this can't reference a holiday page that isn't also linked
+// in the rendered HTML, or vice versa.
+function weekHolidayMentionsExtra(url) {
+  const m = url.match(/^\/viikko-(\d+)-(\d+)$/);
+  if (!m) return {};
+  const officialHolidays = holidaysInWeekForPrerender(+m[2], +m[1]).filter((h) => h.official);
+  const mentions = officialHolidays
+    .map((h) => holidayLinkPath(h.name, h.date))
+    .filter(Boolean)
+    .map((path) => ({ "@id": `${canonicalFor(path)}#webpage` }));
+  return mentions.length > 0 ? { mentions } : {};
+}
+
+// Reusable schema.org/Dataset builder — every dataset below (one per page
+// type that has a real /data/* feed backing it) is one call to this instead
+// of a hand-repeated object literal, so creator/publisher/license/language
+// can't drift between them and adding a 7th (or 8th) family is a single
+// call, not a copy-pasted block. `distributionUrl` accepts either one URL
+// or an array, since one dataset (workingDay) legitimately has no feed
+// family of its own and distributes via two existing ones instead of
+// inventing a URL that isn't real.
+function datasetSchema({ id, name, description, distributionUrl, temporalCoverage, license, dateModified }) {
+  const urls = Array.isArray(distributionUrl) ? distributionUrl : [distributionUrl];
+  return {
+    "@type": "Dataset",
+    "@id": `${SITE_URL}/#dataset-${id}`,
+    name,
+    description,
+    creator: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    license,
+    dateModified,
+    inLanguage: "fi-FI",
+    temporalCoverage,
+    distribution: urls.map((contentUrl) => ({
+      "@type": "DataDownload",
+      contentUrl,
+      encodingFormat: "application/json",
+    })),
+  };
+}
+
+// schema.org/Dataset description of the static JSON feeds generated under
+// /data/* below (STEP 2). Each dataset's distribution points at that family's
+// manifest file (a real, complete list of every generated URL — see the feed
+// generation block near the end of this file), not a single example file, so
+// the contentUrl is an honest description of "the whole dataset" rather than
+// one arbitrary row of it. "Update frequency" has no dedicated schema.org
+// Dataset property (checked against Google's supported Dataset fields before
+// writing this — there isn't one), so it's stated in plain language inside
+// `description` instead of invented as a non-standard JSON-LD key.
+function datasetNodes() {
+  const temporalCoverage = `2020-01-01/${currentYear + 9}-12-31`;
+  const license = `${SITE_URL}/kayttoehdot`;
+  const common = { temporalCoverage, license, dateModified: CONTENT_UPDATED };
+
+  const weekDataset = datasetSchema({
+    ...common,
+    id: "week",
+    name: "Suomen ISO 8601 -viikkonumerodata",
+    description:
+      "Koneluettava JSON-data jokaiselle ISO 8601 -viikolle Suomessa: alkamis- ja päättymispäivä, työpäivien määrä, juhlapyhät, vuosineljännes ja vuodenaika. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/week/index.json`,
+  });
+  const monthDataset = datasetSchema({
+    ...common,
+    id: "month",
+    name: "Suomen kuukausittainen viikkodata",
+    description:
+      "Koneluettava JSON-data jokaiselle kalenterikuukaudelle Suomessa: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä sekä arkipyhät. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/month/index.json`,
+  });
+  const yearDataset = datasetSchema({
+    ...common,
+    id: "year",
+    name: "Suomen vuosittainen viikko- ja työpäivädata",
+    description:
+      "Koneluettava JSON-data jokaiselle vuodelle Suomessa: viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, arkipyhät sekä vuoden ensimmäinen ja viimeinen ISO-viikko. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/year/index.json`,
+  });
+  const quarterDataset = datasetSchema({
+    ...common,
+    id: "quarter",
+    name: "Suomen vuosineljännesdata",
+    description:
+      "Koneluettava JSON-data jokaiselle vuosineljännekselle (Q1-Q4): alkamis- ja päättymispäivä, kuukaudet, viikkoväli, työpäivien ja viikonloppupäivien määrä sekä arkipyhät. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/quarter/index.json`,
+  });
+  const holidayDataset = datasetSchema({
+    ...common,
+    id: "holidays",
+    name: "Suomen pyhäpäivädata",
+    description:
+      "Koneluettava JSON-data Suomen virallisista pyhäpäivistä ja laajasti vietetyistä vapaapäivistä: nimi, päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema jokaiselle vuodelle. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/holidays/index.json`,
+  });
+  // No feed family of its own — workingDays/weekendDays already live inside
+  // the week and year feeds, so this distributes via both rather than
+  // inventing a fifth endpoint. The month-level granularity is covered
+  // separately by monthlyWorkingDaysDataset below, which does have its own
+  // feed family.
+  const workingDayDataset = datasetSchema({
+    ...common,
+    id: "workingdays",
+    name: "Suomen työpäivädata",
+    description:
+      "Koneluettava JSON-data työpäivien, viikonloppupäivien ja arkipyhien määristä viikko- ja vuositasolla Suomessa, arkipyhien vaikutus työpäivien määrään huomioiden. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: [`${SITE_URL}/data/week/index.json`, `${SITE_URL}/data/year/index.json`],
+  });
+  const monthlyWorkingDaysDataset = datasetSchema({
+    ...common,
+    id: "monthly-workingdays",
+    name: "Suomen kuukausittainen työpäivädata",
+    description:
+      "Koneluettava JSON-data työpäivien ja viikonloppupäivien määrästä kuukausitasolla Suomessa, arkipyhät huomioiden. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/monthly-working-days/index.json`,
+  });
+
+  return [
+    weekDataset,
+    monthDataset,
+    yearDataset,
+    quarterDataset,
+    holidayDataset,
+    workingDayDataset,
+    monthlyWorkingDaysDataset,
+  ];
+}
+
+function jsonLdBlock(nodes) {
   const data = {
     "@context": "https://schema.org",
+    "@graph": nodes,
+  };
+  // Escape "<" so a string value containing "</script>" can never terminate
+  // this tag early — JSON.stringify only escapes quotes/backslashes/control
+  // chars, not "<". < is valid inside a JSON string and decodes back to
+  // "<" for every consumer (browsers, schema validators), so this is lossless.
+  const json = JSON.stringify(data, null, 2).replace(/</g, "\\u003c");
+  return `<script type="application/ld+json">\n${json}\n    </script>\n  `;
+}
+
+function breadcrumbNode(url) {
+  const trail = breadcrumbTrail(url);
+  if (!trail || trail.length < 2) return null;
+  return {
     "@type": "BreadcrumbList",
+    "@id": `${canonicalFor(url)}#breadcrumb`,
     itemListElement: trail.map((t, i) => ({
       "@type": "ListItem",
       position: i + 1,
@@ -190,14 +404,12 @@ function breadcrumbScript(url) {
       item: canonicalFor(t.path),
     })),
   };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
 }
 
 // FAQPage structured data generated from src/data/faqs.js. Injected only on
 // /ukk, whose visible list matches it exactly (Google requires the two agree).
-function faqScript() {
-  const data = {
-    "@context": "https://schema.org",
+function faqNodes() {
+  return [{
     "@type": "FAQPage",
     "@id": `${SITE_URL}/ukk#faq`,
     inLanguage: "fi-FI",
@@ -207,16 +419,14 @@ function faqScript() {
       name: f.q,
       acceptedAnswer: { "@type": "Answer", text: f.a },
     })),
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+  }];
 }
 
 // The homepage renders only the curated featured questions. Keep this as a
 // separate FAQPage entity so its structured data matches exactly what users
 // can expand on that page instead of claiming all /ukk answers are present.
-function homepageFaqScript() {
-  const data = {
-    "@context": "https://schema.org",
+function homepageFaqNodes() {
+  return [{
     "@type": "FAQPage",
     "@id": `${SITE_URL}/#faq`,
     inLanguage: "fi-FI",
@@ -226,26 +436,20 @@ function homepageFaqScript() {
       name: item.q,
       acceptedAnswer: { "@type": "Answer", text: item.a },
     })),
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+  }];
 }
 
-function englishPageScript() {
+function englishPageNodes() {
   const url = canonicalFor("/en");
   const meta = metaFor("/en");
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": url + "#page",
-        url,
+  return [
+      pageNode("/en", "WebPage", {
         name: "What is the current week number?",
         description: meta.description,
         inLanguage: "en",
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": url + "#faq",
@@ -257,9 +461,7 @@ function englishPageScript() {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
+    ];
 }
 
 function languageAlternateLinks(url) {
@@ -273,7 +475,38 @@ function languageAlternateLinks(url) {
   return "";
 }
 
-function currentDateIntentScript(url) {
+// Declares each week/year/holidays page's JSON twin the same way an RSS feed
+// is declared — a standard <link rel="alternate"> pointer, not a new
+// discovery mechanism — so an agent that has already fetched the HTML page
+// can find its machine-readable equivalent without guessing the /data/ URL
+// pattern. Deliberately scoped to exactly the three route families STEP 2
+// generates feeds for.
+function jsonFeedAlternateLink(url) {
+  let m;
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/week/${m[2]}/${m[1]}.json" />`;
+  }
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) {
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/year/${m[1]}.json" />`;
+  }
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) {
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/holidays/${m[1]}.json" />`;
+  }
+  if ((m = url.match(/^\/q([1-4])-(\d+)$/))) {
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/quarter/${m[2]}/${m[1]}.json" />`;
+  }
+  if ((m = url.match(/^\/tyopaivat-([a-z]+)-(\d+)$/))) {
+    const mi = M_SLUG.indexOf(m[1]);
+    if (mi === -1) return "";
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/monthly-working-days/${m[2]}/${mi + 1}.json" />`;
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    return `<link rel="alternate" type="application/json" href="${SITE_URL}/data/month/${m[2]}/${m[1]}.json" />`;
+  }
+  return "";
+}
+
+function currentDateIntentNodes(url) {
   const now = new Date();
   const configs = {
     "/mika-kuukausi-nyt": {
@@ -298,19 +531,15 @@ function currentDateIntentScript(url) {
     },
   };
   const config = configs[url];
-  if (!config) return "";
+  if (!config) return [];
   const canonical = canonicalFor(url);
   const graph = [
-    {
-      "@type": "WebPage",
-      "@id": canonical + "#page",
-      url: canonical,
+    pageNode(url, "WebPage", {
       name: config.headline,
       description: config.meta.description,
-      inLanguage: "fi-FI",
       datePublished: "2026-08-04",
       dateModified: CONTENT_UPDATED,
-    },
+    }),
     {
       "@type": "Article",
       "@id": canonical + "#article",
@@ -321,7 +550,7 @@ function currentDateIntentScript(url) {
       dateModified: CONTENT_UPDATED,
       author: { "@id": SITE_URL + "/#organization" },
       publisher: { "@id": SITE_URL + "/#organization" },
-      mainEntityOfPage: { "@id": canonical + "#page" },
+      mainEntityOfPage: { "@id": canonical + "#webpage" },
     },
     {
       "@type": "FAQPage",
@@ -348,20 +577,17 @@ function currentDateIntentScript(url) {
       })),
     });
   }
-  const data = { "@context": "https://schema.org", "@graph": graph };
-  return '<script type="application/ld+json">\n' + JSON.stringify(data, null, 2) + "\n    </script>\n  ";
+  return graph;
 }
 
 // Article + FAQPage structured data for the /mika-on-viikkonumero explainer.
-// BreadcrumbList is added separately (breadcrumbScript), so it is not repeated
+// BreadcrumbList is added separately, so it is not repeated
 // here. The FAQ entries mirror the page's visible <details> list exactly.
-function mikaOnViikkonumeroScript() {
+function mikaOnViikkonumeroNodes() {
   const faq = whatWeekFaqs;
   const url = canonicalFor("/mika-on-viikkonumero");
   const meta = metaFor("/mika-on-viikkonumero");
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
+  return [
       {
         "@type": "Article",
         "@id": `${url}#article`,
@@ -372,25 +598,19 @@ function mikaOnViikkonumeroScript() {
         dateModified: CONTENT_UPDATED,
         author: { "@id": `${SITE_URL}/#organization` },
         publisher: { "@id": `${SITE_URL}/#organization` },
-        mainEntityOfPage: { "@id": `${url}#page` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
         about: [
           { "@type": "Thing", name: "ISO 8601" },
           { "@type": "Thing", name: "Viikkonumero" },
           { "@type": "Thing", name: "Kalenteri" },
         ],
       },
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+      pageNode("/mika-on-viikkonumero", "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-01-01",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         mainEntity: { "@id": `${url}#article` },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${SITE_URL}/mika-on-viikkonumero#faq`,
@@ -409,7 +629,7 @@ function mikaOnViikkonumeroScript() {
         description:
           "Kolmen vaiheen menetelmä päivämäärän ISO 8601 -viikkonumeron laskemiseen.",
         inLanguage: "fi-FI",
-        mainEntityOfPage: { "@id": `${url}#page` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
         step: [
           "Etsi tarkasteltavan päivän sisältävän viikon torstai.",
           "Katso, mihin vuoteen torstai kuuluu – se on ISO-viikkovuosi.",
@@ -420,18 +640,14 @@ function mikaOnViikkonumeroScript() {
           text,
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
-function weekStartsMondayScript() {
+function weekStartsMondayNodes() {
   const path = "/viikko-alkaa-maanantaista";
   const url = canonicalFor(path);
   const meta = metaFor(path);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
+  return [
       {
         "@type": "Article",
         "@id": `${url}#article`,
@@ -442,25 +658,19 @@ function weekStartsMondayScript() {
         dateModified: CONTENT_UPDATED,
         author: { "@id": `${SITE_URL}/#organization` },
         publisher: { "@id": `${SITE_URL}/#organization` },
-        mainEntityOfPage: { "@id": `${url}#page` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
         about: [
           { "@type": "Thing", name: "ISO 8601" },
           { "@type": "Thing", name: "Viikon ensimmäinen päivä" },
           { "@type": "Thing", name: "ISO-viikkovuosi" },
         ],
       },
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+      pageNode(path, "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         mainEntity: { "@id": `${url}#article` },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${url}#faq`,
@@ -473,15 +683,65 @@ function weekStartsMondayScript() {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
-function printIntentScript(pathname) {
+// Article + WebPage + FAQPage for /suomi-vs-usa-viikkonumerot — same shape as
+// weekStartsMondayNodes() above, including its own explicit pageNode() (not
+// the generic fallback) so the Article <-> WebPage reference is reciprocal.
+// Speakable is set directly here, same as namedHolidayNodes()'s own pageNode.
+function finlandVsUsaNodes() {
+  const path = "/suomi-vs-usa-viikkonumerot";
+  const url = canonicalFor(path);
+  const meta = metaFor(path);
+  const faq = finlandVsUsaFaqs();
+  return [
+    {
+      "@type": "Article",
+      "@id": `${url}#article`,
+      headline: "Suomi vs. USA: miksi viikkonumero eroaa?",
+      description: meta.description,
+      inLanguage: "fi-FI",
+      datePublished: "2026-08-05",
+      dateModified: CONTENT_UPDATED,
+      author: { "@id": `${SITE_URL}/#organization` },
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      mainEntityOfPage: { "@id": `${url}#webpage` },
+      about: [
+        { "@type": "Thing", name: "ISO 8601" },
+        { "@type": "Thing", name: "Viikkonumero" },
+        { "@type": "Thing", name: "Yhdysvaltain viikkonumerointi" },
+      ],
+    },
+    pageNode(path, "WebPage", {
+      description: meta.description,
+      datePublished: "2026-08-05",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: { "@id": `${url}#article` },
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".answer-sentence"],
+      },
+    }),
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      inLanguage: "fi-FI",
+      datePublished: "2026-08-05",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ];
+}
+
+function printIntentNodes(pathname) {
   const listMatch = pathname.match(/^\/tulosta-(\d+)$/);
   const calendarMatch = pathname.match(/^\/tulostettava-kalenteri-(\d+)$/);
-  if (!listMatch && !calendarMatch) return "";
+  if (!listMatch && !calendarMatch) return [];
 
   const year = Number((listMatch || calendarMatch)[1]);
   const faqsForPage = listMatch
@@ -489,23 +749,14 @@ function printIntentScript(pathname) {
     : printableCalendarFaqs(year);
   const url = canonicalFor(pathname);
   const meta = metaFor(pathname);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+  return [
+      pageNode(pathname, "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
         author: { "@id": `${SITE_URL}/#organization` },
-        publisher: { "@id": `${SITE_URL}/#organization` },
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         mainEntity: { "@id": `${url}#faq` },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${url}#faq`,
@@ -518,24 +769,20 @@ function printIntentScript(pathname) {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
-function schoolHolidayScript(year) {
+function schoolHolidayNodes(year) {
   const pathname = `/koululomat-${year}`;
   const url = canonicalFor(pathname);
   const meta = metaFor(pathname);
   const page = schoolHolidayPage(year);
-  if (!meta || !page) return "";
+  if (!meta || !page) return [];
   const faq = schoolHolidayFaqs(year);
   const citations = page.sourceKeys.map(
     (key) => SCHOOL_HOLIDAY_SOURCES[key].url,
   );
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
+  return [
       {
         "@type": "Article",
         "@id": `${url}#article`,
@@ -546,7 +793,7 @@ function schoolHolidayScript(year) {
         dateModified: CONTENT_UPDATED,
         author: { "@id": `${SITE_URL}/#organization` },
         publisher: { "@id": `${SITE_URL}/#organization` },
-        mainEntityOfPage: { "@id": `${url}#page` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
         citation: citations,
         about: [
           { "@type": "Thing", name: `Koululomat ${year}` },
@@ -554,44 +801,44 @@ function schoolHolidayScript(year) {
           { "@type": "Thing", name: "Syysloma" },
         ],
       },
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+      pageNode(pathname, "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         mainEntity: { "@id": `${url}#article` },
-      },
-      {
-        "@type": "FAQPage",
-        "@id": `${url}#faq`,
-        inLanguage: "fi-FI",
-        datePublished: "2026-08-04",
-        dateModified: CONTENT_UPDATED,
-        mainEntity: faq.map((item) => ({
-          "@type": "Question",
-          name: item.q,
-          acceptedAnswer: { "@type": "Answer", text: item.a },
-        })),
-      },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+      }),
+      // STEP 7 safeguard: even though a non-CONFIRMED page never reaches this
+      // function (schoolHolidayMeta() sets robots:"noindex" for it, which
+      // the dispatch loop's isIndexable/meta.robots check already skips this
+      // whole function for), don't ALSO rely on that being the only gate —
+      // schoolHolidayFaqs() itself returns [] for anything but Tier A, so
+      // skip emitting an empty FAQPage rather than trust a single check.
+      ...(faq.length > 0
+        ? [
+            {
+              "@type": "FAQPage",
+              "@id": `${url}#faq`,
+              inLanguage: "fi-FI",
+              datePublished: "2026-08-04",
+              dateModified: CONTENT_UPDATED,
+              mainEntity: faq.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: { "@type": "Answer", text: item.a },
+              })),
+            },
+          ]
+        : []),
+    ];
 }
 
 // Article + FAQPage data for the expanded weeks-per-year explainer. FAQs are
 // shared with the visible page so schema and rendered answers stay identical.
-function weeksInYearScript() {
+function weeksInYearNodes() {
   const url = canonicalFor("/kuinka-monta-viikkoa-vuodessa");
   const meta = metaFor("/kuinka-monta-viikkoa-vuodessa");
   const faq = weeksInYearFaqs(currentYear);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
+  return [
       {
         "@type": "Article",
         "@id": `${url}#article`,
@@ -602,25 +849,19 @@ function weeksInYearScript() {
         dateModified: CONTENT_UPDATED,
         author: { "@id": `${SITE_URL}/#organization` },
         publisher: { "@id": `${SITE_URL}/#organization` },
-        mainEntityOfPage: { "@id": `${url}#page` },
+        mainEntityOfPage: { "@id": `${url}#webpage` },
         about: [
           { "@type": "Thing", name: "ISO 8601" },
           { "@type": "Thing", name: "Viikkovuosi" },
           { "@type": "Thing", name: "Viikko 53" },
         ],
       },
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+      pageNode("/kuinka-monta-viikkoa-vuodessa", "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-01-01",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         mainEntity: { "@id": `${url}#article` },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${url}#faq`,
@@ -633,9 +874,7 @@ function weeksInYearScript() {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
 function addDays(date, n) {
@@ -644,15 +883,19 @@ function addDays(date, n) {
   return d;
 }
 
+// ISO date-only string ("2026-08-03") — shared by holidaysEventNodes()'s
+// Event dates and the /data/* JSON feeds below, so both formats can never
+// drift apart on the same date.
+function ymd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // Event structured data for a year's public holidays, injected only on
 // /pyhapaivat-<year>, whose visible table lists these same holidays with the
 // same dates. "Country" is a valid schema.org Place subtype, so a national
 // holiday can carry a real (if coarse) location without inventing a venue.
-function holidaysEventScript(year) {
-  const ymd = (d) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const data = {
-    "@context": "https://schema.org",
+function holidaysEventNodes(year) {
+  return [{
     "@type": "ItemList",
     "@id": `${SITE_URL}/pyhapaivat-${year}#events`,
     name: `Suomen pyhäpäivät ${year}`,
@@ -672,8 +915,68 @@ function holidaysEventScript(year) {
           : "Laajasti vietetty vapaapäivä Suomessa (ei virallinen arkipyhä).",
       },
     })),
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+  }];
+}
+
+// CollectionPage (STEP 6/7) + FAQPage + Speakable for /liputuspaivat-<year>.
+// Bundled into one function like calendarPageNodes()/quarterNodes() above.
+// Each flag day is an Event ListItem (same shape as holidaysEventNodes()
+// above), inside a proper CollectionPage — an upgrade over the bare ItemList
+// pyhapaivat-<year> uses, per this route's explicit CollectionPage
+// requirement. Reuses flagDaysInYear()/flagDayFaqs() (flagDayPages.js), so
+// this can't disagree with FlagDays.jsx's visible table.
+function flagDayNodes(year) {
+  const path = `/liputuspaivat-${year}`;
+  const url = canonicalFor(path);
+  const meta = metaFor(path);
+  const days = flagDaysInYear(year);
+  const faq = flagDayFaqs(year);
+
+  const itemListElement = days.map((d, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    item: {
+      "@type": "Event",
+      name: d.name,
+      startDate: ymd(d.date),
+      endDate: ymd(d.date),
+      eventStatus: "https://schema.org/EventScheduled",
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      location: { "@type": "Country", name: "Suomi" },
+      description: d.holidayOverlap
+        ? `${d.categoryLabel}. Osuu samalle päivälle kuin ${d.holidayOverlap}.`
+        : `${d.categoryLabel}.`,
+    },
+  }));
+
+  return [
+    pageNode(path, "CollectionPage", {
+      name: `Suomen liputuspäivät ${year}`,
+      description: meta.description,
+      dateModified: CONTENT_UPDATED,
+      author: { "@id": `${SITE_URL}/#organization` },
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".answer-sentence"],
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: itemListElement.length,
+        itemListElement,
+      },
+    }),
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ];
 }
 
 // Holidays landing within ISO week `week` of ISO year `isoYearNum`.
@@ -694,7 +997,7 @@ function holidaysInWeekForPrerender(isoYearNum, week) {
 // engines citing the exact page for "what week is 3.8.2026") rather than a
 // rich-snippet bet — consistent with the llms.txt/ai.txt investment already
 // in this repo. Mirrors the visible <details> list added to WeekDays.jsx.
-function weekFaqScript(w, y) {
+function weekFaqNodes(w, y) {
   const mo = mondayOf(w, y);
   const su = addDays(mo, 6);
   const moStr = fmtShortFi(mo);
@@ -715,8 +1018,7 @@ function weekFaqScript(w, y) {
     ]);
   }
 
-  const data = {
-    "@context": "https://schema.org",
+  return [{
     "@type": "FAQPage",
     "@id": `${canonicalFor(`/viikko-${w}-${y}`)}#faq`,
     inLanguage: "fi-FI",
@@ -726,31 +1028,206 @@ function weekFaqScript(w, y) {
       name: q,
       acceptedAnswer: { "@type": "Answer", text: a },
     })),
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+  }];
+}
+
+// FAQPage structured data for the /tyopaivat-<year> hub. The FAQ entries come
+// from workingDaysFaqs() in seo.js — the same function WorkingDays.jsx will
+// use to render its visible <details> list, so the two can't drift (same
+// discipline as calendarFaqs()).
+function workingDaysFaqNodes(year) {
+  const faq = workingDaysFaqs(year);
+  return [{
+    "@type": "FAQPage",
+    "@id": `${canonicalFor(`/tyopaivat-${year}`)}#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// FAQPage structured data for /kuukausi-<month>-<year>. Deliberately separate
+// from weekCollectionNodes() below, which already supplies this same URL's
+// CollectionPage node (the month's week grid, as an ItemList) — the dispatch
+// loop pushes both onto the same page's @graph rather than one function
+// doing both jobs, since the two were built at different times against
+// different, already-shipped patterns and neither needed touching to add the
+// other. The FAQ entries come from monthFaqs() in seo.js, the same function
+// WeeksInEachMonth.jsx uses to render its visible <details> list.
+function monthFaqNodes(month, year) {
+  const faq = monthFaqs(month, year);
+  return [{
+    "@type": "FAQPage",
+    "@id": `${canonicalFor(`/kuukausi-${month}-${year}`)}#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// FAQPage structured data for /vuosi-<year>. Deliberately separate from
+// weekCollectionNodes() below, which already supplies this same URL's
+// CollectionPage node (the year's week grid, as an ItemList) — same
+// dispatch-loop split as monthFaqNodes()/weekCollectionNodes() above. The FAQ
+// entries come from yearFaqs() in seo.js, the same function YearCalendar.jsx
+// uses to render its visible <details> list.
+function yearFaqNodes(year) {
+  const faq = yearFaqs(year);
+  return [{
+    "@type": "FAQPage",
+    "@id": `${canonicalFor(`/vuosi-${year}`)}#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: faq.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// CollectionPage (daily entries, STEP 6) + FAQPage + Speakable for a single
+// month's working-day page (/tyopaivat-<slug>-<year>). Bundled into one
+// function (like calendarPageNodes() above) rather than split across two
+// dispatch-loop pushes, since — unlike weekCollectionNodes()/monthFaqNodes()
+// — nothing else on the site shares this CollectionPage with another route.
+// The FAQ entries come from monthlyWorkingDayFaqs() in seo.js, the same
+// function MonthlyWorkingDays.jsx renders as its visible <details> list.
+function monthlyWorkingDaysNodes(month, year) {
+  const path = `/tyopaivat-${M_SLUG[month - 1]}-${year}`;
+  const url = canonicalFor(path);
+  const meta = metaFor(path);
+  const faq = monthlyWorkingDayFaqs(month, year);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const officialHolidayByDay = new Map(
+    holidaysInYear(year)
+      .filter((h) => h.official && h.date.getMonth() === month - 1)
+      .map((h) => [h.date.getDate(), h.name]),
+  );
+  const itemListElement = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const dow = new Date(year, month - 1, day).getDay();
+    const holidayName = officialHolidayByDay.get(day);
+    const status = holidayName
+      ? "Arkipyhä"
+      : dow === 0 || dow === 6
+        ? "Viikonloppu"
+        : "Työpäivä";
+    return {
+      "@type": "ListItem",
+      position: day,
+      item: {
+        "@type": "Thing",
+        name: `${day}.${month}.${year}`,
+        description: holidayName ? `${status}: ${holidayName}` : status,
+      },
+    };
+  });
+
+  return [
+    pageNode(path, "CollectionPage", {
+      description: meta.description,
+      dateModified: CONTENT_UPDATED,
+      author: { "@id": `${SITE_URL}/#organization` },
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".answer-sentence"],
+      },
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: itemListElement.length,
+        itemListElement,
+      },
+    }),
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ];
+}
+
+// CollectionPage (STEP 6: months as hasPart, weeks as the ItemList) + FAQPage
+// + Speakable for a fiscal-quarter page (/q<1-4>-<year>). Bundled into one
+// function like calendarPageNodes()/monthlyWorkingDaysNodes() above, since
+// nothing else on the site shares a quarter's CollectionPage. Reuses
+// quarterStats() (itself built from monthStats()) for both the week ItemList
+// and the FAQ, so this can't disagree with QuarterPage.jsx's visible content.
+function quarterNodes(quarter, year) {
+  const path = `/q${quarter}-${year}`;
+  const url = canonicalFor(path);
+  const meta = metaFor(path);
+  const stats = quarterStats(year, quarter);
+  const faq = quarterFaqs(quarter, year);
+
+  const hasPart = stats.months.map((m) => ({
+    "@type": "WebPage",
+    name: `${M_FULL[m - 1]} ${year}`,
+    url: canonicalFor(`/kuukausi-${m}-${year}`),
+  }));
+  const itemListElement = stats.weeks.map((w, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    url: canonicalFor(`/viikko-${w.week}-${w.year}`),
+  }));
+
+  return [
+    pageNode(path, "CollectionPage", {
+      name: `Q${quarter} ${year}`,
+      description: meta.description,
+      dateModified: CONTENT_UPDATED,
+      author: { "@id": `${SITE_URL}/#organization` },
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: [".answer-sentence"],
+      },
+      hasPart,
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: itemListElement.length,
+        itemListElement,
+      },
+    }),
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: faq.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+  ];
 }
 
 // CollectionPage + FAQPage data for the full /kalenteri-<year> landing pages.
 // The FAQ entries come from the same source as the visible <details> list.
-function calendarPageScript(year) {
+function calendarPageNodes(year) {
   const url = canonicalFor(`/kalenteri-${year}`);
   const meta = calendarMeta(year, null, false);
   const faq = calendarFaqs(year);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "CollectionPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+  return [
+      pageNode(`/kalenteri-${year}`, "CollectionPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-03",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         author: { "@id": `${SITE_URL}/#organization` },
-        publisher: { "@id": `${SITE_URL}/#organization` },
         mainEntity: {
           "@type": "ItemList",
           numberOfItems: 12,
@@ -760,7 +1237,7 @@ function calendarPageScript(year) {
             url: canonicalFor(`/kuukausi-${index + 1}-${year}`),
           })),
         },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${url}#faq`,
@@ -773,18 +1250,18 @@ function calendarPageScript(year) {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
 // Year and month pages are directories of week pages, so CollectionPage with
 // an ItemList describes their visible linked grids more accurately than a
 // generic WebPage. Full calendar pages have their own richer function above.
-function weekCollectionScript(pathname) {
+function weekCollectionNodes(pathname) {
   let match = pathname.match(/^\/vuosi-(\d+)$/);
   let urls;
   let collectionName;
+  let hasPart;
+  let speakable;
 
   if (match) {
     const year = Number(match[1]);
@@ -793,9 +1270,18 @@ function weekCollectionScript(pathname) {
       { length: weeksInIsoYear(year) },
       (_, index) => canonicalFor(`/viikko-${index + 1}-${year}`),
     );
+    // The year page also links out to its 12 month pages (see YearCalendar.jsx's
+    // month pill row) — surfaced here as hasPart WebPage stubs alongside the
+    // week ItemList, rather than folding them into one mixed ItemList, so the
+    // existing week-only mainEntity contract stays unchanged for any consumer.
+    hasPart = M_FULL.map((name, index) => ({
+      "@type": "WebPage",
+      name: `${name} ${year}`,
+      url: canonicalFor(`/kuukausi-${index + 1}-${year}`),
+    }));
   } else {
     match = pathname.match(/^\/kuukausi-(\d+)-(\d+)$/);
-    if (!match) return "";
+    if (!match) return [];
     const month = Number(match[1]);
     const year = Number(match[2]);
     const seen = new Set();
@@ -817,22 +1303,25 @@ function weekCollectionScript(pathname) {
       urls.push(canonicalFor(`/viikko-${week}-${weekYear}`));
     }
     collectionName = metaFor(pathname).title;
+    // Month pages carry a short factual summary sentence (WeeksInEachMonth.jsx's
+    // .answer-sentence — "Kesäkuu 2026 sisältää N viikkoa: viikot X-Y.") that
+    // year pages don't have an equivalent single crisp sentence for, so this
+    // is scoped to just this branch, not both outcomes of the vuosi/kuukausi
+    // split above.
+    speakable = {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".answer-sentence"],
+    };
   }
 
-  const canonical = canonicalFor(pathname);
   const meta = metaFor(pathname);
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "@id": `${canonical}#page`,
-    url: canonical,
+  return [pageNode(pathname, "CollectionPage", {
     name: collectionName,
     description: meta.description,
-    inLanguage: "fi-FI",
     dateModified: CONTENT_UPDATED,
-    isPartOf: { "@id": `${SITE_URL}/#website` },
     author: { "@id": `${SITE_URL}/#organization` },
-    publisher: { "@id": `${SITE_URL}/#organization` },
+    ...(hasPart ? { hasPart } : {}),
+    ...(speakable ? { speakable } : {}),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: urls.length,
@@ -842,37 +1331,39 @@ function weekCollectionScript(pathname) {
         url,
       })),
     },
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+  })];
 }
 
 // WebPage + Event + FAQPage data for each named-holiday landing page. The
 // visible content, metadata and schema all use holidayPages.js, so dates and
 // answers cannot drift between the three representations.
-function namedHolidayScript(year, slug) {
+function namedHolidayNodes(year, slug) {
   const page = holidayPageFor(year, slug);
-  if (!page) return "";
+  if (!page) return [];
   const meta = holidayPageMeta(year, slug);
   const faq = holidayFaqs(page);
   const date = `${page.date.getFullYear()}-${String(page.date.getMonth() + 1).padStart(2, "0")}-${String(page.date.getDate()).padStart(2, "0")}`;
   const url = canonicalFor(page.path);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${url}#page`,
-        url,
-        name: meta.title,
+  // Holiday -> Week/Month structured-data links (bidirectional linking
+  // system), built from the exact same helper NamedHoliday.jsx's visible
+  // links use, so the schema and the page content can't disagree.
+  const links = holidayWeekLinks(page);
+  return [
+      pageNode(page.path, "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-03",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         author: { "@id": `${SITE_URL}/#organization` },
-        publisher: { "@id": `${SITE_URL}/#organization` },
         mainEntity: { "@id": `${url}#event` },
-      },
+        mentions: [
+          { "@id": `${canonicalFor(links.week.path)}#webpage` },
+          { "@id": `${canonicalFor(links.month.path)}#webpage` },
+        ],
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: [".answer-sentence"],
+        },
+      }),
       {
         "@type": "Event",
         "@id": `${url}#event`,
@@ -897,12 +1388,10 @@ function namedHolidayScript(year, slug) {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
-function nameDayPageScript(url) {
+function nameDayPageNodes(url) {
   let page;
   let meta;
   let type;
@@ -920,25 +1409,16 @@ function nameDayPageScript(url) {
     meta = nameDayDateMeta(match[1]);
     type = "date";
   }
-  if (!page || !meta) return "";
+  if (!page || !meta) return [];
   const faq = nameDayFaqs(page, type);
   const canonical = canonicalFor(url);
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebPage",
-        "@id": `${canonical}#page`,
-        url: canonical,
-        name: meta.title,
+  return [
+      pageNode(url, "WebPage", {
         description: meta.description,
-        inLanguage: "fi-FI",
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
-        isPartOf: { "@id": `${SITE_URL}/#website` },
         author: { "@id": `${SITE_URL}/#organization` },
-        publisher: { "@id": `${SITE_URL}/#organization` },
-      },
+      }),
       {
         "@type": "FAQPage",
         "@id": `${canonical}#faq`,
@@ -951,14 +1431,12 @@ function nameDayPageScript(url) {
           acceptedAnswer: { "@type": "Answer", text: item.a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
 // HowTo + FAQ structured data for the four calculator pages. Each FAQ entry
 // mirrors that page's visible <details> list exactly (same convention as
-// mikaOnViikkonumeroScript above and faqScript for /ukk) — edit the page's
+// mikaOnViikkonumeroNodes above and faqNodes for /ukk) — edit the page's
 // JSX and this object together.
 const CALCULATOR_SCHEMA = {
   "/paivamaara-viikoksi": {
@@ -1051,12 +1529,10 @@ const CALCULATOR_SCHEMA = {
   },
 };
 
-function calculatorScript(url) {
+function calculatorNodes(url) {
   const entry = CALCULATOR_SCHEMA[url];
-  if (!entry) return "";
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
+  if (!entry) return [];
+  return [
       {
         "@type": "HowTo",
         name: entry.howToName,
@@ -1078,9 +1554,7 @@ function calculatorScript(url) {
           acceptedAnswer: { "@type": "Answer", text: a },
         })),
       },
-    ],
-  };
-  return `<script type="application/ld+json">\n${JSON.stringify(data, null, 2)}\n    </script>\n  `;
+    ];
 }
 
 // The <SEO> component renders <title>/<meta> via Helmet, and React emits those
@@ -1159,6 +1633,10 @@ for (const url of routes) {
     if (languageLinks) {
       html = html.replace("</head>", languageLinks + "</head>");
     }
+    const feedLink = jsonFeedAlternateLink(url);
+    if (feedLink) {
+      html = html.replace("</head>", feedLink + "</head>");
+    }
     if (url === "/en") {
       html = html.replace('<html lang="fi">', '<html lang="en">');
     }
@@ -1183,88 +1661,99 @@ for (const url of routes) {
         .replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${og}$2`);
     }
 
-    const crumb = breadcrumbScript(url);
-    if (crumb) html = html.replace("</head>", `${crumb}</head>`);
+    // Noindexed archive pages keep their crawlable HTML but omit page-level
+    // schema, avoiding hundreds of repeated graph payloads that parsers should
+    // not index anyway.
+    if (isIndexable(url) && !meta.robots?.startsWith("noindex")) {
+      const nodes = [];
+      const crumb = breadcrumbNode(url);
+      if (crumb) nodes.push(crumb);
 
-    if (url === "/ukk") {
-      html = html.replace("</head>", `${faqScript()}</head>`);
-    }
+      if (url === "/ukk") nodes.push(...faqNodes());
+      if (url === "/") nodes.push(...homepageFaqNodes(), ...datasetNodes());
+      if (url === "/en") nodes.push(...englishPageNodes());
 
-    if (url === "/") {
-      html = html.replace("</head>", `${homepageFaqScript()}</head>`);
-    }
+      if (["/mika-kuukausi-nyt", "/mika-vuosi-nyt", "/viikonpaiva"].includes(url)) {
+        nodes.push(...currentDateIntentNodes(url));
+      }
+      if (url === "/mika-on-viikkonumero") {
+        nodes.push(...mikaOnViikkonumeroNodes());
+      }
+      if (url === "/viikko-alkaa-maanantaista") {
+        nodes.push(...weekStartsMondayNodes());
+      }
+      if (url === "/suomi-vs-usa-viikkonumerot") {
+        nodes.push(...finlandVsUsaNodes());
+      }
+      if (/^\/(?:tulosta-|tulostettava-kalenteri-)\d+$/.test(url)) {
+        nodes.push(...printIntentNodes(url));
+      }
 
-    if (url === "/en") {
-      html = html.replace("</head>", englishPageScript() + "</head>");
-    }
+      const schoolHolidayMatch = url.match(/^\/koululomat-(\d+)$/);
+      if (schoolHolidayMatch) {
+        nodes.push(...schoolHolidayNodes(Number(schoolHolidayMatch[1])));
+      }
+      if (url === "/kuinka-monta-viikkoa-vuodessa") {
+        nodes.push(...weeksInYearNodes());
+      }
 
-    if (["/mika-kuukausi-nyt", "/mika-vuosi-nyt", "/viikonpaiva"].includes(url)) {
-      html = html.replace("</head>", currentDateIntentScript(url) + "</head>");
-    }
+      const holidaysMatch = url.match(/^\/pyhapaivat-(\d+)$/);
+      if (holidaysMatch) nodes.push(...holidaysEventNodes(+holidaysMatch[1]));
 
-    if (url === "/mika-on-viikkonumero") {
-      html = html.replace("</head>", `${mikaOnViikkonumeroScript()}</head>`);
-    }
+      const flagDaysMatch = url.match(/^\/liputuspaivat-(\d+)$/);
+      if (flagDaysMatch) nodes.push(...flagDayNodes(+flagDaysMatch[1]));
 
-    if (url === "/viikko-alkaa-maanantaista") {
-      html = html.replace("</head>", `${weekStartsMondayScript()}</head>`);
-    }
+      const workingDaysMatch = url.match(/^\/tyopaivat-(\d+)$/);
+      if (workingDaysMatch) nodes.push(...workingDaysFaqNodes(+workingDaysMatch[1]));
 
-    if (/^\/(?:tulosta-|tulostettava-kalenteri-)\d+$/.test(url)) {
-      html = html.replace("</head>", `${printIntentScript(url)}</head>`);
-    }
+      const monthlyWorkingDaysMatch = url.match(/^\/tyopaivat-([a-z]+)-(\d+)$/);
+      if (monthlyWorkingDaysMatch) {
+        const mi = M_SLUG.indexOf(monthlyWorkingDaysMatch[1]);
+        if (mi !== -1) {
+          nodes.push(...monthlyWorkingDaysNodes(mi + 1, +monthlyWorkingDaysMatch[2]));
+        }
+      }
 
-    const schoolHolidayMatch = url.match(/^\/koululomat-(\d+)$/);
-    if (schoolHolidayMatch) {
+      const namedHolidayMatch = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/);
+      if (namedHolidayMatch) {
+        nodes.push(...namedHolidayNodes(+namedHolidayMatch[1], namedHolidayMatch[2]));
+      }
+      if (/^\/nimipaiva(?:t)?\//.test(url)) nodes.push(...nameDayPageNodes(url));
+
+      const weekMatch = url.match(/^\/viikko-(\d+)-(\d+)$/);
+      if (weekMatch) nodes.push(...weekFaqNodes(+weekMatch[1], +weekMatch[2]));
+
+      const calendarMatch = url.match(/^\/kalenteri-(\d+)$/);
+      if (calendarMatch) nodes.push(...calendarPageNodes(+calendarMatch[1]));
+
+      const monthMatch = url.match(/^\/kuukausi-(\d+)-(\d+)$/);
+      if (monthMatch) nodes.push(...monthFaqNodes(+monthMatch[1], +monthMatch[2]));
+
+      const quarterMatch = url.match(/^\/q([1-4])-(\d+)$/);
+      if (quarterMatch) nodes.push(...quarterNodes(+quarterMatch[1], +quarterMatch[2]));
+
+      const yearMatch = url.match(/^\/vuosi-(\d+)$/);
+      if (yearMatch) nodes.push(...yearFaqNodes(+yearMatch[1]));
+
+      if (/^\/(?:vuosi-\d+|kuukausi-\d+-\d+)$/.test(url)) {
+        nodes.push(...weekCollectionNodes(url));
+      }
+      if (CALCULATOR_SCHEMA[url]) nodes.push(...calculatorNodes(url));
+
+      const pageId = `${canonical}#webpage`;
+      if (!nodes.some((node) => node["@id"] === pageId)) {
+        nodes.unshift(
+          pageNode(url, "WebPage", {
+            description,
+            ...speakableExtra(url),
+            ...weekHolidayMentionsExtra(url),
+          }),
+        );
+      }
       html = html.replace(
         "</head>",
-        `${schoolHolidayScript(Number(schoolHolidayMatch[1]))}</head>`,
+        `${jsonLdBlock([...globalJsonLdNodes, ...nodes])}</head>`,
       );
-    }
-
-    if (url === "/kuinka-monta-viikkoa-vuodessa") {
-      html = html.replace("</head>", `${weeksInYearScript()}</head>`);
-    }
-
-    const holidaysMatch = url.match(/^\/pyhapaivat-(\d+)$/);
-    if (holidaysMatch) {
-      html = html.replace("</head>", `${holidaysEventScript(+holidaysMatch[1])}</head>`);
-    }
-
-    const namedHolidayMatch = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/);
-    if (namedHolidayMatch) {
-      html = html.replace(
-        "</head>",
-        `${namedHolidayScript(+namedHolidayMatch[1], namedHolidayMatch[2])}</head>`,
-      );
-    }
-
-    if (/^\/nimipaiva(?:t)?\//.test(url)) {
-      html = html.replace("</head>", `${nameDayPageScript(url)}</head>`);
-    }
-
-    const weekMatch = url.match(/^\/viikko-(\d+)-(\d+)$/);
-    if (weekMatch) {
-      html = html.replace(
-        "</head>",
-        `${weekFaqScript(+weekMatch[1], +weekMatch[2])}</head>`,
-      );
-    }
-
-    const calendarMatch = url.match(/^\/kalenteri-(\d+)$/);
-    if (calendarMatch) {
-      html = html.replace(
-        "</head>",
-        `${calendarPageScript(+calendarMatch[1])}</head>`,
-      );
-    }
-
-    if (/^\/(?:vuosi-\d+|kuukausi-\d+-\d+)$/.test(url)) {
-      html = html.replace("</head>", `${weekCollectionScript(url)}</head>`);
-    }
-
-    if (CALCULATOR_SCHEMA[url]) {
-      html = html.replace("</head>", `${calculatorScript(url)}</head>`);
     }
 
     html = html.replace(
@@ -1316,6 +1805,310 @@ try {
 } catch (err) {
   console.error("failed to prerender 404.html:", err);
 }
+
+// Static machine-readable JSON feeds (STEP 2 of the GEO/AI-consumption data
+// layer): one file per week/year/holiday-year, written straight to dist/ so
+// Vercel serves them as plain static assets — no API route, no server, no
+// auth, fully CDN-cacheable, same publishing mechanism as every prerendered
+// HTML page. Every value below is read from a function this file already
+// imports for the HTML pages (yearStats, holidaysInYear, the week-page date
+// math) — no new day-counting logic, so a feed value and its HTML/schema
+// equivalent can never disagree (STEP 6).
+// Bumped only on a breaking payload-shape change (a field renamed or
+// removed — adding a new field is not breaking and doesn't require a bump).
+// Every per-item feed below carries this, so a consumer caching or parsing
+// these feeds long-term has a stable way to detect a future breaking change
+// without guessing from field presence.
+const FEED_SCHEMA_VERSION = "1.0";
+
+function writeJson(filePath, data) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
+}
+
+// Working days in a single ISO week (Mon–Fri minus official holidays) — the
+// one genuinely new calculation this feature needs, since nothing before now
+// exposed a per-week count as a plain function (WeekDays.jsx computes its own
+// copy inline for its Quick Facts block, but that file has JSX prerender.js
+// can't import directly — see holidaysInWeekForPrerender() above for the
+// same constraint on the holiday list itself).
+function weekWorkingDaysCount(monday, officialHolidays) {
+  const officialDates = new Set(officialHolidays.map((h) => h.date.toDateString()));
+  let count = 0;
+  for (let i = 0; i < 7; i += 1) {
+    const d = addDays(monday, i);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6 && !officialDates.has(d.toDateString())) count += 1;
+  }
+  return count;
+}
+
+const dataDir = path.join(distDir, "data");
+const weekManifest = []; // { year, weekCount, indexUrl }
+const yearManifest = []; // { year, url }
+const holidaysManifest = []; // { year, url }
+const quarterManifest = []; // { year, quarter, url }
+const monthlyWorkingDaysManifest = []; // { year, month, url }
+const monthManifest = []; // { year, month, url }
+let feedFileCount = 0;
+
+for (let y = 2020; y <= currentYear + 9; y += 1) {
+  // /data/year/<year>.json — reuses yearStats() (seo.js), the same function
+  // powering YearCalendar.jsx's Quick Facts and yearFaqs().
+  const yStats = yearStats(y);
+  const yearHolidaysOut = holidaysInYear(y).map((h) => ({
+    name: h.name,
+    date: ymd(h.date),
+    official: h.official,
+  }));
+  writeJson(path.join(dataDir, "year", `${y}.json`), {
+    schemaVersion: FEED_SCHEMA_VERSION,
+    year: y,
+    weekCount: yStats.weekCount,
+    workingDays: yStats.working,
+    weekendDays: yStats.weekend,
+    holidays: yearHolidaysOut,
+    firstWeek: { week: yStats.firstWeek, year: yStats.firstWeekYear },
+    lastWeek: { week: yStats.lastWeek, year: yStats.lastWeekYear },
+    url: canonicalFor(`/vuosi-${y}`),
+  });
+  yearManifest.push({ year: y, url: `${SITE_URL}/data/year/${y}.json` });
+  feedFileCount += 1;
+
+  // /data/holidays/<year>.json — reuses holidaysInYear() (data/holidays.js),
+  // the same source PublicHolidays.jsx renders as its data table.
+  writeJson(path.join(dataDir, "holidays", `${y}.json`), {
+    schemaVersion: FEED_SCHEMA_VERSION,
+    year: y,
+    holidays: holidaysInYear(y).map((h) => ({
+      name: h.name,
+      date: ymd(h.date),
+      weekday: getWeekdayName(h.date),
+      week: isoWeek(h.date),
+      official: h.official,
+    })),
+    url: canonicalFor(`/pyhapaivat-${y}`),
+  });
+  holidaysManifest.push({ year: y, url: `${SITE_URL}/data/holidays/${y}.json` });
+  feedFileCount += 1;
+
+  // /data/week/<year>/<week>.json — reuses holidaysInWeekForPrerender() (this
+  // file, already used by weekFaqNodes) and mondayOf/quarterOf/seasonIndexOf.
+  const totalWeeks = weeksInIsoYear(y);
+  const yearWeekManifest = [];
+  for (let w = 1; w <= totalWeeks; w += 1) {
+    const monday = mondayOf(w, y);
+    const sunday = addDays(monday, 6);
+    const thursday = addDays(monday, 3);
+    const weekHolidays = holidaysInWeekForPrerender(y, w);
+    const officialWeekHolidays = weekHolidays.filter((h) => h.official);
+    writeJson(path.join(dataDir, "week", String(y), `${w}.json`), {
+      schemaVersion: FEED_SCHEMA_VERSION,
+      week: w,
+      year: y,
+      startDate: ymd(monday),
+      endDate: ymd(sunday),
+      workingDays: weekWorkingDaysCount(monday, officialWeekHolidays),
+      holidays: weekHolidays.map((h) => ({
+        name: h.name,
+        date: ymd(h.date),
+        official: h.official,
+      })),
+      quarter: quarterOf(monday),
+      season: SEASON_KEYS_EN[seasonIndexOf(thursday.getMonth())],
+      url: canonicalFor(`/viikko-${w}-${y}`),
+    });
+    yearWeekManifest.push({ week: w, url: `${SITE_URL}/data/week/${y}/${w}.json` });
+    feedFileCount += 1;
+  }
+  writeJson(path.join(dataDir, "week", String(y), "index.json"), {
+    year: y,
+    weeks: yearWeekManifest,
+  });
+  weekManifest.push({
+    year: y,
+    weekCount: totalWeeks,
+    indexUrl: `${SITE_URL}/data/week/${y}/index.json`,
+  });
+  feedFileCount += 1; // the per-year week index itself
+
+  // /data/quarter/<year>/<quarter>.json — reuses quarterStats() (seo.js,
+  // itself built from monthStats()), the same function QuarterPage.jsx and
+  // quarterFaqs() use. Added after the fiscal-quarter route family shipped;
+  // slots into the same year loop and manifest pattern as week/year/holidays
+  // without any URL-architecture change — exactly the extensibility STEP 9
+  // of the original data-layer design called for.
+  for (let q = 1; q <= 4; q += 1) {
+    const qStats = quarterStats(y, q);
+    const qHolidaysOut = qStats.holidays.map((h) => ({
+      name: h.name,
+      date: ymd(h.date),
+      official: h.official,
+    }));
+    writeJson(path.join(dataDir, "quarter", String(y), `${q}.json`), {
+      schemaVersion: FEED_SCHEMA_VERSION,
+      quarter: q,
+      year: y,
+      startDate: ymd(qStats.firstDay),
+      endDate: ymd(qStats.lastDay),
+      months: qStats.months,
+      weekRange: {
+        firstWeek: qStats.weeks[0].week,
+        firstYear: qStats.weeks[0].year,
+        lastWeek: qStats.weeks[qStats.weeks.length - 1].week,
+        lastYear: qStats.weeks[qStats.weeks.length - 1].year,
+      },
+      workingDays: qStats.working,
+      weekendDays: qStats.weekend,
+      totalDays: qStats.totalDays,
+      holidays: qHolidaysOut,
+      url: canonicalFor(`/q${q}-${y}`),
+    });
+    quarterManifest.push({
+      year: y,
+      quarter: q,
+      url: `${SITE_URL}/data/quarter/${y}/${q}.json`,
+    });
+    feedFileCount += 1;
+  }
+
+  // /data/monthly-working-days/<year>/<month>.json — reuses monthStats()
+  // (seo.js), the same function MonthlyWorkingDays.jsx and
+  // monthlyWorkingDayFaqs() use. Feed paths use the plain month number, not
+  // the page route's Finnish slug (M_SLUG), matching quarter's convention
+  // above (page /q1-<year>, feed /data/quarter/<year>/1.json) — feed URLs
+  // stay slug-free throughout /data/.
+  for (let mm = 1; mm <= 12; mm += 1) {
+    const mStats = monthStats(y, mm);
+    const officialHolidays = mStats.holidays.filter((h) => h.official);
+    writeJson(path.join(dataDir, "monthly-working-days", String(y), `${mm}.json`), {
+      schemaVersion: FEED_SCHEMA_VERSION,
+      month: mm,
+      year: y,
+      startDate: ymd(mStats.firstDay),
+      endDate: ymd(mStats.lastDay),
+      workingDays: mStats.working,
+      weekendDays: mStats.weekend,
+      holidays: officialHolidays.map((h) => ({
+        name: h.name,
+        date: ymd(h.date),
+        official: h.official,
+      })),
+      url: canonicalFor(`/tyopaivat-${M_SLUG[mm - 1]}-${y}`),
+    });
+    monthlyWorkingDaysManifest.push({
+      year: y,
+      month: mm,
+      url: `${SITE_URL}/data/monthly-working-days/${y}/${mm}.json`,
+    });
+    feedFileCount += 1;
+  }
+
+  // /data/month/<year>/<month>.json — the Month dataset (audit finding: no
+  // feed or Dataset schema existed for /kuukausi-<m>-<y> before this pass,
+  // unlike every other page type). Distinct from monthly-working-days above:
+  // this describes which ISO weeks fall in the month, not its working-day
+  // count. Reuses the same monthStats() call already made for the
+  // monthly-working-days feed two lines up — no second day-counting pass.
+  for (let mm = 1; mm <= 12; mm += 1) {
+    const mStats = monthStats(y, mm);
+    writeJson(path.join(dataDir, "month", String(y), `${mm}.json`), {
+      schemaVersion: FEED_SCHEMA_VERSION,
+      month: mm,
+      year: y,
+      startDate: ymd(mStats.firstDay),
+      endDate: ymd(mStats.lastDay),
+      weekCount: mStats.weekCount,
+      weeks: mStats.weeks,
+      workingDays: mStats.working,
+      weekendDays: mStats.weekend,
+      holidays: mStats.holidays
+        .filter((h) => h.official)
+        .map((h) => ({ name: h.name, date: ymd(h.date), official: h.official })),
+      url: canonicalFor(`/kuukausi-${mm}-${y}`),
+    });
+    monthManifest.push({
+      year: y,
+      month: mm,
+      url: `${SITE_URL}/data/month/${y}/${mm}.json`,
+    });
+    feedFileCount += 1;
+  }
+}
+
+// Per-family manifests — the actual contentUrl each Dataset node's
+// distribution points at (STEP 4), and the one URL an agent needs to
+// discover every week/year/holiday feed without guessing the pattern.
+writeJson(path.join(dataDir, "year", "index.json"), { years: yearManifest });
+writeJson(path.join(dataDir, "holidays", "index.json"), { years: holidaysManifest });
+writeJson(path.join(dataDir, "week", "index.json"), { years: weekManifest });
+writeJson(path.join(dataDir, "quarter", "index.json"), { quarters: quarterManifest });
+writeJson(path.join(dataDir, "monthly-working-days", "index.json"), {
+  months: monthlyWorkingDaysManifest,
+});
+writeJson(path.join(dataDir, "month", "index.json"), { months: monthManifest });
+feedFileCount += 6;
+
+// Top-level manifest (STEP 9): describes the whole /data/ surface by dataset
+// family rather than by URL pattern, so a fifth family (school holidays, name
+// days, monthly working days, another country) can be added later as one more
+// entry here without changing anything about the URLs already published.
+writeJson(path.join(dataDir, "index.json"), {
+  name: "Viikko Nro machine-readable data feeds",
+  schemaVersion: FEED_SCHEMA_VERSION,
+  license: `${SITE_URL}/kayttoehdot`,
+  dateModified: CONTENT_UPDATED,
+  datasets: [
+    {
+      name: "week",
+      description: "One JSON file per ISO 8601 week.",
+      indexUrl: `${SITE_URL}/data/week/index.json`,
+      urlPattern: `${SITE_URL}/data/week/{year}/{week}.json`,
+    },
+    {
+      name: "year",
+      description: "One JSON file per calendar year.",
+      indexUrl: `${SITE_URL}/data/year/index.json`,
+      urlPattern: `${SITE_URL}/data/year/{year}.json`,
+    },
+    {
+      name: "holidays",
+      description: "One JSON file per calendar year's public holidays.",
+      indexUrl: `${SITE_URL}/data/holidays/index.json`,
+      urlPattern: `${SITE_URL}/data/holidays/{year}.json`,
+    },
+    {
+      name: "quarter",
+      description: "One JSON file per fiscal quarter (Q1-Q4).",
+      indexUrl: `${SITE_URL}/data/quarter/index.json`,
+      urlPattern: `${SITE_URL}/data/quarter/{year}/{quarter}.json`,
+    },
+    {
+      name: "monthly-working-days",
+      description: "One JSON file per calendar month's working-day count.",
+      indexUrl: `${SITE_URL}/data/monthly-working-days/index.json`,
+      urlPattern: `${SITE_URL}/data/monthly-working-days/{year}/{month}.json`,
+    },
+    {
+      name: "month",
+      description: "One JSON file per calendar month's ISO weeks.",
+      indexUrl: `${SITE_URL}/data/month/index.json`,
+      urlPattern: `${SITE_URL}/data/month/{year}/{month}.json`,
+    },
+  ],
+});
+feedFileCount += 1;
+
+// Standalone Dataset JSON-LD (STEP 3/4), fetchable on its own without parsing
+// any HTML — the same 4 nodes also embedded in the homepage's <head> above,
+// built from the one datasetNodes() function so the two can't drift.
+writeJson(path.join(dataDir, "dataset.json"), {
+  "@context": "https://schema.org",
+  "@graph": datasetNodes(),
+});
+feedFileCount += 1;
+
+console.log(`generated ${feedFileCount} JSON feed files under dist/data/ (2020-${currentYear + 9})`);
 
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
 // (currentYear is defined above, alongside the prerender route list.)

@@ -15,6 +15,7 @@ Keskeiset faktat viikkonumeroista Suomessa:
 - [Mikä on viikkonumero?](https://viikkonro.fi/mika-on-viikkonumero): viikkonumeron ja ISO 8601 -standardin selitys
 - [Miksi viikko alkaa maanantaista?](https://viikkonro.fi/viikko-alkaa-maanantaista): viikon alku, torstaisääntö ja vuodenvaihteen ISO-viikot
 - [Kuinka monta viikkoa vuodessa on?](https://viikkonro.fi/kuinka-monta-viikkoa-vuodessa): 52 vai 53 viikkoa ja miksi
+- [Suomi vs. USA: miksi viikkonumero eroaa?](https://viikkonro.fi/suomi-vs-usa-viikkonumerot): ISO 8601 vs. sunnuntaista alkava viikko, oikeilla päivämäärillä laskettuna
 - [Mikä kuukausi nyt on?](https://viikkonro.fi/mika-kuukausi-nyt): nykyinen kuukausi, kuukauden numero, päivien määrä ja viikot
 - [Mikä vuosi nyt on?](https://viikkonro.fi/mika-vuosi-nyt): nykyinen vuosi, päivien ja ISO-viikkojen määrä sekä vuoden eteneminen
 - [Mikä viikonpäivä oli?](https://viikkonro.fi/viikonpaiva): jaettava viikonpäivälaskuri mille tahansa päivämäärälle
@@ -26,6 +27,19 @@ Keskeiset faktat viikkonumeroista Suomessa:
 - [Tietoa meistä](https://viikkonro.fi/tietoa-meista): palvelun esittely
 - [Ota yhteyttä](https://viikkonro.fi/ota-yhteytta): yhteydenottolomake
 - [Week number today – English](https://viikkonro.fi/en): current ISO week number and the dates of week 27 in 2023
+
+## Koneluettava data (JSON)
+
+Jokaiselle viikolle, vuodelle ja pyhäpäivävuodelle 2020–2035 on saatavilla staattinen JSON-tiedosto ilman kirjautumista tai rajapyyntörajoja:
+
+- [Datan hakemisto](https://viikkonro.fi/data/index.json): kaikki datasetit ja URL-kaavat
+- [Viikkodata (hakemisto)](https://viikkonro.fi/data/week/index.json) — esim. [viikko 32/2026](https://viikkonro.fi/data/week/2026/32.json)
+- [Vuosidata (hakemisto)](https://viikkonro.fi/data/year/index.json) — esim. [vuosi 2026](https://viikkonro.fi/data/year/2026.json)
+- [Pyhäpäivädata (hakemisto)](https://viikkonro.fi/data/holidays/index.json) — esim. [vuosi 2026](https://viikkonro.fi/data/holidays/2026.json)
+- [Vuosineljännesdata (hakemisto)](https://viikkonro.fi/data/quarter/index.json) — esim. [Q1 2026](https://viikkonro.fi/data/quarter/2026/1.json)
+- [Kuukausittainen työpäivädata (hakemisto)](https://viikkonro.fi/data/monthly-working-days/index.json) — esim. [tammikuu 2026](https://viikkonro.fi/data/monthly-working-days/2026/1.json)
+- [Kuukausittainen viikkodata (hakemisto)](https://viikkonro.fi/data/month/index.json) — esim. [tammikuu 2026](https://viikkonro.fi/data/month/2026/1.json)
+- [Dataset-skeema (JSON-LD)](https://viikkonro.fi/data/dataset.json)
 
 ## Optional
 

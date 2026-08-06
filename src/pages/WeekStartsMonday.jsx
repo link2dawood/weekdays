@@ -93,7 +93,12 @@ const WeekStartsMonday = () => {
           Esimerkiksi yhdysvaltalaisissa kalentereissa sunnuntai on usein
           ensimmäinen sarake. Se ei ole sama laskentatapa kuin Suomessa käytetty
           ISO 8601 -viikkonumerointi, joten eri asetuksilla varustetut kalenterit
-          voivat näyttää vuodenvaihteessa eri viikkonumeron.
+          voivat näyttää vuodenvaihteessa eri viikkonumeron. Katso oikeilla
+          päivämäärillä laskettu{" "}
+          <Link to="/suomi-vs-usa-viikkonumerot">
+            vertailu Suomen ja Yhdysvaltain viikkonumeroista
+          </Link>
+          .
         </p>
 
         <h2>Aiheeseen liittyviä sivuja</h2>
@@ -101,6 +106,10 @@ const WeekStartsMonday = () => {
           <Link className="ql" to="/mika-on-viikkonumero">
             <b>Mikä on viikkonumero?</b>
             <span>ISO 8601 -viikkolaskenta kokonaisuudessaan</span>
+          </Link>
+          <Link className="ql" to="/suomi-vs-usa-viikkonumerot">
+            <b>Suomi vs. USA</b>
+            <span>Miksi viikkonumero eroaa — oikeat esimerkit</span>
           </Link>
           <Link className="ql" to="/paivamaara-viikoksi">
             <b>Päivämäärästä viikkonumeroon</b>

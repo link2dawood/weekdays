@@ -105,23 +105,27 @@
       }
     </script>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Load fonts without blocking first paint: preload the stylesheet, then
-         flip it to a real stylesheet once fetched. display=swap shows text in a
-         fallback font immediately. -->
+    <!-- Fonts are self-hosted (src/fonts.css, bundled into the site
+         stylesheet and inlined per-page by prerender.js) — no Google Fonts
+         round trip, so no preconnect/preload-then-flip stylesheet hack is
+         needed here. Only the two above-the-fold families (the hero <h1>/
+         week digit in Bricolage Grotesque, body/lead text in Inter) are
+         preloaded as fonts directly; IBM Plex Mono is used for smaller
+         secondary text in the same hero card and can load in without one. -->
     <link
       rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
+      as="font"
+      type="font/woff2"
+      href="/fonts/bricolage-grotesque-variable-latin.a79fdb52.woff2"
+      crossorigin
     />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap"
-      />
-    </noscript>
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-variable-latin.3100e775.woff2"
+      crossorigin
+    />
   </head>
   <body>
     <div id="root"></div>

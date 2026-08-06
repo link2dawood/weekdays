@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   HOLIDAY_DEFINITIONS,
   holidayFaqs,
+  holidayLinkPath,
   holidayPageFor,
   holidayPageMeta,
 } from "./holidayPages.js";
+import {
+  PRERENDER_MIN_YEAR,
+  PRERENDER_MAX_YEAR,
+} from "../components/dateUtils.js";
 
 describe("named holiday pages", () => {
   it("defines 15 unique canonical holiday slugs", () => {
@@ -56,5 +61,53 @@ describe("named holiday pages", () => {
   it("rejects unknown holiday slugs", () => {
     expect(holidayPageFor(2026, "tuntematon")).toBeNull();
     expect(holidayPageMeta(2026, "tuntematon")).toBeNull();
+  });
+
+  describe("holidayLinkPath (week-page → holiday internal links)", () => {
+    it("links a fixed-date holiday using the source name from holidays.js", () => {
+      expect(holidayLinkPath("Vappu", new Date(2026, 4, 1))).toBe("/pyhat-2026/vappu");
+    });
+
+    it("links a movable holiday the same way — no special-casing by kind", () => {
+      expect(holidayLinkPath("Juhannuspäivä", new Date(2027, 5, 26))).toBe(
+        "/pyhat-2027/juhannuspaiva",
+      );
+      expect(holidayLinkPath("1. pääsiäispäivä", new Date(2026, 3, 5))).toBe(
+        "/pyhat-2026/paasiaispaiva",
+      );
+    });
+
+    it("uses the holiday's own date year, not any other year a caller might pass around it", () => {
+      // The scenario this guards: a week page for ISO year Y can include a
+      // Monday–Sunday span whose Uudenvuodenpäivä falls in calendar year Y
+      // (not Y-1) even when the week itself starts in December of Y-1 — the
+      // link must point at the holiday's real year regardless of which ISO
+      // week/year the caller happens to be rendering.
+      expect(holidayLinkPath("Uudenvuodenpäivä", new Date(2026, 0, 1))).toBe(
+        "/pyhat-2026/uudenvuodenpaiva",
+      );
+    });
+
+    it("returns null for a name with no matching holiday definition", () => {
+      expect(holidayLinkPath("Ei ole pyhäpäivä", new Date(2026, 0, 1))).toBeNull();
+    });
+
+    it("returns null outside the prerendered year horizon (never links a 404)", () => {
+      expect(
+        holidayLinkPath("Vappu", new Date(PRERENDER_MIN_YEAR - 1, 4, 1)),
+      ).toBeNull();
+      expect(
+        holidayLinkPath("Vappu", new Date(PRERENDER_MAX_YEAR + 1, 4, 1)),
+      ).toBeNull();
+    });
+
+    it("links at both edges of the prerendered horizon", () => {
+      expect(holidayLinkPath("Vappu", new Date(PRERENDER_MIN_YEAR, 4, 1))).toBe(
+        `/pyhat-${PRERENDER_MIN_YEAR}/vappu`,
+      );
+      expect(holidayLinkPath("Vappu", new Date(PRERENDER_MAX_YEAR, 4, 1))).toBe(
+        `/pyhat-${PRERENDER_MAX_YEAR}/vappu`,
+      );
+    });
   });
 });

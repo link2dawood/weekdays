@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
+import QuickFacts from "../components/QuickFacts";
 import {
   PRERENDER_MAX_YEAR,
   PRERENDER_MIN_YEAR,
@@ -9,6 +10,7 @@ import {
   holidayFaqs,
   holidayPageFor,
   holidayPageMeta,
+  holidayWeekLinks,
 } from "../data/holidayPages";
 import { canonicalFor, CONTENT_UPDATED_FI } from "../data/seo";
 import NotFound from "./NotFound";
@@ -22,6 +24,9 @@ const NamedHoliday = () => {
   const meta = holidayPageMeta(page.year, page.slug);
   const faqs = holidayFaqs(page);
   const status = page.official ? "Virallinen pyhäpäivä" : "Vietetty juhlapäivä";
+  // Shared with prerender.js's structured-data `mentions` so the visible
+  // links and the schema references point at exactly the same URLs.
+  const links = holidayWeekLinks(page);
 
   return (
     <section className="app">
@@ -35,28 +40,31 @@ const NamedHoliday = () => {
       <h1>{page.displayName} {page.year}</h1>
 
       <div className="prose">
-        <p className="lead">
+        <p className="lead answer-sentence">
           <strong>
             {page.displayName} {page.year} on {page.weekdayEssive}{" "}
             {fmtFullFi(page.date)} ja kuuluu viikkoon {page.week}.
           </strong>
         </p>
 
-        <div className="panel">
-          <div className="now-label">{page.displayName} {page.year} lyhyesti</div>
-          <ul>
-            <li><strong>Päivämäärä:</strong> {fmtFullFi(page.date)}</li>
-            <li><strong>Viikonpäivä:</strong> {page.weekday}</li>
-            <li>
-              <strong>Viikkonumero:</strong>{" "}
-              <Link to={`/viikko-${page.week}-${page.weekYear}`}>
-                viikko {page.week}
-              </Link>
-            </li>
-            <li><strong>Asema:</strong> {status}</li>
-            <li><strong>Tyyppi:</strong> {page.kind}</li>
-          </ul>
-        </div>
+        <QuickFacts
+          title={`${page.displayName} ${page.year} lyhyesti`}
+          facts={[
+            { label: "Pyhäpäivä", value: page.displayName },
+            { label: "Päivämäärä", value: fmtFullFi(page.date) },
+            { label: "Viikonpäivä", value: page.weekday },
+            {
+              label: "Viikkonumero",
+              value: <Link to={links.week.path}>{links.week.label}</Link>,
+            },
+            {
+              label: "Kuukausi",
+              value: <Link to={links.month.path}>{links.month.label}</Link>,
+            },
+            { label: "Asema", value: status },
+            { label: "Tyyppi", value: page.kind },
+          ]}
+        />
 
         <p className="note-soft">Sisältö päivitetty {CONTENT_UPDATED_FI}.</p>
 
@@ -69,10 +77,11 @@ const NamedHoliday = () => {
         <h2>Mille viikolle {page.displayName.toLowerCase()} {page.year} osuu?</h2>
         <p>
           Päivä kuuluu ISO 8601 -kalenterissa{" "}
-          <Link to={`/viikko-${page.week}-${page.weekYear}`}>
+          <Link to={links.week.path}>
             viikkoon {page.week} vuonna {page.weekYear}
           </Link>.
-          Suomessa viikko alkaa maanantaina ja päättyy sunnuntaina.
+          Suomessa viikko alkaa maanantaina ja päättyy sunnuntaina. Katso{" "}
+          <Link to={links.month.path}>{links.month.label} viikot kokonaisuudessaan</Link>.
         </p>
 
         <h2>Onko {page.displayName.toLowerCase()} virallinen pyhäpäivä?</h2>
@@ -99,8 +108,11 @@ const NamedHoliday = () => {
 
         <p>
           Katso myös <Link to={`/kalenteri-${page.year}`}>viikkokalenteri {page.year}</Link>,{" "}
-          <Link to={`/pyhapaivat-${page.year}`}>kaikki pyhäpäivät {page.year}</Link>{" "}
-          ja <Link to={`/vuosi-${page.year}`}>vuoden {page.year} viikkonumerot</Link>.
+          <Link to={`/pyhapaivat-${page.year}`}>kaikki pyhäpäivät {page.year}</Link>,{" "}
+          <Link to={`/liputuspaivat-${page.year}`}>liputuspäivät {page.year}</Link>,{" "}
+          <Link to={links.month.path}>{links.month.label}</Link>,{" "}
+          <Link to={links.year.path}>{links.year.label}</Link>{" "}
+          ja <Link to="/mika-on-viikkonumero">mikä on viikkonumero</Link>.
         </p>
 
         <div className="prevnext">

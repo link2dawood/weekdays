@@ -1,0 +1,128 @@
+/* Self-hosted fonts (same-origin, served from /public/fonts by Vercel) — was a
+   Google Fonts round trip (2 preconnects + a preload-then-flip stylesheet) on
+   the critical path of a site whose whole value proposition is an instant
+   answer. Only the weights actually used are shipped (audited every
+   font-family/font-weight rule in App.css, including ones that only inherit a
+   weight via <strong>/<b> browser-default bold — see the git history for the
+   audit) and only the "latin" subset (unicode-range below is Google's own
+   "latin" block: U+0000-00FF already covers ä/ö/å as Latin-1 Supplement, so
+   "latin-ext" — Vietnamese/Central-European extras — would be dead weight).
+
+   Bricolage Grotesque and Inter are published by Google as variable fonts: a
+   single file covers their whole weight axis, so one @font-face with a
+   font-weight RANGE replaces what would otherwise be 3-4 separate files.
+   IBM Plex Mono has no variable axis (Google serves 4 distinct static
+   files), so it gets one @font-face per weight actually used (400/500/600 —
+   plus 700, which nothing here requested before this file existed, even
+   though .cal-dn/.cal-day.today render IBM Plex Mono bold today).
+
+   Bricolage Grotesque also carries an optical-size (opsz) axis, which the
+   original Google Fonts URL requested (opsz,wght@12..96,...) and this file
+   preserves — worth the extra ~36KB over the weight-only instance because
+   this family draws the site's signature huge hero digit (.week-big, up to
+   140px) as well as small labels; opsz is exactly the axis that keeps a
+   typeface's proportions right across that range. font-optical-sizing is set
+   explicitly below even though "auto" is the CSS default, so the reason this
+   axis exists isn't silently lost if someone later "cleans up" the rule. */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800; /* file's real variable axis range, confirmed against Google's own CSS */
+  font-optical-sizing: auto;
+  font-display: swap;
+  src: url("/fonts/bricolage-grotesque-variable-latin.a79fdb52.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-variable-latin.3100e775.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400-latin.08949f72.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500-latin.01d28544.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-600-latin.0d1f0b8d.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-700-latin.4f84d86c.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Metric-matched local fallbacks: with font-display: swap, the browser paints
+   text in the fallback immediately, then swaps to the real font once it
+   loads — the swap itself is what causes layout shift, because a generic
+   sans-serif/monospace has different average glyph width and vertical
+   metrics than the font it's standing in for. size-adjust rescales the
+   fallback so its average character width matches the real font's; the
+   ascent/descent/line-gap overrides then compensate for that same rescale so
+   the fallback's line box height matches too. Values computed from each real
+   font's own hhea/OS-2 tables (read directly from the woff2 files, not
+   guessed) against the standard published Arial / Courier New reference
+   metrics — the same technique (and the same reference metrics) tools like
+   Fontaine and next/font use. Only activates where the named local font
+   actually exists (local()), so it's a no-op, not a forced substitution. */
+@font-face {
+  font-family: "Bricolage Grotesque Fallback";
+  src: local("Arial");
+  size-adjust: 112.82%;
+  ascent-override: 82.43%;
+  descent-override: 23.93%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 138.27%;
+  ascent-override: 70.06%;
+  descent-override: 17.44%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "IBM Plex Mono Fallback";
+  src: local("Courier New");
+  size-adjust: 99.98%;
+  ascent-override: 102.52%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}

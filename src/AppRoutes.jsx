@@ -1,15 +1,19 @@
 import { Routes, Route, useParams } from "react-router-dom";
+import { M_SLUG } from "./components/dateUtils";
 import Home from "./pages/Home";
 import YearCalendar from "./pages/YearCalendar";
 import Navbar from "./components/Navbar";
 import FAQPage from "./pages/FAQPage";
 import WeekDays from "./pages/WeekDays";
 import WeeksInEachMonth from "./pages/WeeksInEachMonth";
+import QuarterPage from "./pages/QuarterPage";
 import WhatWeek from "./pages/WhatWeek";
 import WeekStartsMonday from "./pages/WeekStartsMonday";
 import PrintCalendar from "./pages/PrintCalendar";
 import PublicHolidays from "./pages/PublicHolidays";
+import FlagDays from "./pages/FlagDays";
 import WorkingDays from "./pages/WorkingDays";
+import MonthlyWorkingDays from "./pages/MonthlyWorkingDays";
 import CalendarYear from "./pages/CalendarYear";
 import Calculators from "./pages/Calculators";
 import DateToWeek from "./pages/DateToWeek";
@@ -17,6 +21,7 @@ import WeekToDate from "./pages/WeekToDate";
 import WorkingDaysBetween from "./pages/WorkingDaysBetween";
 import DaysBetween from "./pages/DaysBetween";
 import WeeksInYear from "./pages/WeeksInYear";
+import FinlandVsUsa from "./pages/FinlandVsUsa";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -46,10 +51,22 @@ const DynamicSlug = () => {
     return <WeekDays week={+m[1]} year={+m[2]} />;
   if ((m = slug.match(/^kuukausi-(\d+)-(\d+)$/)))
     return <WeeksInEachMonth month={+m[1]} year={+m[2]} />;
+  if ((m = slug.match(/^q([1-4])-(\d+)$/)))
+    return <QuarterPage quarter={+m[1]} year={+m[2]} />;
   if ((m = slug.match(/^vuosi-(\d+)$/))) return <YearCalendar year={+m[1]} />;
   if ((m = slug.match(/^tulosta-(\d+)$/))) return <PrintCalendar year={+m[1]} />;
   if ((m = slug.match(/^pyhapaivat-(\d+)$/)))
     return <PublicHolidays year={+m[1]} />;
+  if ((m = slug.match(/^liputuspaivat-(\d+)$/)))
+    return <FlagDays year={+m[1]} />;
+  if ((m = slug.match(/^tyopaivat-([a-z]+)-(\d+)$/))) {
+    const mi = M_SLUG.indexOf(m[1]);
+    return mi === -1 ? (
+      <NotFound />
+    ) : (
+      <MonthlyWorkingDays month={mi + 1} year={+m[2]} />
+    );
+  }
   if ((m = slug.match(/^tyopaivat-(\d+)$/))) return <WorkingDays year={+m[1]} />;
   if ((m = slug.match(/^koululomat-(\d+)$/)))
     return <SchoolHolidays year={+m[1]} />;
@@ -77,6 +94,7 @@ const AppRoutes = () => {
         <Route path="/mika-on-viikkonumero" element={<WhatWeek />} />
         <Route path="/viikko-alkaa-maanantaista" element={<WeekStartsMonday />} />
         <Route path="/kuinka-monta-viikkoa-vuodessa" element={<WeeksInYear />} />
+        <Route path="/suomi-vs-usa-viikkonumerot" element={<FinlandVsUsa />} />
         <Route path="/mika-kuukausi-nyt" element={<CurrentMonth />} />
         <Route path="/mika-vuosi-nyt" element={<CurrentYear />} />
         <Route path="/viikonpaiva" element={<WeekdayCalculator />} />

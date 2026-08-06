@@ -1,9 +1,12 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
-import { canonicalFor, workingDaysMeta } from "../data/seo";
+import QuickFacts from "../components/QuickFacts";
+import { canonicalFor, workingDaysFaqs, workingDaysMeta } from "../data/seo";
 import { holidaysInYear } from "../data/holidays";
 import {
+  M_INESSIVE,
+  M_SLUG,
   PRERENDER_MIN_YEAR as YEAR_MIN,
   PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
@@ -65,6 +68,11 @@ const WorkingDays = ({ year: pYear } = {}) => {
     d.setDate(d.getDate() + 1);
   }
 
+  // Shared with prerender.js's FAQPage JSON-LD (workingDaysFaqNodes) so the
+  // visible list and the schema can't drift — same discipline as the
+  // calendar page's calendarFaqs().
+  const faqs = workingDaysFaqs(y);
+
   return (
     <section className="app">
       <SEO {...workingDaysMeta(y)} canonical={canonicalFor(`/tyopaivat-${year}`)} />
@@ -76,25 +84,21 @@ const WorkingDays = ({ year: pYear } = {}) => {
       <h1>Työpäivät {year}</h1>
 
       <p className="lead">
-        Vuonna {year} on <strong>{totalWorking} työpäivää</strong>. Työpäivä
-        tarkoittaa maanantaista perjantaihin osuvaa päivää, joka ei ole
-        virallinen arkipyhä.
+        <span className="answer-sentence">
+          Vuonna {year} on <strong>{totalWorking} työpäivää</strong>.
+        </span>{" "}
+        Työpäivä tarkoittaa maanantaista perjantaihin osuvaa päivää, joka ei
+        ole virallinen arkipyhä.
       </p>
 
-      <div className="stat-row">
-        <div className="stat-box">
-          <div className="n">{totalWorking}</div>
-          <div className="l">Työpäivää</div>
-        </div>
-        <div className="stat-box">
-          <div className="n">{totalWeekend}</div>
-          <div className="l">Viikonlopun päivää</div>
-        </div>
-        <div className="stat-box">
-          <div className="n">{totalHoliday}</div>
-          <div className="l">Arkipyhää (ma–pe)</div>
-        </div>
-      </div>
+      <QuickFacts
+        variant="stats"
+        facts={[
+          { label: "Työpäivää", value: totalWorking },
+          { label: "Viikonlopun päivää", value: totalWeekend },
+          { label: "Arkipyhää (ma–pe)", value: totalHoliday },
+        ]}
+      />
 
       <div className="table-wrap">
         <table className="data-table">
@@ -104,6 +108,7 @@ const WorkingDays = ({ year: pYear } = {}) => {
               <th className="num">Työpäivät</th>
               <th className="num">Viikonloput</th>
               <th className="num">Arkipyhät</th>
+              <th>Tarkemmin</th>
             </tr>
           </thead>
           <tbody>
@@ -115,6 +120,11 @@ const WorkingDays = ({ year: pYear } = {}) => {
                 <td className="num">{mo.working}</td>
                 <td className="num">{mo.weekend}</td>
                 <td className="num">{mo.holiday}</td>
+                <td>
+                  <Link to={`/tyopaivat-${M_SLUG[i]}-${year}`}>
+                    Työpäivät {M_INESSIVE[i]} →
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -127,6 +137,16 @@ const WorkingDays = ({ year: pYear } = {}) => {
         työpaikoilla vapaita, mutta eivät ole virallisia arkipyhiä, joten ne
         sisältyvät yllä työpäiviin.
       </p>
+
+      <section className="prose">
+        <h2>Usein kysytyt kysymykset</h2>
+        {faqs.map((item, index) => (
+          <details key={item.q} open={index === 0}>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </section>
 
       <p>
         Katso myös <Link to={`/pyhapaivat-${year}`}>pyhäpäivät {year}</Link>,{" "}

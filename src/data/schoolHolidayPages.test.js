@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  CONFIDENCE,
+  confidenceLabel,
+  pageConfidenceTier,
   schoolHolidayFaqs,
   schoolHolidayMeta,
   schoolHolidayPage,
   schoolHolidayPeriodsInWeek,
   schoolHolidayYears,
+  tierFromGroups,
 } from "./schoolHolidayPages.js";
 
 describe("school holiday landing-page data", () => {
@@ -40,5 +44,53 @@ describe("school holiday landing-page data", () => {
       expect(meta.description.length).toBeGreaterThanOrEqual(140);
       expect(meta.description.length).toBeLessThanOrEqual(160);
     }
+  });
+
+  it("names cities with no published autumn-2027 date instead of inventing or silently omitting them", () => {
+    const page = schoolHolidayPage(2027);
+    expect(page.autumn).toHaveLength(1); // only Helsinki is dated
+    expect(page.autumnUnknownCities.length).toBeGreaterThan(0);
+    expect(page.autumnUnknownCities).not.toContain("Helsinki");
+  });
+});
+
+describe("confidence-tier architecture", () => {
+  it("labels all three tiers with a visible, machine-readable string", () => {
+    expect(confidenceLabel(CONFIDENCE.CONFIRMED)).toBe("✓ Vahvistettu");
+    expect(confidenceLabel(CONFIDENCE.ESTIMATED)).toBe("⚠ Arvio");
+    expect(confidenceLabel(CONFIDENCE.UNKNOWN)).toBe("— Ei vahvistettu");
+  });
+
+  it("both currently-published school years are fully CONFIRMED (Tier A)", () => {
+    for (const year of schoolHolidayYears) {
+      expect(pageConfidenceTier(year)).toBe(CONFIDENCE.CONFIRMED);
+    }
+  });
+
+  it("treats a year with no page at all as UNKNOWN (Tier C) — no fabricated page", () => {
+    expect(schoolHolidayPage(2099)).toBeNull();
+    expect(pageConfidenceTier(2099)).toBe(CONFIDENCE.UNKNOWN);
+    expect(schoolHolidayMeta(2099)).toBeNull();
+    expect(schoolHolidayFaqs(2099)).toEqual([]);
+  });
+
+  it("demotes a page to ESTIMATED (Tier B) the moment any one group is estimated — the rollup rule itself", () => {
+    const allConfirmed = [
+      { confidence: CONFIDENCE.CONFIRMED },
+      { confidence: CONFIDENCE.CONFIRMED },
+    ];
+    const oneEstimated = [
+      { confidence: CONFIDENCE.CONFIRMED },
+      { confidence: CONFIDENCE.ESTIMATED },
+    ];
+    expect(tierFromGroups(allConfirmed)).toBe(CONFIDENCE.CONFIRMED);
+    expect(tierFromGroups(oneEstimated)).toBe(CONFIDENCE.ESTIMATED);
+  });
+
+  it("suppresses FAQ generation entirely for a non-CONFIRMED tier (STEP 7 safeguard)", () => {
+    // schoolHolidayFaqs() has no real ESTIMATED year to call today (by
+    // design — see the coverage report), so this exercises its other
+    // non-CONFIRMED path: a year with no page at all.
+    expect(schoolHolidayFaqs(2099)).toEqual([]);
   });
 });

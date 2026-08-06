@@ -11,12 +11,18 @@ import {
   dayOfYear,
   daysRemainingInYear,
   quarterOf,
+  seasonIndexOf,
+  validateWeek,
+  validateYear,
   PRERENDER_MIN_YEAR as YEAR_MIN,
   PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
+import QuickFacts from "../components/QuickFacts";
 import { canonicalFor, weekMeta } from "../data/seo";
+import NotFound from "./NotFound";
 import { holidaysInWeek } from "../data/holidays";
+import { holidayLinkPath } from "../data/holidayPages";
 import { hasNameDayPage, nameDaySlug, nameDaysForWeek } from "../data/nameDays";
 import { schoolHolidayPeriodsInWeek } from "../data/schoolHolidayPages";
 import { sunTimesForWeek, formatHelsinkiTime, HELSINKI } from "../data/sunTimes";
@@ -43,13 +49,21 @@ function schoolPeriodLabel(p) {
   return `${SCHOOL_PERIOD_LABELS[p.type]}${region}${estimate}`;
 }
 
-// Meteorological season of the ISO week's Thursday (its canonical month),
-// in the illative case for the phrase "viikko ajoittuu ___".
+// Meteorological season of the ISO week's Thursday (its canonical month), in
+// the illative case for the phrase "viikko ajoittuu ___". Both this and
+// seasonNominative() below derive their season from dateUtils.js's
+// seasonIndexOf() (also used by the public JSON feeds' English "season"
+// field), so the boundary months can never disagree between the two.
+const SEASON_ILLATIVE = ["talveen", "kevääseen", "kesään", "syksyyn"];
 function seasonIllative(monthIndex) {
-  if (monthIndex === 11 || monthIndex <= 1) return "talveen";
-  if (monthIndex <= 4) return "kevääseen";
-  if (monthIndex <= 7) return "kesään";
-  return "syksyyn";
+  return SEASON_ILLATIVE[seasonIndexOf(monthIndex)];
+}
+
+// Same season, nominative form — for the Quick Facts fact block, where a
+// case-inflected word ("kesään") would read as a fragment rather than a fact.
+const SEASON_NOMINATIVE = ["Talvi", "Kevät", "Kesä", "Syksy"];
+function seasonNominative(monthIndex) {
+  return SEASON_NOMINATIVE[seasonIndexOf(monthIndex)];
 }
 
 // Props come from the /:slug dispatcher (parsed "/viikko-30-2026"); the
@@ -60,11 +74,14 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   const year = pYear ?? params.year;
   const w = Number(week);
   const y = Number(year);
+
+  if (!validateYear(y)) return <NotFound />;
+
   const total = weeksInIsoYear(y);
 
   // Week 53 only exists in a 53-week year — redirect anything out of range
   // to the nearest real week rather than rendering nonsense dates.
-  if (w < 1 || w > total) {
+  if (!validateWeek(w, y)) {
     const clamped = Math.min(Math.max(w, 1), total);
     return <Navigate to={`/viikko-${clamped}-${y}`} replace />;
   }
@@ -102,6 +119,15 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
     ) : (
       label
     );
+
+  // Link a holiday mention to its dedicated /pyhat-{year}/{slug} page — falls
+  // back to plain text for the rare case holidayLinkPath declines to link
+  // (unmapped name, or its date falls outside the prerendered horizon), same
+  // "never link a 404" discipline as monthLink below.
+  const holidayLink = (h) => {
+    const path = holidayLinkPath(h.name, h.date);
+    return path ? <Link to={path}>{h.name}</Link> : h.name;
+  };
 
   let monthLinks;
 
@@ -173,6 +199,13 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
   const officialHolidays = weekHolidays.filter((h) => h.official);
   const observedOnlyHolidays = weekHolidays.filter((h) => !h.official);
 
+  // Same days[] loop the day panel below already renders — a working day is
+  // Mon–Fri with no official holiday on it, matching workingDaySplit()'s
+  // definition in seo.js.
+  const workingDaysCount = days.filter(
+    (d) => !d.isWeekend && !d.holidays.some((h) => h.official),
+  ).length;
+
   // Sibling weeks of this week's (Monday's) month — a topical mesh so each of
   // the ~835 week pages links to its month-neighbours, not just prev/next.
   // Each week keeps its OWN ISO year (a boundary week can belong to an adjacent
@@ -219,22 +252,56 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       )}
 
       <p className="lead">
-        Viikko {week} alkaa <strong>maanantaina {fmtFullFi(mo)}</strong> ja
-        päättyy <strong>sunnuntaina {fmtFullFi(su)}.</strong> Se kuuluu{" "}
-        {monthLinks} kalenteriin ja ajoittuu {season}.{" "}
+        <span className="answer-sentence">
+          Viikko {week} alkaa <strong>maanantaina {fmtFullFi(mo)}</strong> ja
+          päättyy <strong>sunnuntaina {fmtFullFi(su)}.</strong>
+        </span>{" "}
+        Se kuuluu {monthLinks} kalenteriin ja ajoittuu {season}.{" "}
         {weeksLeft === 0
           ? `Viikko ${w} on vuoden ${y} viimeinen viikko.`
           : `Vuodessa ${y} on ${total} viikkoa, joten viikon ${w} jälkeen niitä on jäljellä ${weeksLeft}.`}
       </p>
 
+      <QuickFacts
+        facts={[
+          { label: "Viikko", value: w },
+          { label: "Alkaa", value: fmtShortFi(mo) },
+          { label: "Päättyy", value: fmtShortFi(su) },
+          {
+            label: "Vuosineljännes",
+            value: (
+              <Link to={`/q${quarterOf(mo)}-${mo.getFullYear()}`}>
+                Q{quarterOf(mo)} {mo.getFullYear()}
+              </Link>
+            ),
+          },
+          { label: "Vuodenaika", value: seasonNominative(thursday.getMonth()) },
+          { label: "Työpäiviä", value: workingDaysCount },
+          { label: "Juhlapäiviä", value: officialHolidays.length },
+          { label: "Viikkoja jäljellä vuonna", value: weeksLeft },
+        ]}
+      />
+
       {officialHolidays.length > 0 && (
         <p className="lead">
-          Tällä viikolla vietetään: {officialHolidays.map((h) => h.name).join(", ")}.
+          Tällä viikolla vietetään:{" "}
+          {officialHolidays.map((h, i) => (
+            <span key={h.name}>
+              {i > 0 && ", "}
+              {holidayLink(h)}
+            </span>
+          ))}
+          .
         </p>
       )}
       {observedOnlyHolidays.length > 0 && (
         <p className="lead">
-          {observedOnlyHolidays.map((h) => h.name).join(" ja ")}{" "}
+          {observedOnlyHolidays.map((h, i) => (
+            <span key={h.name}>
+              {i > 0 && " ja "}
+              {holidayLink(h)}
+            </span>
+          ))}{" "}
           {observedOnlyHolidays.length === 1 ? "ei ole virallinen arkipyhä" : "eivät ole virallisia arkipyhiä"}, mutta
           {observedOnlyHolidays.length === 1 ? " sitä" : " niitä"} vietetään laajasti.
         </p>
@@ -279,7 +346,7 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
                 )}
                 {day.holidays.map((h) => (
                   <div key={h.name}>
-                    {h.name}
+                    {holidayLink(h)}
                     {!h.official && " (ei virallinen arkipyhä)"}
                   </div>
                 ))}
@@ -414,6 +481,20 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
           <li>
             <Link to={`/tulosta-${y}`} onClick={() => window.scrollTo(0, 0)}>
               Tulostettava viikkolista {y}
+            </Link>
+          </li>
+        </ul>
+
+        <h3>ISO 8601</h3>
+        <ul className="links">
+          <li>
+            <Link to="/mika-on-viikkonumero" onClick={() => window.scrollTo(0, 0)}>
+              Mikä on viikkonumero?
+            </Link>
+          </li>
+          <li>
+            <Link to="/suomi-vs-usa-viikkonumerot" onClick={() => window.scrollTo(0, 0)}>
+              Suomi vs. USA — miksi viikkonumero eroaa?
             </Link>
           </li>
         </ul>

@@ -17,6 +17,22 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Several hydration-safe inputs intentionally receive today's value only
+      // after mount so build-time HTML still matches the first client render.
+      'react-hooks/set-state-in-effect': 'off',
+      // Legacy JSX files still import React explicitly; the automatic JSX
+      // runtime makes the binding appear unused even though the import is safe.
+      'no-unused-vars': ['error', { varsIgnorePattern: '^React$' }],
+    },
+  },
+  {
+    // SocialLinks intentionally colocates its reusable static link catalogue
+    // with the component; exporting that data does not affect refresh state.
+    files: ['src/components/SocialLinks.jsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
   },
   {
     // Build-tooling config files run under Node, not the browser.

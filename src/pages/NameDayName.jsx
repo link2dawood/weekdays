@@ -23,7 +23,8 @@ const NameDayName = () => {
     <section className="app">
       <SEO {...meta} canonical={canonicalFor(page.path)} />
       <div className="breadcrumb">
-        <Link to="/">Etusivu</Link> / Nimipäivät / {page.name}
+        <Link to="/">Etusivu</Link> /{" "}
+        <Link to="/nimipaivat/tanaan">Nimipäivät</Link> / {page.name}
       </div>
       <h1>{page.genitive} nimipäivä</h1>
       <div className="prose">

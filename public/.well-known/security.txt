@@ -1,0 +1,4 @@
+Contact: https://viikkonro.fi/ota-yhteytta
+Canonical: https://viikkonro.fi/.well-known/security.txt
+Preferred-Languages: fi, en
+Expires: 2027-08-06T00:00:00.000Z
