@@ -35,9 +35,11 @@ const PublicHolidays = ({ year: pYear } = {}) => {
       <h1>Suomen pyhäpäivät {year}</h1>
 
       <p className="lead">
-        Vuonna {year} Suomessa on{" "}
-        <strong>{officialCount} virallista pyhäpäivää</strong> (arkipyhää) sekä
-        muutama laajasti vietetty vapaapäivä. Alla kaikki pyhäpäivät
+        <span className="answer-sentence">
+          Vuonna {year} Suomessa on{" "}
+          <strong>{officialCount} virallista pyhäpäivää</strong>.
+        </span>{" "}
+        Lisäksi muutama laajasti vietetty vapaapäivä. Alla kaikki pyhäpäivät
         päivämäärineen, viikonpäivineen ja viikkonumeroineen.
       </p>
 

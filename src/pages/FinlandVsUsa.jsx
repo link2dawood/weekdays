@@ -38,14 +38,15 @@ const FinlandVsUsa = () => {
       <div className="prose">
         <p className="lead">
           <span className="answer-sentence">
-            Sama päivä voi kuulua eri viikkonumeroon Suomessa ja
-            Yhdysvalloissa, koska <strong>Suomi käyttää ISO 8601 -standardia</strong>{" "}
-            (viikko alkaa maanantaista, viikko 1 sisältää vuoden ensimmäisen
-            torstain) ja <strong>Yhdysvalloissa yleisin käytäntö</strong> aloittaa
-            viikon sunnuntaista ja asettaa viikon 1 aina 1. tammikuuta
-            sisältäväksi viikoksi.
+            Suomen ja Yhdysvaltain viikkonumerot voivat erota samalle
+            päivälle, koska maat käyttävät eri viikkonumerointijärjestelmää.
           </span>{" "}
-          Kumpikaan sääntö ei ole "väärä" — ne vain vastaavat eri kysymykseen.
+          Suomessa käytetään <strong>ISO 8601 -standardia</strong> (viikko
+          alkaa maanantaista, viikko 1 sisältää vuoden ensimmäisen torstain),
+          kun taas <strong>Yhdysvaltain yleisin käytäntö</strong> aloittaa
+          viikon sunnuntaista ja asettaa viikon 1 aina 1. tammikuuta
+          sisältäväksi viikoksi. Kumpikaan sääntö ei ole "väärä" — ne vain
+          vastaavat eri kysymykseen.
         </p>
 
         <QuickFacts

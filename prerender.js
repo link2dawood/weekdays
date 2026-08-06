@@ -233,7 +233,8 @@ function pageNode(url, type = "WebPage", extra = {}) {
 function speakableExtra(url) {
   if (
     /^\/viikko-\d+-\d+$/.test(url) ||
-    /^\/tyopaivat-\d+$/.test(url)
+    /^\/tyopaivat-\d+$/.test(url) ||
+    /^\/pyhapaivat-\d+$/.test(url)
   ) {
     return {
       speakable: {
@@ -262,6 +263,14 @@ function weekHolidayMentionsExtra(url) {
   return mentions.length > 0 ? { mentions } : {};
 }
 
+// Bumped only on a breaking payload-shape change (a field renamed or
+// removed — adding a new field is not breaking and doesn't require a bump).
+// Declared here (not down by the feed-writing loop that also uses it) so
+// datasetSchema() below — called from the main per-URL loop, which runs
+// before the feed-writing section — can reference it without a temporal-
+// dead-zone error.
+const FEED_SCHEMA_VERSION = "1.0";
+
 // Reusable schema.org/Dataset builder — every dataset below (one per page
 // type that has a real /data/* feed backing it) is one call to this instead
 // of a hand-repeated object literal, so creator/publisher/license/language
@@ -281,8 +290,10 @@ function datasetSchema({ id, name, description, distributionUrl, temporalCoverag
     publisher: { "@id": `${SITE_URL}/#organization` },
     license,
     dateModified,
+    version: FEED_SCHEMA_VERSION,
     inLanguage: "fi-FI",
     temporalCoverage,
+    spatialCoverage: { "@type": "Country", name: "Suomi" },
     distribution: urls.map((contentUrl) => ({
       "@type": "DataDownload",
       contentUrl,
@@ -806,6 +817,10 @@ function schoolHolidayNodes(year) {
         datePublished: "2026-08-04",
         dateModified: CONTENT_UPDATED,
         mainEntity: { "@id": `${url}#article` },
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: [".answer-sentence"],
+        },
       }),
       // STEP 7 safeguard: even though a non-CONFIRMED page never reaches this
       // function (schoolHolidayMeta() sets robots:"noindex" for it, which
@@ -1279,6 +1294,10 @@ function weekCollectionNodes(pathname) {
       name: `${name} ${year}`,
       url: canonicalFor(`/kuukausi-${index + 1}-${year}`),
     }));
+    speakable = {
+      "@type": "SpeakableSpecification",
+      cssSelector: [".answer-sentence"],
+    };
   } else {
     match = pathname.match(/^\/kuukausi-(\d+)-(\d+)$/);
     if (!match) return [];
@@ -1304,10 +1323,7 @@ function weekCollectionNodes(pathname) {
     }
     collectionName = metaFor(pathname).title;
     // Month pages carry a short factual summary sentence (WeeksInEachMonth.jsx's
-    // .answer-sentence — "Kesäkuu 2026 sisältää N viikkoa: viikot X-Y.") that
-    // year pages don't have an equivalent single crisp sentence for, so this
-    // is scoped to just this branch, not both outcomes of the vuosi/kuukausi
-    // split above.
+    // .answer-sentence — "Kesäkuu 2026 sisältää N viikkoa: viikot X-Y.").
     speakable = {
       "@type": "SpeakableSpecification",
       cssSelector: [".answer-sentence"],
@@ -1814,13 +1830,6 @@ try {
 // imports for the HTML pages (yearStats, holidaysInYear, the week-page date
 // math) — no new day-counting logic, so a feed value and its HTML/schema
 // equivalent can never disagree (STEP 6).
-// Bumped only on a breaking payload-shape change (a field renamed or
-// removed — adding a new field is not breaking and doesn't require a bump).
-// Every per-item feed below carries this, so a consumer caching or parsing
-// these feeds long-term has a stable way to detect a future breaking change
-// without guessing from field presence.
-const FEED_SCHEMA_VERSION = "1.0";
-
 function writeJson(filePath, data) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");

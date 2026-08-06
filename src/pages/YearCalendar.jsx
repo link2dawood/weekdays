@@ -80,8 +80,10 @@ const YearCalendar = ({ year: pYear } = {}) => {
       <h1>Viikkonumerot {year}</h1>
 
       <p className="lead">
-        Vuodessa {year} on <strong>{weeks.length} viikkoa</strong>. Napsauta
-        viikkoa nähdäksesi sen päivämäärät.
+        <span className="answer-sentence">
+          Vuodessa {year} on <strong>{weeks.length} viikkoa</strong>.
+        </span>{" "}
+        Napsauta viikkoa nähdäksesi sen päivämäärät.
       </p>
 
       <QuickFacts

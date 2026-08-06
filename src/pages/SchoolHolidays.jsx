@@ -115,10 +115,12 @@ const SchoolHolidays = ({ year }) => {
         )}
 
         <p className="lead">
-          <strong>
-            Koululaisten hiihtoloma {selectedYear} ajoittuu Suomessa alueesta
-            riippuen viikoille 8, 9 tai 10.
-          </strong>{" "}
+          <span className="answer-sentence">
+            <strong>
+              Koululaisten hiihtoloma {selectedYear} ajoittuu Suomessa
+              alueesta riippuen viikoille 8, 9 tai 10.
+            </strong>
+          </span>{" "}
           Syysloman, joululoman ja lukuvuoden muiden päivien tarkka ajankohta
           riippuu kunnasta ja oppilaitoksesta.
         </p>
