@@ -18,7 +18,7 @@ import {
 import WeekCard from "../components/WeekCard";
 import QuickFacts from "../components/QuickFacts";
 import SEO from "../components/SEO";
-import { canonicalFor, monthFaqs, monthMeta, monthStats } from "../data/seo";
+import { canonicalFor, monthFaqs, monthMeta, monthPdfPath, monthStats } from "../data/seo";
 import { flagDaysInYear } from "../data/flagDayPages";
 import { holidayLinkPath } from "../data/holidayPages";
 import { schoolHolidayPeriodsInWeek } from "../data/schoolHolidayPages";
@@ -200,6 +200,13 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
           <WeekCard key={`${w.year}-${w.week}`} w={w.week} y={w.year} />
         ))}
       </div>
+
+      <p>
+        <a className="btn" href={monthPdfPath(m, y)} download>
+          Lataa {M_INESSIVE[mi]} {year} PDF-tiedostona
+        </a>
+      </p>
+
       <div className="prevnext">
         {prevY >= YEAR_MIN && (
           <Link to={`/kuukausi-${prevM}-${prevY}`}>

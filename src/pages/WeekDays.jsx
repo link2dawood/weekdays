@@ -20,7 +20,7 @@ import {
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import QuickFacts from "../components/QuickFacts";
-import { canonicalFor, weekMeta } from "../data/seo";
+import { canonicalFor, weekMeta, weekPdfPath } from "../data/seo";
 import NotFound from "./NotFound";
 import { holidaysInWeek } from "../data/holidays";
 import { holidayLinkPath } from "../data/holidayPages";
@@ -377,6 +377,12 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
 
       <p className="note-soft">
         Ajat lasketaan Helsingin sijainnin mukaan.
+      </p>
+
+      <p>
+        <a className="btn" href={weekPdfPath(w, y)} download>
+          Lataa viikko {w}/{y} PDF-tiedostona
+        </a>
       </p>
 
       <div className="prevnext" onClick={() => window.scrollTo(0, 0)}>

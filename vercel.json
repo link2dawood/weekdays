@@ -9,6 +9,11 @@
     { "source": "/month/:month/:year", "destination": "/kuukausi-:month-:year", "statusCode": 301 },
     { "source": "/year/:year", "destination": "/vuosi-:year", "statusCode": 301 },
     { "source": "/print/:year", "destination": "/tulosta-:year", "statusCode": 301 },
+    { "source": "/pdfs/:file", "destination": "/pdf/:file", "statusCode": 301 },
+    { "source": "/api/week/:week/:year.json", "destination": "/data/week/:year/:week.json", "statusCode": 301 },
+    { "source": "/api/month/:month/:year.json", "destination": "/data/month/:year/:month.json", "statusCode": 301 },
+    { "source": "/api/year/:year.json", "destination": "/data/year/:year.json", "statusCode": 301 },
+    { "source": "/api/holiday/:slug/:year.json", "destination": "/data/holiday/:year/:slug.json", "statusCode": 301 },
     { "source": "/kalenteri-:y(\\d+)-1", "destination": "/kalenteri-:y-alkuvuosi", "statusCode": 301 },
     { "source": "/kalenteri-:y(\\d+)-2", "destination": "/kalenteri-:y-loppuvuosi", "statusCode": 301 },
     { "source": "/what-is-a-week-number", "destination": "/mika-on-viikkonumero", "statusCode": 301 },
@@ -85,7 +90,7 @@
       ]
     },
     {
-      "source": "/(sitemap.xml|robots.txt|llms.txt|llms-full.txt|og.png|ai.txt)",
+      "source": "/(sitemap.xml|robots.txt|llms.txt|llms-full.txt|ai-manifest.txt|og.png|ai.txt)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=3600" },
         {
@@ -108,7 +113,7 @@
       ]
     },
     {
-      "source": "/pdfs/(.*)",
+      "source": "/pdf/(.*)",
       "headers": [
         { "key": "Content-Type", "value": "application/pdf" },
         { "key": "Cache-Control", "value": "public, max-age=3600" },
@@ -120,6 +125,17 @@
     },
     {
       "source": "/og/(.*)",
+      "headers": [
+        { "key": "Content-Type", "value": "image/png" },
+        { "key": "Cache-Control", "value": "public, max-age=3600" },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "public, s-maxage=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/discover/(.*)",
       "headers": [
         { "key": "Content-Type", "value": "image/png" },
         { "key": "Cache-Control", "value": "public, max-age=3600" },

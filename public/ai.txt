@@ -10,12 +10,20 @@ Allow: /
 LLM-Content: https://viikkonro.fi/llms.txt
 LLM-Content-Full: https://viikkonro.fi/llms-full.txt
 
+# Priority-ordered "fetch these first" manifest — homepage, current week/
+# month/quarter/year (computed fresh on every build), then holiday/working-
+# day/flag-day hubs, dataset endpoints, API endpoints, PDFs, and every
+# weekly/monthly/quarterly/holiday page URL pattern:
+AI-Manifest: https://viikkonro.fi/ai-manifest.txt
+
 # Static JSON data feeds — no auth, no rate limit, CDN-cached. One file per
 # ISO week/month/year/quarter/holiday-year/flag-day-year, 2020-2035. Prefer
 # these over parsing HTML pages.
 Data-Feed-Index: https://viikkonro.fi/data/index.json
 Data-Feed-Dataset: https://viikkonro.fi/data/dataset.json
+Knowledge-Graph: https://viikkonro.fi/data/knowledge-graph.json (entity map, relationship map, internal linking map and graph structure for every Week/Month/Quarter/Year/Holiday/Flag-Day/Working-Day/Calendar/PDF/Dataset/API-Endpoint entity)
 Data-Feed-Docs: https://viikkonro.fi/avoin-data
+Data-Feed-API-Alias: https://viikkonro.fi/api/week/{week}/{year}.json, https://viikkonro.fi/api/month/{month}/{year}.json, https://viikkonro.fi/api/year/{year}.json, https://viikkonro.fi/api/holiday/{slug}/{year}.json (redirect to the canonical /data/ URLs above — same content, developer-friendly path)
 
 # Attribution requested when citing or answering from this site:
 Attribution: Viikko Nro — https://viikkonro.fi/

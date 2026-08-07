@@ -13,7 +13,7 @@ export const DATA_FEED_FAMILIES = [
   {
     id: "week",
     name: "Viikko",
-    description: "Yksi tiedosto jokaiselle ISO 8601 -viikolle: alkamis- ja päättymispäivä, työpäivien määrä, juhlapyhät, vuosineljännes ja vuodenaika.",
+    description: "Yksi tiedosto jokaiselle ISO 8601 -viikolle: alkamis- ja päättymispäivä, työpäivien määrä, juhla- ja liputuspäivät, vuosineljännes ja vuodenaika.",
     indexUrl: "/data/week/index.json",
     urlPattern: "/data/week/{vuosi}/{viikko}.json",
     example: "/data/week/2026/32.json",
@@ -21,7 +21,7 @@ export const DATA_FEED_FAMILIES = [
   {
     id: "month",
     name: "Kuukausi",
-    description: "Yksi tiedosto jokaiselle kalenterikuukaudelle: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä sekä arkipyhät.",
+    description: "Yksi tiedosto jokaiselle kalenterikuukaudelle: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä, arkipyhät, liputuspäivät sekä vuosineljännes.",
     indexUrl: "/data/month/index.json",
     urlPattern: "/data/month/{vuosi}/{kuukausi}.json",
     example: "/data/month/2026/8.json",
@@ -29,7 +29,7 @@ export const DATA_FEED_FAMILIES = [
   {
     id: "year",
     name: "Vuosi",
-    description: "Yksi tiedosto jokaiselle vuodelle: viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, arkipyhät sekä vuoden ensimmäinen ja viimeinen ISO-viikko.",
+    description: "Yksi tiedosto jokaiselle vuodelle: viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, arkipyhät, liputuspäivät sekä vuoden ensimmäinen ja viimeinen ISO-viikko.",
     indexUrl: "/data/year/index.json",
     urlPattern: "/data/year/{vuosi}.json",
     example: "/data/year/2026.json",
@@ -49,6 +49,14 @@ export const DATA_FEED_FAMILIES = [
     indexUrl: "/data/holidays/index.json",
     urlPattern: "/data/holidays/{vuosi}.json",
     example: "/data/holidays/2026.json",
+  },
+  {
+    id: "holiday",
+    name: "Pyhäpäivä (yksittäinen)",
+    description: "Yksi tiedosto jokaista nimettyä pyhäpäivää kohti per vuosi: päivämäärä, viikonpäivä, ISO-viikko, vuosineljännes, virallinen asema, määräytymissääntö ja lainsäädäntöperuste (kun se on vahvistettu).",
+    indexUrl: "/data/holiday/index.json",
+    urlPattern: "/data/holiday/{vuosi}/{tunniste}.json",
+    example: "/data/holiday/2026/itsenaisyyspaiva.json",
   },
   {
     id: "flag-days",

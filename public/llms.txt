@@ -42,10 +42,13 @@ Jokaiselle viikolle, kuukaudelle, vuodelle, vuosineljännekselle, pyhäpäivävu
 - [Kuukausittainen työpäivädata (hakemisto)](https://viikkonro.fi/data/monthly-working-days/index.json) — esim. [tammikuu 2026](https://viikkonro.fi/data/monthly-working-days/2026/1.json)
 - [Kuukausittainen viikkodata (hakemisto)](https://viikkonro.fi/data/month/index.json) — esim. [tammikuu 2026](https://viikkonro.fi/data/month/2026/1.json)
 - [Dataset-skeema (JSON-LD)](https://viikkonro.fi/data/dataset.json)
+- [Tietämysverkko (knowledge graph)](https://viikkonro.fi/data/knowledge-graph.json): entiteettikartta, suhdekartta, sisäisten linkkien kartta ja verkon rakenne
+- Kehittäjäystävällinen alias: `/api/week/{viikko}/{vuosi}.json`, `/api/month/{kuukausi}/{vuosi}.json`, `/api/year/{vuosi}.json`, `/api/holiday/{tunniste}/{vuosi}.json` — pysyvät uudelleenohjaukset yllä oleviin `/data/`-osoitteisiin, sama sisältö.
 
 ## Optional
 
 - [Täysi sisältö LLM:ille](https://viikkonro.fi/llms-full.txt): kaikki usein kysytyt kysymykset vastauksineen
+- [AI-manifesti](https://viikkonro.fi/ai-manifest.txt): tärkeysjärjestykseen laitettu lista tärkeimmistä osoitteista tekoälyjärjestelmille (kuluva viikko, kuukausi, vuosineljännes ja vuosi, juhlapäivä-, työpäivä- ja liputuspäiväkeskukset, data- ja API-rajapinnat, PDF:t)
 - [Käyttöehdot](https://viikkonro.fi/kayttoehdot)
 - [Tietosuojaseloste](https://viikkonro.fi/tietosuoja)
 - [Sivukartta (XML)](https://viikkonro.fi/sitemap.xml)

@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Before any task touching routing, page content, structured data, `prerender.js`, `vercel.json`, or anything under `/data/`, `/pdf/`, `/og/`, `/discover/`, or the AI-facing text files in `public/`, read [`docs/SEO_CONSTITUTION.md`](docs/SEO_CONSTITUTION.md) first.** It names the exact mechanisms (URL structure, schema coverage, internal linking, sitemap, PDF/image discoverability, AI-facing files) that must survive any change, and what "preserve" means for each in this specific codebase.
+
 ## What this is
 
 "Viikko Nro" (viikkonro.fi) — a Finnish-language ISO 8601 week-number calculator built as a React SPA (Vite + React Router). All UI copy is in Finnish. There is no backend; the contact form posts directly to Web3Forms from the client.

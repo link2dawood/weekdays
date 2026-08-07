@@ -31,30 +31,35 @@ import {
   mondayOf,
   monthFaqs,
   monthlyWorkingDayFaqs,
+  monthPdfPath,
   monthStats,
   quarterFaqs,
   quarterStats,
+  weekPdfPath,
   workingDaysFaqs,
   yearFaqs,
   yearStats,
 } from "./src/data/seo.js";
-import { openDataFaqs } from "./src/data/openDataContent.js";
+import { openDataFaqs, DATA_FEED_FAMILIES } from "./src/data/openDataContent.js";
 import { faqs, faqCategories, featuredFaqs } from "./src/data/faqs.js";
 import {
   fmtShortFi,
   getWeekdayName,
   isoWeek,
+  isoWeekDateLabel,
   isoYear,
   quarterOf,
   seasonIndexOf,
   SEASON_KEYS_EN,
+  SEASON_NOMINATIVE_FI,
   weeksInIsoYear,
   M_FULL,
+  M_INESSIVE,
   M_SLUG,
   PRERENDER_MIN_YEAR,
   PRERENDER_MAX_YEAR,
 } from "./src/components/dateUtils.js";
-import { holidaysInYear } from "./src/data/holidays.js";
+import { holidaysInYear, HOLIDAY_LEGAL_BASIS } from "./src/data/holidays.js";
 import { flagDayFaqs, flagDaysInYear } from "./src/data/flagDayPages.js";
 import {
   holidayFaqs,
@@ -62,6 +67,7 @@ import {
   holidayPageFor,
   holidayPageMeta,
   holidayWeekLinks,
+  HOLIDAY_DEFINITIONS,
 } from "./src/data/holidayPages.js";
 import {
   nameDayDateMeta,
@@ -296,6 +302,65 @@ function ogImageUrlFor(url) {
   if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/))) {
     return `${SITE_URL}/og/pyhat-${m[1]}-${m[2]}.png`;
   }
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) {
+    return `${SITE_URL}/og/pyhapaivat-${m[1]}.png`;
+  }
+  if ((m = url.match(/^\/liputuspaivat-(\d+)$/))) {
+    return `${SITE_URL}/og/liputuspaivat-${m[1]}.png`;
+  }
+  if ((m = url.match(/^\/tyopaivat-([a-z]+)-(\d+)$/))) {
+    return `${SITE_URL}/og/tyopaivat-${m[1]}-${m[2]}.png`;
+  }
+  if ((m = url.match(/^\/tyopaivat-(\d+)$/))) {
+    return `${SITE_URL}/og/tyopaivat-${m[1]}.png`;
+  }
+  if ((m = url.match(/^\/q([1-4])-(\d+)$/))) {
+    return `${SITE_URL}/og/q${m[1]}-${m[2]}.png`;
+  }
+  return null;
+}
+
+// Descriptive og:image:alt text to go with ogImageUrlFor()'s image — same
+// regex branches, same match groups, so the two can't fall out of sync (a
+// page whose image changes but whose alt text doesn't is worse than no alt
+// text: it actively misdescribes the image). The template's default
+// ("Viikko Nro – kuluva viikkonumero", i.e. "current week") is only accurate
+// for "/" itself, which is why every other branch here overrides it and "/"
+// doesn't need a case — the template value stands unmodified for it.
+function ogImageAltFor(url) {
+  let m;
+  if ((m = url.match(/^\/(?:tulostettava-)?kalenteri-(\d+)/))) {
+    return `Vuoden ${m[1]} kalenteri – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) {
+    return `Viikkonumerot ${m[1]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    return `${M_FULL[Number(m[1]) - 1]} ${m[2]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    return `Viikko ${m[1]}/${m[2]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/))) {
+    const page = holidayPageFor(m[1], m[2]);
+    return page ? `${page.displayName} ${m[1]} – Viikko Nro` : null;
+  }
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) {
+    return `Suomen pyhäpäivät ${m[1]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/liputuspaivat-(\d+)$/))) {
+    return `Suomen liputuspäivät ${m[1]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/tyopaivat-([a-z]+)-(\d+)$/))) {
+    const mi = M_SLUG.indexOf(m[1]);
+    return mi === -1 ? null : `Työpäivät ${M_FULL[mi]} ${m[2]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/tyopaivat-(\d+)$/))) {
+    return `Työpäivät ${m[1]} – Viikko Nro`;
+  }
+  if ((m = url.match(/^\/q([1-4])-(\d+)$/))) {
+    return `Q${m[1]} ${m[2]} – Viikko Nro`;
+  }
   return null;
 }
 
@@ -318,6 +383,173 @@ function ogImageExtra(url) {
       height: 630,
     },
   };
+}
+
+// Downloadable-PDF twin of a /viikko-<w>-<y> page: an associatedMedia/
+// MediaObject (exact same shape calendarPageNodes() already uses for the
+// calendar PDF) plus a DownloadAction naming that same MediaObject as its
+// object — the standard schema.org pairing for "this page has a real,
+// downloadable file", not a new convention invented for this one case.
+function weekPdfExtra(url) {
+  const m = url.match(/^\/viikko-(\d+)-(\d+)$/);
+  if (!m) return {};
+  const pdfUrl = `${SITE_URL}${weekPdfPath(m[1], m[2])}`;
+  return {
+    associatedMedia: {
+      "@type": "MediaObject",
+      "@id": `${pdfUrl}#media`,
+      name: `Viikko ${m[1]}/${m[2]} (PDF)`,
+      contentUrl: pdfUrl,
+      encodingFormat: "application/pdf",
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+    },
+    potentialAction: {
+      "@type": "DownloadAction",
+      target: pdfUrl,
+      object: { "@id": `${pdfUrl}#media` },
+    },
+  };
+}
+
+// Same pairing as weekPdfExtra() above, for /kuukausi-<m>-<y>. Returns {}
+// for any other URL (including /vuosi-<y>, which shares weekCollectionNodes()
+// with this route but has no month PDF of its own), so it's safe to spread
+// unconditionally into that one shared pageNode() call.
+function monthPdfExtra(url) {
+  const m = url.match(/^\/kuukausi-(\d+)-(\d+)$/);
+  if (!m) return {};
+  const pdfUrl = `${SITE_URL}${monthPdfPath(m[1], m[2])}`;
+  return {
+    associatedMedia: {
+      "@type": "MediaObject",
+      "@id": `${pdfUrl}#media`,
+      name: `${M_FULL[Number(m[1]) - 1]} ${m[2]} (PDF)`,
+      contentUrl: pdfUrl,
+      encodingFormat: "application/pdf",
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+    },
+    potentialAction: {
+      "@type": "DownloadAction",
+      target: pdfUrl,
+      object: { "@id": `${pdfUrl}#media` },
+    },
+  };
+}
+
+// Knowledge-graph edges: connects every Week/Month/Quarter/Year/Holiday/
+// FlagDay/WorkingDay page's #webpage node to its natural container(s) via
+// isPartOf, and (for the three hub pages that list many children) to those
+// children via hasPart. Every @id referenced here is another page's own
+// #webpage node built by pageNode() elsewhere — no new nodes are created,
+// only edges between nodes that already exist, using the same cross-document
+// @id-reference convention every page already uses for isPartOf/publisher
+// pointing at the homepage's #website/#organization nodes. Spread into every
+// pageNode() call site across the entity pages (see call sites) plus the
+// generic fallback, so this is the one place the site's containment
+// hierarchy (Week->Year, Month->Quarter->Year, Holiday->Holiday-hub, etc.)
+// is declared. Returns {} for any URL outside that hierarchy.
+function entityParentExtra(url) {
+  let m;
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    // The {year} in /viikko-{week}-{year} is already the ISO week-year (the
+    // route's own definition), so the containing Year needs no recomputation.
+    const year = m[2];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    const month = Number(m[1]);
+    const year = m[2];
+    const quarter = quarterOf(new Date(Number(year), month - 1, 1));
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/q${quarter}-${year}`)}#webpage` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if ((m = url.match(/^\/q([1-4])-(\d+)$/))) {
+    const year = m[2];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if ((m = url.match(/^\/pyhapaivat-(\d+)$/))) {
+    const year = m[1];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+      hasPart: HOLIDAY_DEFINITIONS.map((h) => ({
+        "@id": `${canonicalFor(`/pyhat-${year}/${h.slug}`)}#webpage`,
+      })),
+    };
+  }
+  if ((m = url.match(/^\/pyhat-(\d+)\/[a-z0-9-]+$/))) {
+    const year = m[1];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/pyhapaivat-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if ((m = url.match(/^\/liputuspaivat-(\d+)$/))) {
+    const year = m[1];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if ((m = url.match(/^\/tyopaivat-(\d+)$/))) {
+    const year = m[1];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+      hasPart: M_SLUG.map((slug) => ({
+        "@id": `${canonicalFor(`/tyopaivat-${slug}-${year}`)}#webpage`,
+      })),
+    };
+  }
+  if ((m = url.match(/^\/tyopaivat-([a-z]+)-(\d+)$/))) {
+    const mi = M_SLUG.indexOf(m[1]);
+    if (mi === -1) return {};
+    const year = m[2];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/kuukausi-${mi + 1}-${year}`)}#webpage` },
+      ],
+    };
+  }
+  if (
+    (m = url.match(/^\/kalenteri-(\d+)(?:-(?:alkuvuosi|loppuvuosi))?$/)) ||
+    (m = url.match(/^\/tulostettava-kalenteri-(\d+)$/))
+  ) {
+    const year = m[1];
+    return {
+      isPartOf: [
+        { "@id": `${SITE_URL}/#website` },
+        { "@id": `${canonicalFor(`/vuosi-${year}`)}#webpage` },
+      ],
+    };
+  }
+  return {};
 }
 
 // Shared visual template for every per-page OG image below (week/month/year/
@@ -380,6 +612,256 @@ function ogCard(h, { big, accent, tagline }) {
         )]
       : []),
   );
+}
+
+// ============================================================================
+// Discover image system — a SECOND, independent image family for Google
+// Discover eligibility, built entirely alongside the OG system above without
+// calling or altering a single one of its functions (ogCard/ogImageUrlFor/
+// ogImageAltFor/ogImageExtra all remain exactly as they were). Google's own
+// Discover documentation (checked directly against developers.google.com,
+// not secondary summaries) recommends 16:9, high resolution, and explicitly
+// says to avoid text-heavy images and generic/logo-only images — three things
+// the OG cards above are deliberately built around (big stylized title text,
+// a prominent wordmark), because that's what makes a *good* og:image/Twitter
+// card. The two goals don't fully overlap, hence a second, real image family
+// rather than a compromise redesign of the first. This one is graphic-first:
+// an actual small calendar grid (the same Monday-first week-row shape as
+// pdfMonthRows() in the PDF system, but a fresh, independent implementation
+// — "parallel system" means not sharing code with either sibling system
+// either) with the relevant week/day highlighted by color, not labeled by
+// text. Directory is a completely separate top-level path (/discover/, not
+// /og/), so there is zero chance of a filename colliding with the OG family.
+// ============================================================================
+
+const DISCOVER_COLORS = {
+  ink: "#15211f",
+  inkSoft: "#56655f",
+  paper: "#ffffff",
+  line: "#e3e8e6",
+  accent: "#1f7a5c",
+  accentSoft: "#e3f0ea",
+  amber: "#e0a23b",
+  amberSoft: "#faf1e0",
+};
+
+// Monday-first week rows for one calendar month — independent from (not
+// shared with) the PDF system's pdfMonthRows(), by design, even though the
+// two happen to compute the same shape. Pure date logic, no rendering.
+function discoverMonthRows(year, monthIndex) {
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const rows = [];
+  let current = null;
+  for (let d = 1; d <= daysInMonth; d += 1) {
+    const date = new Date(year, monthIndex, d);
+    const col = (date.getDay() + 6) % 7; // 0=Mon..6=Sun
+    if (col === 0 || !current) {
+      current = new Array(7).fill(null);
+      rows.push(current);
+    }
+    current[col] = { day: d, date };
+  }
+  return rows;
+}
+
+// One month as a flexbox grid of day-cells — the one visual building block
+// every Discover image is made of (week/month/holiday images use it once,
+// large; the year image uses it 12 times, small). `highlightWeek` tints an
+// entire week-row's background (week pages); `highlightDay` draws a filled
+// circle behind one specific date (holiday pages) — color communicates what
+// text would otherwise have to say, per Google's "avoid text-heavy" guidance.
+function discoverMonthGrid(h, { year, monthIndex, cellSize, highlightWeek, highlightDay, showMonthLabel }) {
+  const rows = discoverMonthRows(year, monthIndex);
+  const fontSize = Math.round(cellSize * 0.34);
+  return h(
+    "div",
+    { style: { display: "flex", flexDirection: "column" } },
+    ...(showMonthLabel
+      ? [h(
+          "div",
+          {
+            style: {
+              display: "flex",
+              fontSize: Math.round(cellSize * 0.28),
+              fontWeight: 700,
+              color: DISCOVER_COLORS.ink,
+              marginBottom: Math.round(cellSize * 0.15),
+            },
+          },
+          M_FULL[monthIndex],
+        )]
+      : []),
+    ...rows.map((row, rowIndex) => {
+      const anchor = row.find((c) => c);
+      const isHighlightRow =
+        highlightWeek &&
+        isoWeek(anchor.date) === highlightWeek.week &&
+        isoYear(anchor.date) === highlightWeek.weekYear;
+      return h(
+        "div",
+        {
+          key: String(rowIndex),
+          style: {
+            display: "flex",
+            flexDirection: "row",
+            background: isHighlightRow ? DISCOVER_COLORS.accentSoft : "transparent",
+            borderRadius: Math.round(cellSize * 0.18),
+          },
+        },
+        ...row.map((cell, colIndex) => {
+          const isSunday = colIndex === 6;
+          const isHighlightDay = highlightDay && cell && cell.date.getTime() === highlightDay.getTime();
+          return h(
+            "div",
+            {
+              key: String(colIndex),
+              style: {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: cellSize,
+                height: cellSize,
+              },
+            },
+            cell
+              ? h(
+                  "div",
+                  {
+                    style: {
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: Math.round(cellSize * 0.78),
+                      height: Math.round(cellSize * 0.78),
+                      borderRadius: "50%",
+                      background: isHighlightDay ? DISCOVER_COLORS.amber : "transparent",
+                      color: isHighlightDay
+                        ? "#ffffff"
+                        : isSunday
+                          ? DISCOVER_COLORS.inkSoft
+                          : DISCOVER_COLORS.ink,
+                      fontSize: isHighlightRow || isHighlightDay ? fontSize * 1.05 : fontSize,
+                      fontWeight: isHighlightRow || isHighlightDay ? 700 : 400,
+                    },
+                  },
+                  String(cell.day),
+                )
+              : "",
+          );
+        }),
+      );
+    }),
+  );
+}
+
+// Subtle corner brand mark — small, muted, never the dominant element (the
+// opposite emphasis from ogCard()'s large colored "VIIKKONRO.FI" kicker),
+// matching requirement 5 ("keep branding subtle").
+function discoverBrandMark(h) {
+  return h(
+    "div",
+    {
+      style: {
+        display: "flex",
+        position: "absolute",
+        bottom: 36,
+        right: 44,
+        fontSize: 22,
+        color: DISCOVER_COLORS.inkSoft,
+        letterSpacing: 1,
+      },
+    },
+    "viikkonro.fi",
+  );
+}
+
+function discoverCanvas(h, children) {
+  return h(
+    "div",
+    {
+      style: {
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        background: DISCOVER_COLORS.paper,
+        padding: "56px 64px",
+      },
+    },
+    ...children,
+  );
+}
+
+// Single source of truth for which pages get a Discover image and its
+// filename — same role ogImageUrlFor() plays for the OG family, deliberately
+// not reused by it (see the file-header note above). Scoped to exactly the
+// four families the brief's examples name: week/month/year/named-holiday.
+function discoverImageUrlFor(url) {
+  let m;
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    return `${SITE_URL}/discover/viikko-${m[1]}-${m[2]}.png`;
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    return `${SITE_URL}/discover/kuukausi-${m[1]}-${m[2]}.png`;
+  }
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) {
+    return `${SITE_URL}/discover/vuosi-${m[1]}.png`;
+  }
+  if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/))) {
+    return `${SITE_URL}/discover/pyhat-${m[1]}-${m[2]}.png`;
+  }
+  return null;
+}
+
+// Descriptive alt/caption text — deliberately phrased around what the image
+// literally shows (a calendar view), not the page's marketing title, since
+// this text is what has to carry the meaning the image no longer spells out
+// in big type.
+function discoverImageAltFor(url) {
+  let m;
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    return `Kalenterinäkymä: viikko ${m[1]} korostettuna, ${M_FULL[mondayOf(+m[1], +m[2]).getMonth()]} ${m[2]}`;
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    return `Kalenterinäkymä: ${M_FULL[Number(m[1]) - 1]} ${m[2]} viikkonumeroineen`;
+  }
+  if ((m = url.match(/^\/vuosi-(\d+)$/))) {
+    return `Koko vuoden ${m[1]} kalenterinäkymä, kaikki 12 kuukautta`;
+  }
+  if ((m = url.match(/^\/pyhat-(\d+)\/([a-z0-9-]+)$/))) {
+    const page = holidayPageFor(m[1], m[2]);
+    return page
+      ? `Kalenterinäkymä: ${page.displayName} ${m[1]} korostettuna, ${M_FULL[page.date.getMonth()]}`
+      : null;
+  }
+  return null;
+}
+
+// Standalone schema.org/ImageObject node(s) for the Discover image — pushed
+// directly into the page's @graph as its own entity (like associatedMedia/
+// Dataset/Event nodes elsewhere in this file), NOT merged into the OG
+// system's `image` property on the WebPage node. That's a deliberate schema
+// choice, not just a naming one: cramming a second image into the same
+// `image` key as ogImageExtra() would require overwriting or editing that
+// function's output, which is exactly what "keep the OG system untouched"
+// rules out. A second, independently-referenceable ImageObject in the same
+// graph is valid schema.org, costs zero changes to ogImageExtra(), and
+// Google already reads the whole @graph per page, not just one node's
+// properties.
+function discoverImageNodes(url) {
+  const img = discoverImageUrlFor(url);
+  if (!img) return [];
+  return [{
+    "@type": "ImageObject",
+    "@id": `${img}#discover`,
+    url: img,
+    contentUrl: img,
+    width: 1200,
+    height: 675,
+    caption: discoverImageAltFor(url),
+    representativeOfPage: true,
+  }];
 }
 
 // Reusable schema.org/Dataset builder — every dataset below (one per page
@@ -467,6 +949,14 @@ function datasetNodes() {
       "Koneluettava JSON-data Suomen virallisista pyhäpäivistä ja laajasti vietetyistä vapaapäivistä: nimi, päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema jokaiselle vuodelle. Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/holidays/index.json`,
   });
+  const holidayDetailDataset = datasetSchema({
+    ...common,
+    id: "holiday",
+    name: "Suomen pyhäpäiväkohtainen data",
+    description:
+      "Koneluettava JSON-data yhdelle nimetylle pyhäpäivälle kerrallaan: päivämäärä, viikonpäivä, ISO-viikko, vuosineljännes, virallinen asema, määräytymissääntö ja lainsäädäntöperuste (kun se on erikseen vahvistettu). Yksi tiedosto per pyhäpäivä per vuosi. Päivittyy kerran vuorokaudessa.",
+    distributionUrl: `${SITE_URL}/data/holiday/index.json`,
+  });
   const flagDaysDataset = datasetSchema({
     ...common,
     id: "flag-days",
@@ -503,6 +993,7 @@ function datasetNodes() {
     yearDataset,
     quarterDataset,
     holidayDataset,
+    holidayDetailDataset,
     flagDaysDataset,
     workingDayDataset,
     monthlyWorkingDaysDataset,
@@ -664,9 +1155,17 @@ function jsonFeedAlternateLink(url) {
 // across — so this uses the identical regex rather than re-deriving the
 // grouping logic a second time.
 function pdfAlternateLink(url) {
-  const m = url.match(/^\/(?:tulostettava-)?kalenteri-(\d+)/);
-  if (!m) return "";
-  return `<link rel="alternate" type="application/pdf" href="${SITE_URL}${calendarPdfPath(m[1])}" />`;
+  let m;
+  if ((m = url.match(/^\/(?:tulostettava-)?kalenteri-(\d+)/))) {
+    return `<link rel="alternate" type="application/pdf" href="${SITE_URL}${calendarPdfPath(m[1])}" />`;
+  }
+  if ((m = url.match(/^\/viikko-(\d+)-(\d+)$/))) {
+    return `<link rel="alternate" type="application/pdf" href="${SITE_URL}${weekPdfPath(m[1], m[2])}" />`;
+  }
+  if ((m = url.match(/^\/kuukausi-(\d+)-(\d+)$/))) {
+    return `<link rel="alternate" type="application/pdf" href="${SITE_URL}${monthPdfPath(m[1], m[2])}" />`;
+  }
+  return "";
 }
 
 function currentDateIntentNodes(url) {
@@ -1123,6 +1622,8 @@ function flagDayNodes(year) {
         "@type": "SpeakableSpecification",
         cssSelector: [".answer-sentence"],
       },
+      ...ogImageExtra(path),
+      ...entityParentExtra(path),
       mainEntity: {
         "@type": "ItemList",
         numberOfItems: itemListElement.length,
@@ -1151,6 +1652,19 @@ function holidaysInWeekForPrerender(isoYearNum, week) {
   const candidates = [...years].flatMap((y) => holidaysInYear(y));
   return candidates
     .filter((h) => h.date >= monday && h.date <= sunday)
+    .sort((x, y) => x.date - y.date);
+}
+
+// Flag days landing within ISO week `week` of ISO year `isoYearNum` — same
+// both-calendar-year check as holidaysInWeekForPrerender() above, for the
+// same boundary-week reason (used by the week PDF below).
+function flagDaysInWeekForPrerender(isoYearNum, week) {
+  const monday = mondayOf(week, isoYearNum);
+  const sunday = addDays(monday, 6);
+  const years = new Set([monday.getFullYear(), sunday.getFullYear()]);
+  const candidates = [...years].flatMap((y) => flagDaysInYear(y));
+  return candidates
+    .filter((f) => f.date >= monday && f.date <= sunday)
     .sort((x, y) => x.date - y.date);
 }
 
@@ -1305,6 +1819,8 @@ function monthlyWorkingDaysNodes(month, year) {
         "@type": "SpeakableSpecification",
         cssSelector: [".answer-sentence"],
       },
+      ...ogImageExtra(path),
+      ...entityParentExtra(path),
       mainEntity: {
         "@type": "ItemList",
         numberOfItems: itemListElement.length,
@@ -1338,10 +1854,12 @@ function quarterNodes(quarter, year) {
   const stats = quarterStats(year, quarter);
   const faq = quarterFaqs(quarter, year);
 
+  // @id references to each month's own #webpage node (not inline WebPage
+  // stubs) — the same cross-document node-reference convention every page
+  // already uses for isPartOf/publisher, so a consumer can follow the edge
+  // to the real, fuller node rather than a disconnected duplicate.
   const hasPart = stats.months.map((m) => ({
-    "@type": "WebPage",
-    name: `${M_FULL[m - 1]} ${year}`,
-    url: canonicalFor(`/kuukausi-${m}-${year}`),
+    "@id": `${canonicalFor(`/kuukausi-${m}-${year}`)}#webpage`,
   }));
   const itemListElement = stats.weeks.map((w, index) => ({
     "@type": "ListItem",
@@ -1360,6 +1878,8 @@ function quarterNodes(quarter, year) {
         cssSelector: [".answer-sentence"],
       },
       hasPart,
+      ...ogImageExtra(path),
+      ...entityParentExtra(path),
       mainEntity: {
         "@type": "ItemList",
         numberOfItems: itemListElement.length,
@@ -1407,6 +1927,7 @@ function calendarPageNodes(year) {
           dateModified: CONTENT_UPDATED,
         },
         ...ogImageExtra(`/kalenteri-${year}`),
+        ...entityParentExtra(`/kalenteri-${year}`),
         mainEntity: {
           "@type": "ItemList",
           numberOfItems: 12,
@@ -1450,15 +1971,19 @@ function weekCollectionNodes(pathname) {
       { length: weeksInIsoYear(year) },
       (_, index) => canonicalFor(`/viikko-${index + 1}-${year}`),
     );
-    // The year page also links out to its 12 month pages (see YearCalendar.jsx's
-    // month pill row) — surfaced here as hasPart WebPage stubs alongside the
-    // week ItemList, rather than folding them into one mixed ItemList, so the
+    // The year page also links out to its 12 month pages and 4 quarter pages
+    // (see YearCalendar.jsx's month pill row) — surfaced here as hasPart @id
+    // references to each page's own #webpage node, alongside the week
+    // ItemList, rather than folding them into one mixed ItemList, so the
     // existing week-only mainEntity contract stays unchanged for any consumer.
-    hasPart = M_FULL.map((name, index) => ({
-      "@type": "WebPage",
-      name: `${name} ${year}`,
-      url: canonicalFor(`/kuukausi-${index + 1}-${year}`),
-    }));
+    hasPart = [
+      ...M_FULL.map((_, index) => ({
+        "@id": `${canonicalFor(`/kuukausi-${index + 1}-${year}`)}#webpage`,
+      })),
+      ...[1, 2, 3, 4].map((q) => ({
+        "@id": `${canonicalFor(`/q${q}-${year}`)}#webpage`,
+      })),
+    ];
     speakable = {
       "@type": "SpeakableSpecification",
       cssSelector: [".answer-sentence"],
@@ -1516,6 +2041,8 @@ function weekCollectionNodes(pathname) {
     ...(speakable ? { speakable } : {}),
     ...(mentions ? { mentions } : {}),
     ...ogImageExtra(pathname),
+    ...monthPdfExtra(pathname),
+    ...entityParentExtra(pathname),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: urls.length,
@@ -1570,6 +2097,7 @@ function namedHolidayNodes(year, slug) {
           cssSelector: [".answer-sentence"],
         },
         ...ogImageExtra(page.path),
+        ...entityParentExtra(page.path),
       }),
       {
         "@type": "FAQPage",
@@ -1860,6 +2388,17 @@ for (const url of routes) {
       html = html
         .replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${pageOg}$2`)
         .replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${pageOg}$2`);
+      // The alt text describing pageOg — without this, every non-homepage
+      // page kept the template's "Viikko Nro – kuluva viikkonumero" ("current
+      // week") alt text even though the image itself had changed to show
+      // that page's own week/month/year/holiday, actively misdescribing it.
+      const pageOgAlt = ogImageAltFor(url);
+      if (pageOgAlt) {
+        html = html.replace(
+          /(<meta property="og:image:alt" content=")[^"]*(")/,
+          `$1${pageOgAlt}$2`,
+        );
+      }
     }
 
     // Noindexed archive pages keep their crawlable HTML but omit page-level
@@ -1869,6 +2408,11 @@ for (const url of routes) {
       const nodes = [];
       const crumb = breadcrumbNode(url);
       if (crumb) nodes.push(crumb);
+      // Discover image, when this URL has one — a standalone node, applies
+      // uniformly across every page family without touching any of their
+      // individual node-builder functions (see discoverImageNodes()'s own
+      // comment for why this isn't merged into ogImageExtra()'s `image`).
+      nodes.push(...discoverImageNodes(url));
 
       if (url === "/ukk") nodes.push(...faqNodes());
       if (url === "/") nodes.push(...homepageFaqNodes(), ...datasetNodes());
@@ -1954,6 +2498,8 @@ for (const url of routes) {
             ...speakableExtra(url),
             ...weekHolidayMentionsExtra(url),
             ...ogImageExtra(url),
+            ...weekPdfExtra(url),
+            ...entityParentExtra(url),
           }),
         );
       }
@@ -2082,6 +2628,7 @@ const weekManifest = []; // { year, weekCount, indexUrl }
 const yearManifest = []; // { year, url }
 const holidaysManifest = []; // { year, url }
 const flagDaysManifest = []; // { year, url }
+const holidayDetailManifest = []; // { year, indexUrl }
 const quarterManifest = []; // { year, quarter, url }
 const monthlyWorkingDaysManifest = []; // { year, month, url }
 const monthManifest = []; // { year, month, url }
@@ -2096,6 +2643,10 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
     date: ymd(h.date),
     official: h.official,
   }));
+  const yearFlagDaysOut = flagDaysInYear(y).map((f) => ({
+    name: f.name,
+    date: ymd(f.date),
+  }));
   writeJson(path.join(dataDir, "year", `${y}.json`), {
     schemaVersion: FEED_SCHEMA_VERSION,
     year: y,
@@ -2103,6 +2654,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
     workingDays: yStats.working,
     weekendDays: yStats.weekend,
     holidays: yearHolidaysOut,
+    flagDays: yearFlagDaysOut,
     firstWeek: { week: yStats.firstWeek, year: yStats.firstWeekYear },
     lastWeek: { week: yStats.lastWeek, year: yStats.lastWeekYear },
     url: canonicalFor(`/vuosi-${y}`),
@@ -2148,6 +2700,52 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   flagDaysManifest.push({ year: y, url: `${SITE_URL}/data/flag-days/${y}.json` });
   feedFileCount += 1;
 
+  // /data/holiday/<year>/<slug>.json — one file per named holiday per year
+  // (distinct from /data/holidays/<year>.json above, which lists all 15
+  // holidays in one file; this is the per-slug detail feed backing the new
+  // /api/holiday/{slug}/{year} alias). Reuses holidayPageFor() — the same
+  // function NamedHoliday.jsx renders from — so this can't drift from the
+  // visible /pyhat-<year>/<slug> page. legalBasis is null except for the 2
+  // holidays with an independently confirmed Finlex citation (see
+  // HOLIDAY_LEGAL_BASIS's own comment) rather than guessed for the rest.
+  const yearHolidaySlugManifest = [];
+  for (const def of HOLIDAY_DEFINITIONS) {
+    const page = holidayPageFor(y, def.slug);
+    if (!page) continue;
+    const legalBasis = HOLIDAY_LEGAL_BASIS[page.displayName] ?? null;
+    writeJson(path.join(dataDir, "holiday", String(y), `${def.slug}.json`), {
+      schemaVersion: FEED_SCHEMA_VERSION,
+      slug: page.slug,
+      name: page.displayName,
+      year: page.year,
+      date: ymd(page.date),
+      weekday: page.weekday,
+      week: page.week,
+      weekYear: page.weekYear,
+      month: page.month,
+      quarter: quarterOf(page.date),
+      official: page.official,
+      kind: page.kind,
+      rule: page.rule,
+      legalBasis,
+      url: canonicalFor(page.path),
+    });
+    yearHolidaySlugManifest.push({
+      slug: def.slug,
+      url: `${SITE_URL}/data/holiday/${y}/${def.slug}.json`,
+    });
+    feedFileCount += 1;
+  }
+  writeJson(path.join(dataDir, "holiday", String(y), "index.json"), {
+    year: y,
+    holidays: yearHolidaySlugManifest,
+  });
+  holidayDetailManifest.push({
+    year: y,
+    indexUrl: `${SITE_URL}/data/holiday/${y}/index.json`,
+  });
+  feedFileCount += 1;
+
   // /data/week/<year>/<week>.json — reuses holidaysInWeekForPrerender() (this
   // file, already used by weekFaqNodes) and mondayOf/quarterOf/seasonIndexOf.
   const totalWeeks = weeksInIsoYear(y);
@@ -2158,6 +2756,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
     const thursday = addDays(monday, 3);
     const weekHolidays = holidaysInWeekForPrerender(y, w);
     const officialWeekHolidays = weekHolidays.filter((h) => h.official);
+    const weekFlagDays = flagDaysInWeekForPrerender(y, w);
     writeJson(path.join(dataDir, "week", String(y), `${w}.json`), {
       schemaVersion: FEED_SCHEMA_VERSION,
       week: w,
@@ -2170,6 +2769,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
         date: ymd(h.date),
         official: h.official,
       })),
+      flagDays: weekFlagDays.map((f) => ({ name: f.name, date: ymd(f.date) })),
       quarter: quarterOf(monday),
       season: SEASON_KEYS_EN[seasonIndexOf(thursday.getMonth())],
       url: canonicalFor(`/viikko-${w}-${y}`),
@@ -2268,6 +2868,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   // monthly-working-days feed two lines up — no second day-counting pass.
   for (let mm = 1; mm <= 12; mm += 1) {
     const mStats = monthStats(y, mm);
+    const monthFlagDays = flagDaysInYear(y).filter((f) => f.month === mm);
     writeJson(path.join(dataDir, "month", String(y), `${mm}.json`), {
       schemaVersion: FEED_SCHEMA_VERSION,
       month: mm,
@@ -2281,6 +2882,8 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
       holidays: mStats.holidays
         .filter((h) => h.official)
         .map((h) => ({ name: h.name, date: ymd(h.date), official: h.official })),
+      flagDays: monthFlagDays.map((f) => ({ name: f.name, date: ymd(f.date) })),
+      quarter: Math.ceil(mm / 3),
       url: canonicalFor(`/kuukausi-${mm}-${y}`),
     });
     monthManifest.push({
@@ -2297,6 +2900,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
 // discover every week/year/holiday feed without guessing the pattern.
 writeJson(path.join(dataDir, "year", "index.json"), { years: yearManifest });
 writeJson(path.join(dataDir, "holidays", "index.json"), { years: holidaysManifest });
+writeJson(path.join(dataDir, "holiday", "index.json"), { years: holidayDetailManifest });
 writeJson(path.join(dataDir, "flag-days", "index.json"), { years: flagDaysManifest });
 writeJson(path.join(dataDir, "week", "index.json"), { years: weekManifest });
 writeJson(path.join(dataDir, "quarter", "index.json"), { quarters: quarterManifest });
@@ -2304,7 +2908,7 @@ writeJson(path.join(dataDir, "monthly-working-days", "index.json"), {
   months: monthlyWorkingDaysManifest,
 });
 writeJson(path.join(dataDir, "month", "index.json"), { months: monthManifest });
-feedFileCount += 7;
+feedFileCount += 8;
 
 // Top-level manifest (STEP 9): describes the whole /data/ surface by dataset
 // family rather than by URL pattern, so a fifth family (school holidays, name
@@ -2333,6 +2937,12 @@ writeJson(path.join(dataDir, "index.json"), {
       description: "One JSON file per calendar year's public holidays.",
       indexUrl: `${SITE_URL}/data/holidays/index.json`,
       urlPattern: `${SITE_URL}/data/holidays/{year}.json`,
+    },
+    {
+      name: "holiday",
+      description: "One JSON file per named holiday per year (detail feed backing /api/holiday/{slug}/{year}).",
+      indexUrl: `${SITE_URL}/data/holiday/index.json`,
+      urlPattern: `${SITE_URL}/data/holiday/{year}/{slug}.json`,
     },
     {
       name: "flag-days",
@@ -2371,6 +2981,227 @@ writeJson(path.join(dataDir, "dataset.json"), {
 });
 feedFileCount += 1;
 
+// Knowledge graph (STEP: entity map / relationship map / internal linking map
+// / graph structure), fetchable on its own without parsing HTML or crawling
+// every page. Every @id/urlPattern/count below is read from the same
+// single-source-of-truth modules the live pages and their JSON-LD are built
+// from (HOLIDAY_DEFINITIONS, M_SLUG, DATA_FEED_FAMILIES, entityParentExtra's
+// own regex targets) rather than restated by hand, and every edge listed in
+// relationshipMap is one entityParentExtra() (or a pre-existing xExtra())
+// actually emits into a real page's <head> — this file documents the graph
+// that ships, not an aspirational one.
+const kgYear = currentYear;
+writeJson(path.join(dataDir, "knowledge-graph.json"), {
+  "@context": "https://schema.org",
+  name: "Viikko Nro knowledge graph",
+  description:
+    "Entity map, relationship map, internal linking map and graph structure for viikkonro.fi, for AI retrieval and knowledge-graph systems. Every entity is a real page or resource on the site; every relationship listed is actually present in that page's schema.org JSON-LD.",
+  dateModified: CONTENT_UPDATED,
+  schemaVersion: FEED_SCHEMA_VERSION,
+
+  namingConventions: {
+    pageEntityId: "{canonicalUrl}#webpage — every page's own node id",
+    subResourceId:
+      "{canonicalUrl}#{fragment} — fragment in {faq, breadcrumb, media, discover, howto, article, events}",
+    globalSingletons: [`${SITE_URL}/#website`, `${SITE_URL}/#organization`],
+    datasetFamilyId: `${SITE_URL}/#dataset-{id} — one per /data/ family (see datasets below)`,
+    pdfMediaId: "{pdfUrl}#media",
+  },
+
+  // 1. Entity map — one entry per requested entity type: canonical id
+  // pattern, the schema.org @type actually used for its #webpage node,
+  // a real example, and (for finite families) the exact count.
+  entityMap: [
+    {
+      entity: "Week",
+      schemaType: "WebPage",
+      urlPattern: "/viikko-{week}-{year}",
+      idPattern: `${SITE_URL}/viikko-{week}-{year}#webpage`,
+      example: `${SITE_URL}/viikko-32-${kgYear}`,
+      count: "52 or 53 per year (weeksInIsoYear)",
+    },
+    {
+      entity: "Month",
+      schemaType: "CollectionPage",
+      urlPattern: "/kuukausi-{month}-{year}",
+      idPattern: `${SITE_URL}/kuukausi-{month}-{year}#webpage`,
+      example: `${SITE_URL}/kuukausi-8-${kgYear}`,
+      count: "12 per year",
+    },
+    {
+      entity: "Quarter",
+      schemaType: "CollectionPage",
+      urlPattern: "/q{1-4}-{year}",
+      idPattern: `${SITE_URL}/q{quarter}-{year}#webpage`,
+      example: `${SITE_URL}/q3-${kgYear}`,
+      count: "4 per year",
+    },
+    {
+      entity: "Year",
+      schemaType: "CollectionPage",
+      urlPattern: "/vuosi-{year}",
+      idPattern: `${SITE_URL}/vuosi-{year}#webpage`,
+      example: `${SITE_URL}/vuosi-${kgYear}`,
+      count: `1 per year, ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR}`,
+    },
+    {
+      entity: "Holiday",
+      schemaType: "WebPage (individual) / WebPage (yearly hub)",
+      urlPattern: "/pyhapaivat-{year} (hub), /pyhat-{year}/{slug} (individual)",
+      idPattern: `${SITE_URL}/pyhat-{year}/{slug}#webpage`,
+      example: `${SITE_URL}/pyhat-${kgYear}/itsenaisyyspaiva`,
+      count: `${HOLIDAY_DEFINITIONS.length} named holidays per year (13 statutory + 2 unofficial eve days)`,
+      slugs: HOLIDAY_DEFINITIONS.map((h) => h.slug),
+    },
+    {
+      entity: "Flag Day",
+      schemaType: "CollectionPage (yearly hub only, no individual pages)",
+      urlPattern: "/liputuspaivat-{year}",
+      idPattern: `${SITE_URL}/liputuspaivat-{year}#webpage`,
+      example: `${SITE_URL}/liputuspaivat-${kgYear}`,
+      count: "14 named flag days per year, listed as anchors on the one hub page",
+    },
+    {
+      entity: "Working Day",
+      schemaType: "WebPage (yearly) / CollectionPage (monthly)",
+      urlPattern: "/tyopaivat-{year} (yearly), /tyopaivat-{monthSlug}-{year} (monthly)",
+      idPattern: `${SITE_URL}/tyopaivat-{monthSlug}-{year}#webpage`,
+      example: `${SITE_URL}/tyopaivat-elokuu-${kgYear}`,
+      count: "1 yearly page + 12 monthly pages per year",
+      monthSlugs: M_SLUG,
+    },
+    {
+      entity: "Calendar",
+      schemaType: "CollectionPage",
+      urlPattern:
+        "/kalenteri-{year}, /kalenteri-{year}-alkuvuosi, /kalenteri-{year}-loppuvuosi, /tulostettava-kalenteri-{year}",
+      idPattern: `${SITE_URL}/kalenteri-{year}#webpage`,
+      example: `${SITE_URL}/kalenteri-${kgYear}`,
+      count: "4 calendar-view variants per year",
+    },
+    {
+      entity: "PDF",
+      schemaType: "MediaObject",
+      urlPattern: "/pdf/kalenteri-{year}.pdf, /pdf/viikko-{week}-{year}.pdf, /pdf/kuukausi-{month}-{year}.pdf",
+      idPattern: `${SITE_URL}/pdf/{file}.pdf#media`,
+      example: `${SITE_URL}${weekPdfPath(32, kgYear)}`,
+      count: "1 per calendar year + 1 per week + 1 per month",
+    },
+    {
+      entity: "Dataset",
+      schemaType: "Dataset",
+      urlPattern: "/data/{family}/{year}.json or /data/{family}/{year}/{n}.json",
+      idPattern: `${SITE_URL}/#dataset-{id}`,
+      example: `${SITE_URL}/data/week/${kgYear}/32.json`,
+      count: `${DATA_FEED_FAMILIES.length} dataset families`,
+      families: DATA_FEED_FAMILIES.map((f) => f.id),
+    },
+    {
+      entity: "API Endpoint",
+      schemaType: "EntryPoint (redirect alias, no independent page)",
+      urlPattern: "/api/week/{week}/{year}.json, /api/month/{month}/{year}.json, /api/year/{year}.json, /api/holiday/{slug}/{year}.json",
+      idPattern: `${SITE_URL}/api/{family}/... — 301 redirect to the aliased Dataset's own URL`,
+      example: `${SITE_URL}/api/week/32/${kgYear}.json`,
+      count: "4 aliased families (week, month, year, holiday)",
+    },
+  ],
+
+  // 2. Relationship map — every isPartOf/hasPart/mentions/associatedMedia
+  // edge actually present in the live JSON-LD, described as (from, relation,
+  // to, cardinality). "to"/"from" are entity types from entityMap above.
+  relationshipMap: [
+    { from: "Week", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Month", relation: "isPartOf", to: "Quarter", cardinality: "many-to-one" },
+    { from: "Month", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Quarter", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Quarter", relation: "hasPart", to: "Month", cardinality: "one-to-three" },
+    { from: "Year", relation: "hasPart", to: "Month", cardinality: "one-to-twelve" },
+    { from: "Year", relation: "hasPart", to: "Quarter", cardinality: "one-to-four" },
+    { from: "Year", relation: "mainEntity (ItemList)", to: "Week", cardinality: "one-to-52-or-53" },
+    { from: "Month", relation: "mainEntity (ItemList)", to: "Week", cardinality: "one-to-4-or-6" },
+    { from: "Month", relation: "mentions", to: "Holiday", cardinality: "one-to-many (holidays that month)" },
+    { from: "Holiday (hub)", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Holiday (hub)", relation: "hasPart", to: "Holiday (individual)", cardinality: `one-to-${HOLIDAY_DEFINITIONS.length}` },
+    { from: "Holiday (individual)", relation: "isPartOf", to: "Holiday (hub)", cardinality: "many-to-one" },
+    { from: "Holiday (individual)", relation: "mentions", to: "Week", cardinality: "many-to-one" },
+    { from: "Holiday (individual)", relation: "mentions", to: "Month", cardinality: "many-to-one" },
+    { from: "Holiday (individual)", relation: "mentions", to: "Year", cardinality: "many-to-one" },
+    { from: "Flag Day (hub)", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Working Day (yearly)", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Working Day (yearly)", relation: "hasPart", to: "Working Day (monthly)", cardinality: "one-to-twelve" },
+    { from: "Working Day (monthly)", relation: "isPartOf", to: "Month", cardinality: "many-to-one" },
+    { from: "Calendar", relation: "isPartOf", to: "Year", cardinality: "many-to-one" },
+    { from: "Calendar", relation: "mainEntity (ItemList)", to: "Month", cardinality: "one-to-twelve" },
+    { from: "Calendar", relation: "associatedMedia", to: "PDF", cardinality: "one-to-one" },
+    { from: "Week", relation: "associatedMedia", to: "PDF", cardinality: "one-to-one" },
+    { from: "Month", relation: "associatedMedia", to: "PDF", cardinality: "one-to-one" },
+    { from: "PDF", relation: "potentialAction (DownloadAction)", to: "PDF", cardinality: "self (download target)" },
+    { from: "API Endpoint", relation: "redirects to (301)", to: "Dataset", cardinality: "many-to-one" },
+    { from: "Dataset", relation: "creator / publisher", to: "Organization", cardinality: "many-to-one" },
+    { from: "*", relation: "isPartOf", to: "Website", cardinality: "many-to-one (every page)" },
+    { from: "*", relation: "publisher", to: "Organization", cardinality: "many-to-one (every page)" },
+  ],
+
+  // 3. Internal linking map — same edges as relationshipMap, regrouped by
+  // entity so a consumer can look up "what does a Week page link to / get
+  // linked from" in one place instead of scanning the whole edge list.
+  internalLinkingMap: {
+    Week: { linksTo: ["Year"], linkedFrom: ["Year (ItemList)", "Month (ItemList)", "Holiday (mentions)"] },
+    Month: { linksTo: ["Quarter", "Year", "Holiday (mentions)", "PDF"], linkedFrom: ["Quarter (hasPart)", "Year (hasPart)", "Working Day monthly", "Holiday (mentions)"] },
+    Quarter: { linksTo: ["Year", "Month (hasPart)"], linkedFrom: ["Month", "Year (hasPart)"] },
+    Year: { linksTo: ["Month (hasPart)", "Quarter (hasPart)", "Week (ItemList)"], linkedFrom: ["Week", "Month", "Quarter", "Holiday hub", "Flag Day hub", "Working Day yearly", "Calendar"] },
+    "Holiday (hub)": { linksTo: ["Year", "Holiday individual (hasPart)"], linkedFrom: ["Holiday individual"] },
+    "Holiday (individual)": { linksTo: ["Holiday hub", "Week", "Month", "Year"], linkedFrom: ["Holiday hub (hasPart)"] },
+    "Flag Day (hub)": { linksTo: ["Year"], linkedFrom: [] },
+    "Working Day (yearly)": { linksTo: ["Year", "Working Day monthly (hasPart)"], linkedFrom: [] },
+    "Working Day (monthly)": { linksTo: ["Month", "Working Day yearly (hasPart)"], linkedFrom: ["Working Day yearly (hasPart)"] },
+    Calendar: { linksTo: ["Year", "Month (ItemList)", "PDF"], linkedFrom: [] },
+    PDF: { linksTo: [], linkedFrom: ["Week", "Month", "Calendar (associatedMedia)"] },
+    Dataset: { linksTo: ["Organization"], linkedFrom: ["API Endpoint (redirect)"] },
+    "API Endpoint": { linksTo: ["Dataset (301 redirect)"], linkedFrom: [] },
+  },
+
+  // 4. Knowledge graph structure — node/edge type summary plus a few
+  // multi-hop traversal paths useful for RAG-style context expansion
+  // (e.g. grounding a Week's answer with its Year and any Holiday in it).
+  graphStructure: {
+    nodeTypes: [
+      "Week", "Month", "Quarter", "Year", "Holiday", "Flag Day", "Working Day",
+      "Calendar", "PDF", "Dataset", "API Endpoint", "Website", "Organization",
+    ],
+    edgeTypes: ["isPartOf", "hasPart", "mentions", "mainEntity", "associatedMedia", "potentialAction", "redirects to", "creator/publisher"],
+    hierarchyRoot: "Year",
+    exampleTraversals: [
+      {
+        name: "Week context expansion",
+        path: ["Week", "isPartOf", "Year"],
+        use: "Ground a week-number answer with its containing year (e.g. '53-week year').",
+      },
+      {
+        name: "Month to quarter to year",
+        path: ["Month", "isPartOf", "Quarter", "isPartOf", "Year"],
+        use: "Resolve a month's fiscal quarter and year in two hops.",
+      },
+      {
+        name: "Holiday temporal grounding",
+        path: ["Holiday (individual)", "mentions", "Week/Month/Year"],
+        use: "Answer 'which week is Itsenäisyyspäivä in <year>' directly from the holiday page's own graph.",
+      },
+      {
+        name: "Year to full holiday list",
+        path: ["Year", "isPartOf (reverse)", "Holiday (hub)", "hasPart", "Holiday (individual) x15"],
+        use: "Enumerate every named holiday page for a given year.",
+      },
+      {
+        name: "Dataset to developer alias",
+        path: ["Dataset", "redirects to (reverse)", "API Endpoint"],
+        use: "Find the /api/ alias for a given /data/ family.",
+      },
+    ],
+  },
+});
+feedFileCount += 1;
+
 console.log(`generated ${feedFileCount} JSON feed files under dist/data/ (2020-${currentYear + 9})`);
 
 // Generate sitemap.xml with a fresh <lastmod> and current-year page entries.
@@ -2387,14 +3218,18 @@ const lastmodFor = (p) => {
   if (m && Number(m[1]) < currentYear) return `${m[1]}-12-31`;
   return today;
 };
-const urlset = sitemapEntries(currentYear)
-  .filter((e) => isIndexable(e.path))
+const indexableEntries = sitemapEntries(currentYear).filter((e) => isIndexable(e.path));
+const urlset = indexableEntries
   .map((e) => {
     const loc = e.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${e.path}`;
     // Same ogImageUrlFor() the og:image override and ImageObject schema use
     // — an indexable page with a dedicated image gets an <image:image> entry
-    // here too, the sitemap's own image-discovery extension.
+    // here too, the sitemap's own image-discovery extension. The sitemap
+    // image extension explicitly allows more than one <image:image> per
+    // <url>, so the Discover image (when this page has one) is a second,
+    // additive entry — not a replacement of the OG one.
     const img = ogImageUrlFor(e.path);
+    const discoverImg = discoverImageUrlFor(e.path);
     return [
       "  <url>",
       `    <loc>${loc}</loc>`,
@@ -2402,24 +3237,272 @@ const urlset = sitemapEntries(currentYear)
       `    <changefreq>${e.changefreq}</changefreq>`,
       `    <priority>${e.priority}</priority>`,
       ...(img ? [`    <image:image><image:loc>${img}</image:loc></image:image>`] : []),
+      ...(discoverImg ? [`    <image:image><image:loc>${discoverImg}</image:loc></image:image>`] : []),
       "  </url>",
     ].join("\n");
   })
   .join("\n");
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urlset}\n</urlset>\n`;
+// The PDF twin of each indexable full-year /kalenteri-<year> page gets its
+// own <url> entry — a PDF is a real, independently indexable document (Google
+// crawls and ranks PDFs directly), not a sub-resource of the HTML page the
+// way the <image:image> extension above treats OG images. Tied to the same
+// isIndexable() gate as the HTML page itself: a PDF for a noindexed archive
+// year isn't worth a sitemap entry any more than that year's HTML page is.
+const pdfUrlset = indexableEntries
+  .filter((e) => /^\/kalenteri-\d+$/.test(e.path))
+  .map((e) => {
+    const year = e.path.match(/\d+/)[0];
+    const loc = `${SITE_URL}${calendarPdfPath(year)}`;
+    return [
+      "  <url>",
+      `    <loc>${loc}</loc>`,
+      `    <lastmod>${lastmodFor(e.path)}</lastmod>`,
+      `    <changefreq>${e.changefreq}</changefreq>`,
+      `    <priority>${e.priority}</priority>`,
+      "  </url>",
+    ].join("\n");
+  })
+  .join("\n");
+// Same reasoning as pdfUrlset above, one level down: the PDF twin of each
+// indexable /viikko-<w>-<y> page.
+const weekPdfUrlset = indexableEntries
+  .filter((e) => /^\/viikko-\d+-\d+$/.test(e.path))
+  .map((e) => {
+    const [, week, year] = e.path.match(/^\/viikko-(\d+)-(\d+)$/);
+    const loc = `${SITE_URL}${weekPdfPath(week, year)}`;
+    return [
+      "  <url>",
+      `    <loc>${loc}</loc>`,
+      `    <lastmod>${lastmodFor(e.path)}</lastmod>`,
+      `    <changefreq>${e.changefreq}</changefreq>`,
+      `    <priority>${e.priority}</priority>`,
+      "  </url>",
+    ].join("\n");
+  })
+  .join("\n");
+// Same reasoning again, for /kuukausi-<m>-<y>.
+const monthPdfUrlset = indexableEntries
+  .filter((e) => /^\/kuukausi-\d+-\d+$/.test(e.path))
+  .map((e) => {
+    const [, month, year] = e.path.match(/^\/kuukausi-(\d+)-(\d+)$/);
+    const loc = `${SITE_URL}${monthPdfPath(month, year)}`;
+    return [
+      "  <url>",
+      `    <loc>${loc}</loc>`,
+      `    <lastmod>${lastmodFor(e.path)}</lastmod>`,
+      `    <changefreq>${e.changefreq}</changefreq>`,
+      `    <priority>${e.priority}</priority>`,
+      "  </url>",
+    ].join("\n");
+  })
+  .join("\n");
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urlset}\n${pdfUrlset}\n${weekPdfUrlset}\n${monthPdfUrlset}\n</urlset>\n`;
 fs.writeFileSync(path.join(distDir, "sitemap.xml"), sitemap);
 console.log(
-  `generated sitemap.xml (${sitemapEntries(currentYear).filter((e) => isIndexable(e.path)).length} indexable urls of ${sitemapEntries(currentYear).length} prerendered, lastmod ${today})`,
+  `generated sitemap.xml (${indexableEntries.length} indexable urls + ${indexableEntries.filter((e) => /^\/kalenteri-\d+$/.test(e.path)).length} calendar PDFs + ${indexableEntries.filter((e) => /^\/viikko-\d+-\d+$/.test(e.path)).length} week PDFs + ${indexableEntries.filter((e) => /^\/kuukausi-\d+-\d+$/.test(e.path)).length} month PDFs, of ${sitemapEntries(currentYear).length} prerendered, lastmod ${today})`,
 );
 
-// Generate llms-full.txt from the FAQ single-source so AI ingestion always
-// matches the visible /ukk page and the FAQPage JSON-LD.
+// Generate llms-full.txt: a comprehensive English-language reference for AI
+// answer engines, crawlers and RAG systems (site structure, URL patterns,
+// data feeds, PDFs), followed by the full Finnish FAQ dump. The FAQ section
+// stays sourced from faqCategories/faqs so it can never drift from the
+// visible /ukk page and its FAQPage JSON-LD. Every fact and URL pattern
+// below is derived from the same single-source-of-truth modules the live
+// site itself renders from (HOLIDAY_DEFINITIONS, flagDaysInYear,
+// DATA_FEED_FAMILIES, seo.js path builders) rather than restated by hand.
+const llY = currentYear;
+const llWeek = 32;
+const llMonth = 8;
+const llQuarter = 3;
+
+const llHolidayLines = HOLIDAY_DEFINITIONS.map(
+  (h) =>
+    `  - ${h.displayName} — /pyhat-${llY}/${h.slug} — ${h.kind}. ${h.rule}`,
+).join("\n");
+
+const llFlagDays = [
+  ...new Map(flagDaysInYear(llY).map((f) => [f.name, f])).values(),
+];
+const llFlagDayLines = llFlagDays
+  .map(
+    (f) =>
+      `  - ${f.name}${f.altName ? ` (also known as: ${f.altName})` : ""} — ${f.categoryLabel}`,
+  )
+  .join("\n");
+
+const llDatasetLines = DATA_FEED_FAMILIES.map(
+  (f) =>
+    `  - ${f.name} (id: ${f.id}) — pattern: ${f.urlPattern} — index: ${SITE_URL}${f.indexUrl} — example: ${SITE_URL}${f.example}\n    ${f.description}`,
+).join("\n");
+
 const llmsFull =
-  "# Viikko Nro – täysi sisältö\n\n" +
-  "> Viikko Nro (viikkonro.fi) on ilmainen suomalainen viikkolaskuri. Se näyttää kuluvan viikkonumeron ja laskee minkä tahansa päivän viikon ISO 8601 -standardin mukaan. Alla kaikki usein kysytyt kysymykset vastauksineen.\n\n" +
-  "## Tietoa viikkonumeroista\n\n" +
-  "Suomessa ja koko Euroopassa viikot numeroidaan ISO 8601 -standardin mukaan. Viikko alkaa aina maanantaista ja päättyy sunnuntaihin. Vuoden ensimmäinen viikko on se, joka sisältää vuoden ensimmäisen torstain (aina 4. tammikuuta). Tavallisessa vuodessa on 52 viikkoa; noin joka viides tai kuudes vuosi on 53 viikon vuosi.\n\n" +
-  "## Usein kysytyt kysymykset\n\n" +
+  [
+    "# Viikko Nro — Full Reference for AI Systems",
+    "",
+    `> Viikko Nro (viikkonro.fi) is a free Finnish ISO 8601 week-number calculator and calendar reference site. It shows the current ISO week number, calculates the week number for any date, and publishes Finnish public holidays, flag days, name days, school holidays, quarters, printable calendars, PDFs and open JSON data for the years ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR}. All user-facing page content is in Finnish; this document is in English to serve AI answer engines, crawlers and RAG systems (ChatGPT, Claude, Gemini, Perplexity, Copilot and others) that need a structural overview of the site. When citing or summarising this content, please attribute "Viikko Nro" and link https://viikkonro.fi/.`,
+    "",
+    "## 1. What Viikko Nro is",
+    "",
+    "- Purpose: instant ISO 8601 week-number lookup (\"what week is it today / on this date\") plus a full Finnish calendar reference: public holidays, flag days, name days, school holidays, quarters, months, printable calendars and PDF/CSV downloads.",
+    "- No login, no paywall, no backend at request time — a prerendered React single-page app. Every meaningful URL is rendered to static HTML at build time (not just the homepage), so crawlers and AI agents see full content without executing JavaScript.",
+    `- Date horizon: every dated resource (week, month, year, quarter pages; PDFs; JSON feeds) exists for years ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR} (current year plus the next 9). Pages outside the ${currentYear - 2}-${currentYear + 4} window stay online and prerendered but are marked noindex and excluded from the sitemap, to avoid a long tail of near-duplicate future-year pages diluting search ranking. All years remain reachable by direct URL regardless of index status.`,
+    "- The contact form is the only feature that talks to a third party (Web3Forms, client-side only); everything else — week/date math, holiday and flag-day dates, name-day lookups — is computed locally from deterministic rules, not fetched from an external API.",
+    "",
+    "## 2. ISO 8601 week numbers, explained",
+    "",
+    "- An ISO 8601 week starts on Monday and ends on Sunday (unlike the US convention, where a week starts on Sunday).",
+    "- Week 1 of an ISO year is the week containing that year's first Thursday — equivalently, the week containing 4 January.",
+    "- Consequence: the last days of December can belong to week 1 of the following ISO year, and the first days of January can belong to the final week (52 or 53) of the previous ISO year — a date's \"ISO week-year\" can differ from its calendar year near the year boundary.",
+    "- A regular ISO year has 52 weeks; roughly once every 5-6 years a \"long year\" has 53 weeks instead (when 1 January falls on a Thursday, or on a Wednesday in a leap year). 2020, 2026 and 2032 are 53-week years.",
+    "- Further reading on the site itself: /mika-on-viikkonumero (what a week number is), /viikko-alkaa-maanantaista (why the week starts on Monday, incl. the Thursday rule), /kuinka-monta-viikkoa-vuodessa (52 vs. 53 weeks), /suomi-vs-usa-viikkonumerot (Finland/ISO vs. US Sunday-start convention, with real computed example dates).",
+    "",
+    "## 3. Finland-specific calendar rules",
+    "",
+    `Public holidays (pyhäpäivät): Finland observes 13 statutory public holidays (arkipyhät) plus 2 widely observed non-statutory "eve days" (aatot: Juhannusaatto, Jouluaatto) — 15 named days total, listed on /pyhapaivat-${llY} (the yearly hub) with one dedicated landing page per holiday at /pyhat-{year}/{slug}:`,
+    llHolidayLines,
+    "Only the 13 statutory holidays reduce the working-day counts published across the site (week/month/quarter/year working-day figures); the 2 eve days and all flag days do not.",
+    "",
+    `Flag days (liputuspäivät): Finland has 14 recognised flag-flying days, listed on /liputuspaivat-${llY}, in three categories — officially decreed civic/cultural days honouring a named person or institution, two days established by tradition (Mother's Day, Father's Day), and two international observance days Finland also flags for:`,
+    llFlagDayLines,
+    "A flag day can coincide with a public holiday (e.g. Itsenäisyyspäivä / Independence Day, 6 December, is both a statutory holiday and a flag day).",
+    "",
+    "Name days (nimipäivät): the Finnish almanac assigns one or more personal first names to almost every calendar date. Exposed via /nimipaivat/tanaan (today's name days), /nimipaiva/{name} (lookup by name, e.g. /nimipaiva/matti) and /nimipaivat/{month}-{day} (lookup by date, e.g. /nimipaivat/8-8).",
+    "",
+    "School holidays (koululomat): Finnish school holiday weeks — chiefly the February/March ski holiday (hiihtoloma, week varies by municipality) and the autumn holiday (syysloma) — are documented per year at /koululomat-{year}, sourced from official municipal/regional announcements and broken down by city.",
+    "",
+    "## 4. Page types and URL patterns",
+    "",
+    "All dynamic pages use single-segment, keyword-rich Finnish URL slugs (no query strings, no nested path parameters). {year}, {month}, {week}, {quarter} are always plain integers unless noted.",
+    "",
+    "Week pages",
+    "  /viikko-{week}-{year}  — e.g. /viikko-32-2026",
+    "  One ISO week: start/end date, weekday-by-weekday dates, working-day count, holidays/flag days falling in that week, quarter and season context, downloadable PDF.",
+    "",
+    "Month pages",
+    "  /kuukausi-{month}-{year}  — e.g. /kuukausi-8-2026",
+    "  One calendar month: which ISO weeks fall in it, working/weekend-day counts, holidays/flag days, quarter context, downloadable PDF.",
+    "",
+    "Year pages",
+    "  /vuosi-{year}  — e.g. /vuosi-2026",
+    "  Full-year overview: total ISO weeks (52 or 53), first/last ISO week, working-day and weekend-day totals, full holiday and flag-day lists.",
+    "",
+    "Quarter pages",
+    "  /q{1-4}-{year}  — e.g. /q3-2026",
+    "  One calendar quarter: month and week range, working-day count, holidays falling in it.",
+    "",
+    "Calendar pages",
+    "  /kalenteri-{year}  — full-year calendar grid",
+    "  /kalenteri-{year}-alkuvuosi | /kalenteri-{year}-loppuvuosi  — first-half / second-half-year calendar grid (H1/H2)",
+    "  /tulostettava-kalenteri-{year}  — print-optimised full A4 calendar grid, with PDF and Excel-compatible CSV export",
+    "  /tulosta-{year}  — printable plain week-number list (all weeks of the year) with CSV export (a simpler, list-form alternative to the calendar grid)",
+    "",
+    "Holiday pages",
+    `  /pyhapaivat-{year}  — yearly hub listing all 15 public holidays`,
+    "  /pyhat-{year}/{slug}  — one landing page per named holiday (15 slugs, see section 3)",
+    "",
+    "Flag day page",
+    `  /liputuspaivat-{year}  — yearly hub listing all 14 flag days (no individual flag-day landing pages at present)`,
+    "",
+    "Working-day pages",
+    "  /tyopaivat-{year}  — working-day count and breakdown for the whole year",
+    "  /tyopaivat-{monthSlug}-{year}  — working-day count for one month, e.g. /tyopaivat-elokuu-2026 (monthSlug is the Finnish month name: tammikuu, helmikuu, maaliskuu, huhtikuu, toukokuu, kesäkuu, heinäkuu, elokuu, syyskuu, lokakuu, marraskuu, joulukuu)",
+    "",
+    "School holiday page",
+    "  /koululomat-{year}",
+    "",
+    "Name day pages",
+    "  /nimipaivat/tanaan",
+    "  /nimipaiva/{name}",
+    "  /nimipaivat/{month}-{day}",
+    "",
+    "Calculators (interactive tools, also usable by reading their prerendered default state)",
+    "  /laskurit  — hub page linking all calculators",
+    "  /paivamaara-viikoksi  — enter any date, get its ISO week number",
+    "  /viikko-paivamaaraksi  — enter a week number and year, get its start/end dates",
+    "  /tyopaivalaskuri  — count working days between two dates",
+    "  /paivien-erotus  — count total days between two dates",
+    "  /viikonpaiva  — look up the weekday of any date (shareable result)",
+    "",
+    "Explainer / evergreen articles",
+    "  /mika-on-viikkonumero, /viikko-alkaa-maanantaista, /kuinka-monta-viikkoa-vuodessa, /suomi-vs-usa-viikkonumerot, /mika-kuukausi-nyt, /mika-vuosi-nyt",
+    "",
+    "Reference / meta pages",
+    "  /  — homepage: current ISO week number and a date-to-week lookup",
+    "  /en  — the one English-language page (mirrors the homepage's current-week facts)",
+    "  /ukk  — full FAQ page (Finnish; same content as the FAQ section of this document)",
+    "  /avoin-data  — documentation for the /data/ JSON feeds and the /api/ alias",
+    "  /tietoa-meista, /ota-yhteytta, /tietosuoja, /kayttoehdot  — about, contact, privacy policy, terms",
+    "",
+    "## 5. API and data endpoints",
+    "",
+    `All /data/ feeds are static JSON, no auth, no rate limit, CORS-open (Access-Control-Allow-Origin: *), covering ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR}. Full documentation with field-level schemas: ${SITE_URL}/avoin-data.`,
+    "",
+    llDatasetLines,
+    "",
+    `  - Feed index (all datasets and URL patterns): ${SITE_URL}/data/index.json`,
+    `  - Feed index as schema.org/Dataset JSON-LD: ${SITE_URL}/data/dataset.json`,
+    `  - Knowledge graph (entity map, relationship map, internal linking map, graph structure across all 11 entity types below): ${SITE_URL}/data/knowledge-graph.json`,
+    `  - Every feed carries a "schemaVersion" field, currently "${FEED_SCHEMA_VERSION}". The version only increments when a field is removed or renamed; adding a new field is not a breaking change.`,
+    "",
+    `Developer-friendly aliases (301 redirects to the canonical /data/ URLs above, identical content):`,
+    `  /api/week/{week}/{year}.json    -> /data/week/{year}/{week}.json     — e.g. ${SITE_URL}/api/week/${llWeek}/${llY}.json`,
+    `  /api/month/{month}/{year}.json  -> /data/month/{year}/{month}.json   — e.g. ${SITE_URL}/api/month/${llMonth}/${llY}.json`,
+    `  /api/year/{year}.json           -> /data/year/{year}.json            — e.g. ${SITE_URL}/api/year/${llY}.json`,
+    `  /api/holiday/{slug}/{year}.json -> /data/holiday/{year}/{slug}.json  — e.g. ${SITE_URL}/api/holiday/${HOLIDAY_DEFINITIONS[11].slug}/${llY}.json`,
+    "",
+    "## 6. PDF resources",
+    "",
+    `  /pdf/kalenteri-{year}.pdf         — full-year printable calendar, e.g. ${SITE_URL}${calendarPdfPath(llY)}`,
+    `  /pdf/viikko-{week}-{year}.pdf     — single-week fact sheet, e.g. ${SITE_URL}${weekPdfPath(llWeek, llY)}`,
+    `  /pdf/kuukausi-{month}-{year}.pdf  — single-month calendar + fact sheet, e.g. ${SITE_URL}${monthPdfPath(llMonth, llY)}`,
+    "  Generated with pdfkit (no headless browser), one file per year/week/month across the full data horizon, linked from the corresponding HTML page and from the sitemap.",
+    "",
+    "## 7. Images",
+    "",
+    "  /og/*.png        — Open Graph / social-sharing images, one per indexable page.",
+    "  /discover/*.png  — a separate image family for Google Discover: 1200x675 (16:9), calendar-grid visuals rather than bold text, for week/month/year/holiday pages. Declared via schema.org ImageObject nodes and the sitemap's <image:image> extension.",
+    "",
+    "## 8. Semantic relationships between entities",
+    "",
+    "  - A Week belongs to exactly one ISO week-year (which can differ from the calendar year of its individual days near a year boundary), to the Quarter and Month containing its Monday, and contains exactly 7 days.",
+    "  - A Month belongs to exactly one Quarter and one Year, and overlaps 4-6 ISO weeks.",
+    "  - A Quarter belongs to exactly one Year and contains exactly 3 Months.",
+    "  - A Holiday occurs on exactly one date and therefore falls within exactly one Week, Month, Quarter and Year; it is either official (statutory, reduces working-day counts) or an unofficial eve day (does not).",
+    "  - A FlagDay occurs on exactly one date and may or may not coincide with a Holiday on the same date.",
+    "  - Working-day counts for a Week/Month/Quarter/Year are calendar days minus Saturdays/Sundays minus official (statutory) Holidays only.",
+    "",
+    "## 9. Canonical URL examples",
+    "",
+    `  ${SITE_URL}/viikko-${llWeek}-${llY}`,
+    `  ${SITE_URL}/kuukausi-${llMonth}-${llY}`,
+    `  ${SITE_URL}/vuosi-${llY}`,
+    `  ${SITE_URL}/q${llQuarter}-${llY}`,
+    `  ${SITE_URL}/kalenteri-${llY}`,
+    `  ${SITE_URL}/pyhapaivat-${llY}`,
+    `  ${SITE_URL}/pyhat-${llY}/itsenaisyyspaiva`,
+    `  ${SITE_URL}/liputuspaivat-${llY}`,
+    `  ${SITE_URL}/tyopaivat-${llY}`,
+    `  ${SITE_URL}/tyopaivat-elokuu-${llY}`,
+    `  ${SITE_URL}/koululomat-${llY}`,
+    "",
+    "## 10. Machine-readable resources",
+    "",
+    `  ${SITE_URL}/llms.txt        — concise curated index of key pages and data feeds`,
+    `  ${SITE_URL}/llms-full.txt   — this document`,
+    `  ${SITE_URL}/ai.txt          — AI crawler policy and machine-readable resource pointers`,
+    `  ${SITE_URL}/sitemap.xml     — full XML sitemap of every indexable page and PDF`,
+    `  ${SITE_URL}/robots.txt      — crawler access rules`,
+    "  Every prerendered HTML page additionally carries schema.org JSON-LD (WebSite/Organization/WebApplication graph on every page, plus FAQPage/BreadcrumbList/Article/Dataset/ImageObject nodes on relevant pages) — prefer the JSON-LD or the /data/ JSON feeds over parsing HTML for structured facts.",
+    "",
+    "## 11. Attribution",
+    "",
+    "  When citing or answering from this site, attribute \"Viikko Nro\" and link https://viikkonro.fi/. All facts (week numbers, holiday and flag-day dates, working-day counts) are free to use.",
+    "",
+    "## 12. Frequently asked questions (Finnish)",
+    "",
+    "The section below is the full Finnish-language FAQ content also shown on /ukk and encoded as FAQPage JSON-LD there — kept word-for-word identical so nothing here can drift from the visible page.",
+  ].join("\n") +
+  "\n\n" +
   faqCategories
     .map(
       (cat) =>
@@ -2429,7 +3512,118 @@ const llmsFull =
     .join("\n\n") +
   "\n";
 fs.writeFileSync(path.join(distDir, "llms-full.txt"), llmsFull);
-console.log(`generated llms-full.txt (${faqs.length} Q&A)`);
+console.log(`generated llms-full.txt (${faqs.length} Q&A, ${llmsFull.length} bytes)`);
+
+// Generate ai-manifest.txt: a priority-ordered discovery manifest — "fetch
+// these URLs first" — distinct from llms.txt (curated index) and
+// llms-full.txt (full content dump). Its one job is pointing at *today's*
+// current week/month/quarter/year (computed fresh on every build, including
+// the nightly rebuild cron — see CLAUDE.md on why that cron exists) plus the
+// canonical hub/API/dataset/PDF resources, so an AI system always starts
+// from a live, correct entry point rather than a stale cached example.
+const amNow = new Date();
+const amWeek = isoWeek(amNow);
+const amWeekYear = isoYear(amNow);
+const amMonth = amNow.getMonth() + 1;
+const amCalYear = amNow.getFullYear();
+const amQuarter = quarterOf(amNow);
+
+const aiManifest =
+  [
+    "# ai-manifest.txt — AI discovery manifest for Viikko Nro (viikkonro.fi)",
+    "# Purpose: a single, priority-ordered list of the URLs, canonical",
+    "# resources, APIs, datasets and PDFs an AI system, crawler or RAG",
+    "# pipeline should fetch first to understand and cite this site.",
+    "# Entries 2-5 (current week/month/quarter/year) are computed fresh on",
+    "# every build, including a daily rebuild, so they are never more than a",
+    "# day stale. For the full site structure and entity graph, see",
+    `# ${SITE_URL}/llms-full.txt and ${SITE_URL}/data/knowledge-graph.json.`,
+    `# Generated: ${today}`,
+    '# Attribution: "Viikko Nro" — https://viikkonro.fi/',
+    "",
+    "## Priority order",
+    "",
+    "1. Homepage",
+    `   ${SITE_URL}/`,
+    "",
+    `2. Current week (viikko ${amWeek}/${amWeekYear})`,
+    `   ${SITE_URL}/viikko-${amWeek}-${amWeekYear}`,
+    "",
+    `3. Current month (${M_FULL[amMonth - 1]} ${amCalYear})`,
+    `   ${SITE_URL}/kuukausi-${amMonth}-${amCalYear}`,
+    "",
+    `4. Current year (${amCalYear})`,
+    `   ${SITE_URL}/vuosi-${amCalYear}`,
+    "",
+    `5. Current quarter (Q${amQuarter} ${amCalYear})`,
+    `   ${SITE_URL}/q${amQuarter}-${amCalYear}`,
+    "",
+    "6. Holiday hubs",
+    `   ${SITE_URL}/pyhapaivat-${amCalYear}  (this year)`,
+    `   ${SITE_URL}/pyhapaivat-${amCalYear + 1}  (next year)`,
+    `   Pattern: /pyhapaivat-{year}, one hub per year, ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR}. Each hub links ${HOLIDAY_DEFINITIONS.length} individual holiday pages at /pyhat-{year}/{slug}.`,
+    "",
+    "7. Working-day hubs",
+    `   ${SITE_URL}/tyopaivat-${amCalYear}  (this year)`,
+    `   Pattern: /tyopaivat-{year} (yearly hub), /tyopaivat-{monthSlug}-{year} (12 monthly pages per year, monthSlug e.g. "${M_SLUG[amMonth - 1]}").`,
+    "",
+    "8. Flag-day hubs",
+    `   ${SITE_URL}/liputuspaivat-${amCalYear}  (this year)`,
+    `   Pattern: /liputuspaivat-{year}, one hub per year, listing all 14 flag days.`,
+    "",
+    "9. Dataset endpoints",
+    `   ${SITE_URL}/data/index.json          — index of all dataset families`,
+    `   ${SITE_URL}/data/dataset.json        — same index as schema.org/Dataset JSON-LD`,
+    `   ${SITE_URL}/data/knowledge-graph.json — entity map, relationship map, internal linking map, graph structure`,
+    ...DATA_FEED_FAMILIES.map(
+      (f) => `   ${SITE_URL}${f.indexUrl}  — ${f.name} (pattern: ${f.urlPattern})`,
+    ),
+    "",
+    "10. API endpoints (developer-friendly aliases, 301 redirect to the /data/ URLs above)",
+    `   ${SITE_URL}/api/week/{week}/{year}.json`,
+    `   ${SITE_URL}/api/month/{month}/{year}.json`,
+    `   ${SITE_URL}/api/year/{year}.json`,
+    `   ${SITE_URL}/api/holiday/{slug}/{year}.json`,
+    "",
+    "## Canonical resources",
+    "",
+    `   ${SITE_URL}/llms.txt        — concise curated index`,
+    `   ${SITE_URL}/llms-full.txt   — full site-structure reference`,
+    `   ${SITE_URL}/ai.txt          — AI crawler policy and resource pointers`,
+    `   ${SITE_URL}/sitemap.xml     — full XML sitemap`,
+    `   ${SITE_URL}/robots.txt      — crawler access rules`,
+    `   ${SITE_URL}/avoin-data      — human-readable docs for every /data/ feed`,
+    "",
+    "## PDF resources",
+    "",
+    `   ${SITE_URL}${calendarPdfPath(amCalYear)}  — full-year calendar (pattern: /pdf/kalenteri-{year}.pdf)`,
+    `   ${SITE_URL}${weekPdfPath(amWeek, amWeekYear)}  — current week (pattern: /pdf/viikko-{week}-{year}.pdf)`,
+    `   ${SITE_URL}${monthPdfPath(amMonth, amCalYear)}  — current month (pattern: /pdf/kuukausi-{month}-{year}.pdf)`,
+    `   One PDF per year/week/month, ${PRERENDER_MIN_YEAR}-${PRERENDER_MAX_YEAR}.`,
+    "",
+    "## Weekly pages",
+    "",
+    `   Pattern: /viikko-{week}-{year}  — e.g. ${SITE_URL}/viikko-${amWeek}-${amWeekYear}`,
+    "   52 or 53 per year (ISO 8601). One page per ISO week: dates, working-day count, holidays/flag days, downloadable PDF.",
+    "",
+    "## Monthly pages",
+    "",
+    `   Pattern: /kuukausi-{month}-{year}  — e.g. ${SITE_URL}/kuukausi-${amMonth}-${amCalYear}`,
+    "   12 per year. One page per calendar month: ISO weeks it spans, working-day count, holidays/flag days, downloadable PDF.",
+    "",
+    "## Quarterly pages",
+    "",
+    `   Pattern: /q{1-4}-{year}  — e.g. ${SITE_URL}/q${amQuarter}-${amCalYear}`,
+    "   4 per year. One page per fiscal quarter: month and week range, working-day count, holidays.",
+    "",
+    "## Holiday pages",
+    "",
+    `   Hub: /pyhapaivat-{year}  — e.g. ${SITE_URL}/pyhapaivat-${amCalYear}`,
+    `   Individual: /pyhat-{year}/{slug}  — e.g. ${SITE_URL}/pyhat-${amCalYear}/${HOLIDAY_DEFINITIONS[0].slug}`,
+    `   ${HOLIDAY_DEFINITIONS.length} named holidays per year: ${HOLIDAY_DEFINITIONS.map((h) => h.slug).join(", ")}.`,
+  ].join("\n") + "\n";
+fs.writeFileSync(path.join(distDir, "ai-manifest.txt"), aiManifest);
+console.log(`generated ai-manifest.txt (week ${amWeek}/${amWeekYear}, ${aiManifest.length} bytes)`);
 
 // public/robots.txt is copied verbatim by Vite and can't read env itself, so
 // its Sitemap: line is rewritten here to stay in sync with SITE_URL instead
@@ -2588,10 +3782,13 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
   console.log(`generated ${count} calendar OG images (dist/og/kalenteri-*.png)`);
 }
 
-// Per-page OG images for the four page families that previously had none and
-// fell back to the sitewide /og.png (wrong content for anything but today's
-// homepage): year (/vuosi-<year>), month (/kuukausi-<m>-<y>), week
-// (/viikko-<w>-<y>), and named-holiday (/pyhat-<y>/<slug>) pages. Same
+// Per-page OG images for every remaining indexable page family that
+// previously had none and fell back to the sitewide /og.png (wrong content
+// for anything but today's homepage): year (/vuosi-<year>), month
+// (/kuukausi-<m>-<y>), week (/viikko-<w>-<y>), named-holiday
+// (/pyhat-<y>/<slug>), holiday hub (/pyhapaivat-<y>), flag-day hub
+// (/liputuspaivat-<y>), working-days year (/tyopaivat-<y>) and month
+// (/tyopaivat-<slug>-<y>), and fiscal quarter (/q<1-4>-<y>) pages. Same
 // gradient/kicker/accent template as the homepage's and kalenteri's images
 // (ogCard(), defined above), same 2020..currentYear+9 rolling horizon as
 // every other per-year asset in this file, and the same filename ogImageUrlFor()
@@ -2668,11 +3865,227 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
       fs.writeFileSync(path.join(distDir, "og", `pyhat-${y}-${slug}.png`), buf);
       count += 1;
     }
+
+    // /og/pyhapaivat-<year>.png — the holiday-hub page, distinct from the
+    // per-holiday pyhat-<year>-<slug> images above.
+    {
+      const officialCount = holidaysInYear(y).filter((hd) => hd.official).length;
+      const card = ogCard(h, {
+        big: "Pyhäpäivät",
+        accent: String(y),
+        tagline: `${officialCount} virallista pyhäpäivää`,
+      });
+      const res = new ImageResponse(card, { width: 1200, height: 630 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(distDir, "og", `pyhapaivat-${y}.png`), buf);
+      count += 1;
+    }
+
+    // /og/liputuspaivat-<year>.png
+    {
+      const flagCount = flagDaysInYear(y).length;
+      const card = ogCard(h, {
+        big: "Liputuspäivät",
+        accent: String(y),
+        tagline: `${flagCount} liputuspäivää`,
+      });
+      const res = new ImageResponse(card, { width: 1200, height: 630 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(distDir, "og", `liputuspaivat-${y}.png`), buf);
+      count += 1;
+    }
+
+    // /og/tyopaivat-<year>.png — the year-level working-days hub.
+    {
+      const yStats = yearStats(y);
+      const card = ogCard(h, {
+        big: "Työpäivät",
+        accent: String(y),
+        tagline: `${yStats.working} työpäivää`,
+      });
+      const res = new ImageResponse(card, { width: 1200, height: 630 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(distDir, "og", `tyopaivat-${y}.png`), buf);
+      count += 1;
+    }
+
+    // /og/tyopaivat-<slug>-<year>.png, one per calendar month — filename
+    // mirrors the route's own M_SLUG-based path exactly (/tyopaivat-<slug>-
+    // <year>), same reasoning as every other family here: the URL and the
+    // image filename are never two independently-chosen strings.
+    for (let m = 1; m <= 12; m += 1) {
+      const mStats = monthStats(y, m);
+      const card = ogCard(h, {
+        big: M_FULL[m - 1],
+        accent: String(y),
+        tagline: `${mStats.working} työpäivää`,
+      });
+      const res = new ImageResponse(card, { width: 1200, height: 630 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(distDir, "og", `tyopaivat-${M_SLUG[m - 1]}-${y}.png`), buf);
+      count += 1;
+    }
+
+    // /og/q<1-4>-<year>.png, one per fiscal quarter
+    for (let q = 1; q <= 4; q += 1) {
+      const qStats = quarterStats(y, q);
+      const card = ogCard(h, {
+        big: `Q${q}`,
+        accent: String(y),
+        tagline: `${qStats.weeks.length} viikkoa · ${qStats.working} työpäivää`,
+      });
+      const res = new ImageResponse(card, { width: 1200, height: 630 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(distDir, "og", `q${q}-${y}.png`), buf);
+      count += 1;
+    }
   }
-  console.log(`generated ${count} per-page OG images (dist/og/{vuosi,kuukausi,viikko,pyhat}-*.png)`);
+  console.log(`generated ${count} per-page OG images (dist/og/{vuosi,kuukausi,viikko,pyhat,pyhapaivat,liputuspaivat,tyopaivat,q1-4}-*.png)`);
 }
 
-// Downloadable per-year PDF calendars (dist/pdfs/kalenteri-<year>.pdf), one
+// Discover images (dist/discover/*.png) — the parallel image family, built
+// entirely with discoverMonthGrid()/discoverCanvas() above, never touching
+// ImageResponse calls or file paths belonging to the OG block above it. Same
+// 2020..currentYear+9 rolling horizon as every other per-year asset. cellSize
+// values below are the largest that fit a 6-row month inside a 1200x675
+// canvas with discoverCanvas()'s own padding — computed once, not eyeballed:
+// a 6-row month needs roughly 6.43*cellSize of vertical space (6 day-rows +
+// the month-label row), and the canvas leaves ~563px of usable height after
+// padding and a caption line.
+{
+  const h = React.createElement;
+  const discoverDir = path.join(distDir, "discover");
+  fs.mkdirSync(discoverDir, { recursive: true });
+  let discoverCount = 0;
+  const HERO_CELL = 76; // week/month/holiday images: one month, large
+  const MINI_CELL = 24; // year image: 12 months, small
+
+  function captionLine(h, text) {
+    return h(
+      "div",
+      { style: { display: "flex", fontSize: 30, fontWeight: 600, color: DISCOVER_COLORS.inkSoft, marginBottom: 24 } },
+      text,
+    );
+  }
+
+  for (let y = PRERENDER_MIN_YEAR; y <= PRERENDER_MAX_YEAR; y += 1) {
+    // /discover/vuosi-<year>.png — full 12-month overview, the one
+    // requirement's own example calls "Full-year overview".
+    {
+      const monthRows = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]];
+      const card = discoverCanvas(h, [
+        h(
+          "div",
+          { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" } },
+          captionLine(h, String(y)),
+          h(
+            "div",
+            { style: { display: "flex", flexDirection: "column" } },
+            ...monthRows.map((rowMonths, i) =>
+              h(
+                "div",
+                { key: String(i), style: { display: "flex", flexDirection: "row" } },
+                ...rowMonths.map((mi) =>
+                  h(
+                    "div",
+                    { key: String(mi), style: { display: "flex", margin: 10 } },
+                    discoverMonthGrid(h, { year: y, monthIndex: mi, cellSize: MINI_CELL, showMonthLabel: true }),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        discoverBrandMark(h),
+      ]);
+      const res = new ImageResponse(card, { width: 1200, height: 675 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(discoverDir, `vuosi-${y}.png`), buf);
+      discoverCount += 1;
+    }
+
+    // /discover/kuukausi-<month>-<year>.png — one month, no highlight (the
+    // whole grid IS the subject).
+    for (let m = 1; m <= 12; m += 1) {
+      const card = discoverCanvas(h, [
+        h(
+          "div",
+          { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" } },
+          captionLine(h, `${M_FULL[m - 1]} ${y}`),
+          discoverMonthGrid(h, { year: y, monthIndex: m - 1, cellSize: HERO_CELL, showMonthLabel: false }),
+        ),
+        discoverBrandMark(h),
+      ]);
+      const res = new ImageResponse(card, { width: 1200, height: 675 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(discoverDir, `kuukausi-${m}-${y}.png`), buf);
+      discoverCount += 1;
+    }
+
+    // /discover/viikko-<week>-<year>.png — that week's month, its own row
+    // highlighted by color (no "Viikko 32" giant text — the highlighted row
+    // *is* the answer).
+    const totalWeeks = weeksInIsoYear(y);
+    for (let w = 1; w <= totalWeeks; w += 1) {
+      const monday = mondayOf(w, y);
+      const monthIndex = monday.getMonth();
+      const monthYear = monday.getFullYear();
+      const card = discoverCanvas(h, [
+        h(
+          "div",
+          { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" } },
+          captionLine(h, `Viikko ${w} / ${y}`),
+          discoverMonthGrid(h, {
+            year: monthYear,
+            monthIndex,
+            cellSize: HERO_CELL,
+            showMonthLabel: true,
+            highlightWeek: { week: w, weekYear: y },
+          }),
+        ),
+        discoverBrandMark(h),
+      ]);
+      const res = new ImageResponse(card, { width: 1200, height: 675 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(discoverDir, `viikko-${w}-${y}.png`), buf);
+      discoverCount += 1;
+    }
+
+    // /discover/pyhat-<year>-<slug>.png — that holiday's month, the day
+    // itself highlighted with a filled accent circle. Same "never generate
+    // for a 404" discipline as the OG holiday images: skip anything
+    // holidayLinkPath()/holidayPageFor() can't resolve.
+    for (const hday of holidaysInYear(y)) {
+      const hpath = holidayLinkPath(hday.name, hday.date);
+      if (!hpath) continue;
+      const slug = hpath.split("/").pop();
+      const page = holidayPageFor(y, slug);
+      if (!page) continue;
+      const card = discoverCanvas(h, [
+        h(
+          "div",
+          { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" } },
+          captionLine(h, `${page.displayName} · ${y}`),
+          discoverMonthGrid(h, {
+            year: y,
+            monthIndex: hday.date.getMonth(),
+            cellSize: HERO_CELL,
+            showMonthLabel: true,
+            highlightDay: hday.date,
+          }),
+        ),
+        discoverBrandMark(h),
+      ]);
+      const res = new ImageResponse(card, { width: 1200, height: 675 });
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.writeFileSync(path.join(discoverDir, `pyhat-${y}-${slug}.png`), buf);
+      discoverCount += 1;
+    }
+  }
+  console.log(`generated ${discoverCount} Discover images (dist/discover/{vuosi,kuukausi,viikko,pyhat}-*.png)`);
+}
+
+// Downloadable per-year PDF calendars (dist/pdf/kalenteri-<year>.pdf), one
 // per year across the same 2020..currentYear+9 rolling horizon as the JSON
 // feeds and OG images above — driven by currentYear, so a new year is picked
 // up automatically on the next daily rebuild without a code change. Built
@@ -2795,19 +4208,23 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
     }
   }
 
-  function pdfHeader(doc, year) {
+  // title/subtitle default to exactly the calendar PDF's original hardcoded
+  // strings, so generateCalendarPdf()'s existing calls (unchanged below)
+  // produce byte-identical output — this generalization only adds a second
+  // caller (generateWeekPdf()), it doesn't alter the first one.
+  function pdfHeader(doc, year, { title = `Viikkokalenteri ${year}`, subtitle = "ISO 8601 -viikkonumerot, Suomen juhla- ja liputuspäivät" } = {}) {
     doc.font("Helvetica-Bold").fontSize(18).fillColor(PDF_COLORS.ink);
     doc.text("Viikko Nro", PDF_MARGIN, 40);
     doc.font("Helvetica").fontSize(9).fillColor(PDF_COLORS.accent);
     doc.text("viikkonro.fi", PDF_MARGIN, 60);
 
     doc.font("Helvetica-Bold").fontSize(20).fillColor(PDF_COLORS.ink);
-    doc.text(`Viikkokalenteri ${year}`, PDF_MARGIN, 40, {
+    doc.text(title, PDF_MARGIN, 40, {
       width: PDF_CONTENT_W,
       align: "right",
     });
     doc.font("Helvetica").fontSize(9.5).fillColor(PDF_COLORS.inkSoft);
-    doc.text("ISO 8601 -viikkonumerot, Suomen juhla- ja liputuspäivät", PDF_MARGIN, 64, {
+    doc.text(subtitle, PDF_MARGIN, 64, {
       width: PDF_CONTENT_W,
       align: "right",
     });
@@ -2820,7 +4237,9 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
       .stroke();
   }
 
-  function pdfFooter(doc, year, generatedOn) {
+  // `pagePath` defaults to the calendar's own path, same backward-
+  // compatibility reasoning as pdfHeader() above.
+  function pdfFooter(doc, year, generatedOn, pagePath = `/kalenteri-${year}`) {
     doc
       .moveTo(PDF_MARGIN, PDF_FOOTER_Y)
       .lineTo(PDF_PAGE_W - PDF_MARGIN, PDF_FOOTER_Y)
@@ -2829,7 +4248,7 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
       .stroke();
     doc.font("Helvetica").fontSize(7.5).fillColor(PDF_COLORS.inkSoft);
     doc.text(
-      `Viikko Nro · ${SITE_URL}/kalenteri-${year} · Luotu automaattisesti ${generatedOn}`,
+      `Viikko Nro · ${SITE_URL}${pagePath} · Luotu automaattisesti ${generatedOn}`,
       PDF_MARGIN,
       PDF_FOOTER_Y + 6,
       { width: PDF_CONTENT_W, align: "center" },
@@ -3013,14 +4432,335 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
     });
   }
 
-  const pdfDir = path.join(distDir, "pdfs");
+  // Single-page PDF for one ISO week (dist/pdf/viikko-<week>-<year>.pdf).
+  // Reuses generateCalendarPdf()'s exact helpers (pdfHeader/pdfFooter/
+  // pdfMmdd/PDF_COLORS/PDF_MARGIN/PDF_CONTENT_W/PDF_PAGE_W) and the same
+  // holidaysInYear()/flagDaysInYear()-backed data the live /viikko-<w>-<y>
+  // page and its FAQPage schema (weekFaqNodes()) already use, so the PDF
+  // can't disagree with either. A week's content fits one page — no need
+  // for generateCalendarPdf()'s two-page split.
+  function generateWeekPdf(week, year, outPath) {
+    const monday = mondayOf(week, year);
+    const sunday = addDays(monday, 6);
+    const thursday = addDays(monday, 3);
+    const weekHolidays = holidaysInWeekForPrerender(year, week);
+    const officialHolidays = weekHolidays.filter((hd) => hd.official);
+    const weekFlagDays = flagDaysInWeekForPrerender(year, week);
+    const workingDays = weekWorkingDaysCount(monday, officialHolidays);
+    const quarter = quarterOf(monday);
+    const season = SEASON_NOMINATIVE_FI[seasonIndexOf(thursday.getMonth())];
+    const isoLabel = isoWeekDateLabel(week, year);
+    const generatedOn = CONTENT_UPDATED;
+
+    const holidayMap = new Map(weekHolidays.map((hd) => [pdfMmdd(hd.date), hd]));
+    const flagMap = new Map(weekFlagDays.map((fd) => [pdfMmdd(fd.date), fd]));
+
+    const doc = new PDFDocument({
+      size: "A4",
+      margins: {
+        top: PDF_MARGIN,
+        bottom: PDF_MARGIN,
+        left: PDF_MARGIN,
+        right: PDF_MARGIN,
+      },
+      autoFirstPage: false,
+      info: {
+        Title: `Viikko ${week}/${year} – Viikko Nro`,
+        Author: "Viikko Nro (viikkonro.fi)",
+        Subject: `Viikko ${week} vuonna ${year}: päivämäärät, työpäivät, juhla- ja liputuspäivät`,
+        Creator: SITE_URL,
+      },
+    });
+    const stream = fs.createWriteStream(outPath);
+    doc.pipe(stream);
+
+    doc.addPage();
+    pdfHeader(doc, year, {
+      title: `Viikko ${week} / ${year}`,
+      subtitle: "ISO 8601 -viikkonumero, päivämäärät ja juhlapäivät",
+    });
+
+    // Quick facts: 2 columns x 4 rows, same label/value idea as the live
+    // page's QuickFacts panel (WeekDays.jsx) — same 8 facts, same terms
+    // ("Juhlapäiviä" not a synonym), so the PDF and the page never disagree.
+    // Vuosineljännes uses monday.getFullYear(), NOT the ISO week-year param
+    // — matching WeekDays.jsx's own Q{quarterOf(mo)} {mo.getFullYear()}
+    // exactly, since a year-boundary week's Monday can fall in the previous
+    // calendar year (e.g. week 1/2026's Monday is 29.12.2025 = Q4 2025, not
+    // "Q4 2026"). Caught by generating and reading week 1/2026's actual PDF.
+    const facts = [
+      ["Viikko", String(week)],
+      ["ISO 8601 -merkintä", isoLabel],
+      ["Alkaa", fmtShortFi(monday)],
+      ["Päättyy", fmtShortFi(sunday)],
+      ["Vuosineljännes", `Q${quarter} ${monday.getFullYear()}`],
+      ["Vuodenaika", season],
+      ["Työpäiviä", String(workingDays)],
+      ["Juhlapäiviä", String(officialHolidays.length)],
+    ];
+    const factColW = PDF_CONTENT_W / 2;
+    const factTop = 100;
+    facts.forEach((fact, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = PDF_MARGIN + col * factColW;
+      const fy = factTop + row * 30;
+      doc.font("Helvetica").fontSize(8.5).fillColor(PDF_COLORS.inkSoft);
+      doc.text(fact[0], x, fy);
+      doc.font("Helvetica-Bold").fontSize(11).fillColor(PDF_COLORS.ink);
+      doc.text(fact[1], x, fy + 11);
+    });
+
+    let y = factTop + 4 * 30 + 6;
+    doc
+      .moveTo(PDF_MARGIN, y)
+      .lineTo(PDF_PAGE_W - PDF_MARGIN, y)
+      .lineWidth(0.5)
+      .strokeColor(PDF_COLORS.line)
+      .stroke();
+    y += 18;
+
+    // Weekday table: every day of the week, its status, and any holiday or
+    // flag day landing on it — the ISO week's full "weekday table" the
+    // brief asked for, not just the aggregate counts above.
+    doc.font("Helvetica-Bold").fontSize(11).fillColor(PDF_COLORS.ink);
+    doc.text(`Viikon ${week} päivät`, PDF_MARGIN, y);
+    y += 18;
+
+    const colX = { weekday: PDF_MARGIN, date: 140, status: 220, note: 310 };
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(PDF_COLORS.inkSoft);
+    doc.text("Viikonpäivä", colX.weekday, y);
+    doc.text("Päivämäärä", colX.date, y);
+    doc.text("Tila", colX.status, y);
+    doc.text("Merkintä", colX.note, y);
+    y += 10;
+    doc
+      .moveTo(PDF_MARGIN, y)
+      .lineTo(PDF_PAGE_W - PDF_MARGIN, y)
+      .lineWidth(0.5)
+      .strokeColor(PDF_COLORS.line)
+      .stroke();
+    y += 6;
+
+    for (let i = 0; i < 7; i += 1) {
+      const date = addDays(monday, i);
+      const dow = date.getDay();
+      const key = pdfMmdd(date);
+      const holiday = holidayMap.get(key);
+      const flag = flagMap.get(key);
+      const status = holiday?.official
+        ? "Arkipyhä"
+        : dow === 0 || dow === 6
+          ? "Viikonloppu"
+          : "Työpäivä";
+
+      if (holiday?.official) {
+        doc.rect(PDF_MARGIN, y - 3, PDF_CONTENT_W, 18).fill(PDF_COLORS.holidayTint);
+      }
+      doc.font("Helvetica-Bold").fontSize(9).fillColor(PDF_COLORS.ink);
+      doc.text(getWeekdayName(date), colX.weekday, y, { width: colX.date - colX.weekday - 4 });
+      doc.font("Helvetica").fontSize(9).fillColor(PDF_COLORS.ink);
+      doc.text(fmtShortFi(date), colX.date, y);
+      doc.fillColor(
+        status === "Viikonloppu" ? PDF_COLORS.sunday : status === "Arkipyhä" ? PDF_COLORS.accent : PDF_COLORS.inkSoft,
+      );
+      doc.text(status, colX.status, y);
+      doc.font("Helvetica").fontSize(8.5).fillColor(PDF_COLORS.ink);
+      const notes = [holiday?.name, flag?.name].filter(Boolean).join(" · ");
+      if (notes) {
+        doc.text(notes, colX.note, y, { width: PDF_PAGE_W - PDF_MARGIN - colX.note });
+      }
+      y += 20;
+    }
+
+    pdfFooter(doc, year, generatedOn, `/viikko-${week}-${year}`);
+
+    doc.end();
+    return new Promise((resolve, reject) => {
+      stream.on("finish", resolve);
+      stream.on("error", reject);
+    });
+  }
+
+  // Single-page PDF for one calendar month (dist/pdf/kuukausi-<month>-<year>.pdf).
+  // Reuses pdfDrawMonthGrid() as-is — the same function that draws each of
+  // the 12 cramped mini-grids on the calendar PDF's page 1 — just called
+  // once at full page width instead of 1/3 width, so the grid comes out
+  // larger and more legible for free (its column width is a fraction of
+  // whatever `w` it's given). Same holidaysInYear()/flagDaysInYear()-backed
+  // data the live /kuukausi-<m>-<y> page and monthFaqNodes() already use.
+  function generateMonthPdf(month, year, outPath) {
+    const monthIndex = month - 1;
+    const stats = monthStats(year, month);
+    const monthHolidays = holidaysInYear(year).filter((hd) => hd.date.getMonth() === monthIndex);
+    const officialHolidays = monthHolidays.filter((hd) => hd.official);
+    const monthFlagDays = flagDaysInYear(year).filter((fd) => fd.month === month);
+    const schoolWeeks = pdfSchoolWeekSet(year);
+    const holidayMap = new Map(monthHolidays.map((hd) => [pdfMmdd(hd.date), hd]));
+    const flagMap = new Map(monthFlagDays.map((fd) => [pdfMmdd(fd.date), fd]));
+    const quarter = Math.ceil(month / 3);
+    const quarterMonths = [0, 1, 2].map((i) => (quarter - 1) * 3 + i + 1);
+    const generatedOn = CONTENT_UPDATED;
+
+    const doc = new PDFDocument({
+      size: "A4",
+      margins: {
+        top: PDF_MARGIN,
+        bottom: PDF_MARGIN,
+        left: PDF_MARGIN,
+        right: PDF_MARGIN,
+      },
+      autoFirstPage: false,
+      info: {
+        Title: `${M_FULL[monthIndex]} ${year} – Viikko Nro`,
+        Author: "Viikko Nro (viikkonro.fi)",
+        Subject: `${M_FULL[monthIndex]} ${year}: ISO-viikkonumerot, työpäivät, juhla- ja liputuspäivät`,
+        Creator: SITE_URL,
+      },
+    });
+    const stream = fs.createWriteStream(outPath);
+    doc.pipe(stream);
+
+    doc.addPage();
+    pdfHeader(doc, year, {
+      title: `${M_FULL[monthIndex]} ${year}`,
+      subtitle: "ISO 8601 -viikkonumerot, työpäivät ja juhlapäivät",
+    });
+
+    // Quick facts: 2 columns x 4 rows, same shape as the week PDF's.
+    const facts = [
+      ["Kuukausi", M_FULL[monthIndex]],
+      ["Vuosineljännes", `Q${quarter} ${year}`],
+      ["Viikkoja", String(stats.weekCount)],
+      ["Työpäiviä", String(stats.working)],
+      ["Arkipyhiä", String(officialHolidays.length)],
+      ["Liputuspäiviä", String(monthFlagDays.length)],
+      ["Ensimmäinen päivä", fmtShortFi(stats.firstDay)],
+      ["Viimeinen päivä", fmtShortFi(stats.lastDay)],
+    ];
+    const factColW = PDF_CONTENT_W / 2;
+    const factTop = 100;
+    facts.forEach((fact, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const x = PDF_MARGIN + col * factColW;
+      const fy = factTop + row * 30;
+      doc.font("Helvetica").fontSize(8.5).fillColor(PDF_COLORS.inkSoft);
+      doc.text(fact[0], x, fy);
+      doc.font("Helvetica-Bold").fontSize(11).fillColor(PDF_COLORS.ink);
+      doc.text(fact[1], x, fy + 11);
+    });
+
+    // Full-width month grid — same drawing function as the calendar PDF's
+    // 12-up grid, just given the whole content width instead of a third of
+    // it, so it comes out roughly 3x larger and easier to read.
+    const gridTop = factTop + 4 * 30 + 10;
+    pdfDrawMonthGrid(doc, PDF_MARGIN, gridTop, PDF_CONTENT_W, year, monthIndex, holidayMap, flagMap, schoolWeeks);
+
+    const legendY = gridTop + 12 + 9 + 6 * 11 + 14;
+    doc.font("Helvetica").fontSize(7);
+    doc.rect(PDF_MARGIN, legendY, 8, 8).fill(PDF_COLORS.holidayTint);
+    doc.fillColor(PDF_COLORS.inkSoft).text("Pyhäpäivä", PDF_MARGIN + 12, legendY);
+    doc.circle(160, legendY + 4, 1.6).fill(PDF_COLORS.amber);
+    doc.fillColor(PDF_COLORS.inkSoft).text("Liputuspäivä", 168, legendY);
+    doc.rect(260, legendY, 8, 8).fill(PDF_COLORS.schoolTint);
+    doc.fillColor(PDF_COLORS.inkSoft).text("Koululoma (viikko, jos tiedossa)", 272, legendY);
+
+    let y = legendY + 22;
+
+    // Holidays and flag days landing in this month — "where available", same
+    // as the calendar PDF: an empty month (most months have 0-2 of either)
+    // just skips straight past an empty section rather than printing a
+    // header over nothing.
+    if (monthHolidays.length > 0) {
+      doc.font("Helvetica-Bold").fontSize(10).fillColor(PDF_COLORS.ink);
+      doc.text(`Pyhäpäivät ${M_INESSIVE[monthIndex]} ${year}`, PDF_MARGIN, y);
+      y += 15;
+      doc.font("Helvetica").fontSize(8).fillColor(PDF_COLORS.ink);
+      for (const hd of monthHolidays) {
+        doc.text(
+          `${pdfPad2(hd.date.getDate())}.${pdfPad2(month)}.${year} · ${hd.name} · ${hd.official ? "Virallinen" : "Vietetään"}`,
+          PDF_MARGIN,
+          y,
+          { width: PDF_CONTENT_W },
+        );
+        y += 12;
+      }
+      y += 8;
+    }
+
+    if (monthFlagDays.length > 0) {
+      doc.font("Helvetica-Bold").fontSize(10).fillColor(PDF_COLORS.ink);
+      doc.text(`Liputuspäivät ${M_INESSIVE[monthIndex]} ${year}`, PDF_MARGIN, y);
+      y += 15;
+      doc.font("Helvetica").fontSize(8).fillColor(PDF_COLORS.ink);
+      for (const fd of monthFlagDays) {
+        doc.text(
+          `${pdfPad2(fd.date.getDate())}.${pdfPad2(month)}.${year} · ${fd.name}`,
+          PDF_MARGIN,
+          y,
+          { width: PDF_CONTENT_W },
+        );
+        y += 12;
+      }
+      y += 8;
+    }
+
+    // Quarter context: which quarter this month belongs to and its two
+    // sibling months, so the PDF states the same fact QuarterPage.jsx's
+    // "Kuukaudet" pill row shows visibly.
+    doc.font("Helvetica-Bold").fontSize(10).fillColor(PDF_COLORS.ink);
+    doc.text(`Vuosineljännes Q${quarter} ${year}`, PDF_MARGIN, y);
+    y += 14;
+    doc.font("Helvetica").fontSize(8).fillColor(PDF_COLORS.inkSoft);
+    doc.text(
+      `Kuukaudet: ${quarterMonths.map((mi) => M_FULL[mi - 1]).join(", ")}`,
+      PDF_MARGIN,
+      y,
+      { width: PDF_CONTENT_W },
+    );
+
+    pdfFooter(doc, year, generatedOn, `/kuukausi-${month}-${year}`);
+
+    doc.end();
+    return new Promise((resolve, reject) => {
+      stream.on("finish", resolve);
+      stream.on("error", reject);
+    });
+  }
+
+  const pdfDir = path.join(distDir, "pdf");
   fs.mkdirSync(pdfDir, { recursive: true });
   let pdfCount = 0;
   for (let py = PRERENDER_MIN_YEAR; py <= PRERENDER_MAX_YEAR; py += 1) {
     await generateCalendarPdf(py, path.join(pdfDir, `kalenteri-${py}.pdf`));
     pdfCount += 1;
   }
-  console.log(`generated ${pdfCount} calendar PDFs (dist/pdfs/kalenteri-*.pdf)`);
+  console.log(`generated ${pdfCount} calendar PDFs (dist/pdf/kalenteri-*.pdf)`);
+
+  // One PDF per ISO week, same 2020..currentYear+9 rolling horizon as every
+  // other per-year asset in this file (OG images, JSON feeds, the calendar
+  // PDFs above) — a new year is picked up automatically on the next nightly
+  // rebuild, no code change needed.
+  let weekPdfCount = 0;
+  for (let wy = PRERENDER_MIN_YEAR; wy <= PRERENDER_MAX_YEAR; wy += 1) {
+    const totalWeeks = weeksInIsoYear(wy);
+    for (let w = 1; w <= totalWeeks; w += 1) {
+      await generateWeekPdf(w, wy, path.join(pdfDir, `viikko-${w}-${wy}.pdf`));
+      weekPdfCount += 1;
+    }
+  }
+  console.log(`generated ${weekPdfCount} week PDFs (dist/pdf/viikko-*.pdf)`);
+
+  // One PDF per calendar month, same rolling horizon.
+  let monthPdfCount = 0;
+  for (let my = PRERENDER_MIN_YEAR; my <= PRERENDER_MAX_YEAR; my += 1) {
+    for (let m = 1; m <= 12; m += 1) {
+      await generateMonthPdf(m, my, path.join(pdfDir, `kuukausi-${m}-${my}.pdf`));
+      monthPdfCount += 1;
+    }
+  }
+  console.log(`generated ${monthPdfCount} month PDFs (dist/pdf/kuukausi-*.pdf)`);
 }
 
 // Remove the temporary SSR bundle so it never ships in the image.

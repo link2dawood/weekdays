@@ -70,6 +70,11 @@ export function seasonIndexOf(monthIndex) {
   return 3;
 }
 export var SEASON_KEYS_EN = ["winter", "spring", "summer", "autumn"];
+// Nominative Finnish form, same 4 values WeekDays.jsx's own local
+// SEASON_NOMINATIVE array already renders in its Quick Facts panel —
+// centralized here so a new caller (the week PDF) doesn't hand-write a
+// third copy alongside WeekDays.jsx's two case-form arrays.
+export var SEASON_NOMINATIVE_FI = ["Talvi", "Kevät", "Kesä", "Syksy"];
 
 export function mondayOf(week, year) {
   var jan4 = new Date(year, 0, 4);
