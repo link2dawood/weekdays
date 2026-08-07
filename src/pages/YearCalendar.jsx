@@ -3,6 +3,8 @@ import {
   isoWeek,
   isoYear,
   dShort,
+  daysInYear,
+  isLeapYear,
   mondayOf,
   M_FULL,
   validateYear,
@@ -11,7 +13,7 @@ import {
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import QuickFacts from "../components/QuickFacts";
-import { canonicalFor, yearFaqs, yearMeta, yearStats } from "../data/seo";
+import { calendarPdfPath, canonicalFor, yearFaqs, yearMeta, yearStats } from "../data/seo";
 import { CONFIDENCE, pageConfidenceTier } from "../data/schoolHolidayPages";
 import NotFound from "./NotFound";
 
@@ -45,6 +47,7 @@ const YearCalendar = ({ year: pYear } = {}) => {
   // monthFaqs()/workingDaysFaqs().
   const faqs = yearFaqs(selectedYear);
   const stats = yearStats(selectedYear);
+  const leap = isLeapYear(selectedYear);
 
   function WeekCard({ w, y }) {
     const mo = mondayOf(w, y);
@@ -89,6 +92,8 @@ const YearCalendar = ({ year: pYear } = {}) => {
       <QuickFacts
         facts={[
           { label: "Vuosi", value: selectedYear },
+          { label: "Päiviä yhteensä", value: daysInYear(selectedYear) },
+          { label: "Karkausvuosi", value: leap ? "Kyllä" : "Ei" },
           { label: "Viikkoja", value: stats.weekCount },
           {
             label: "Ensimmäinen viikko",
@@ -166,6 +171,10 @@ const YearCalendar = ({ year: pYear } = {}) => {
         >
           Tulostettava kalenteri {selectedYear}
         </Link>
+        {" "}
+        <a className="btn" href={calendarPdfPath(selectedYear)} download>
+          Lataa PDF-kalenteri {selectedYear}
+        </a>
       </p>
       <p className="hub-links">
         Katso myös <Link to={`/pyhapaivat-${year}`}>pyhäpäivät {year}</Link>,{" "}

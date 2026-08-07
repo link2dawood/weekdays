@@ -1527,6 +1527,19 @@ body:has(.cal-print) footer {
   padding: 12px 16px;
   border-bottom: 1px solid var(--line);
 }
+.code-block {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  margin: 20px 0;
+  padding: 16px 20px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  -webkit-overflow-scrolling: touch;
+}
 .data-table thead th {
   font-size: 12px;
   text-transform: uppercase;

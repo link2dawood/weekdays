@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
 import QuickFacts from "../components/QuickFacts";
 import { canonicalFor, workingDaysFaqs, workingDaysMeta } from "../data/seo";
-import { holidaysInYear } from "../data/holidays";
+import { HOLIDAY_LEGAL_BASIS, holidaysInYear } from "../data/holidays";
 import {
   M_INESSIVE,
   M_SLUG,
@@ -134,8 +134,10 @@ const WorkingDays = ({ year: pYear } = {}) => {
       <p className="note-soft">
         Laskutapa: työpäiviksi lasketaan maanantai–perjantai, joista on
         vähennetty viralliset arkipyhät. Jouluaatto ja juhannusaatto ovat monilla
-        työpaikoilla vapaita, mutta eivät ole virallisia arkipyhiä, joten ne
-        sisältyvät yllä työpäiviin.
+        työpaikoilla vapaita, mutta eivät ole virallisia arkipyhiä — toisin kuin
+        esimerkiksi itsenäisyyspäivä, josta on erikseen säädetty lailla{" "}
+        {HOLIDAY_LEGAL_BASIS["Itsenäisyyspäivä"].act} — joten jouluaatto ja
+        juhannusaatto sisältyvät yllä työpäiviin.
       </p>
 
       <section className="prose">

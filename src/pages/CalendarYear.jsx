@@ -11,7 +11,7 @@ import { getJuhlapaivat, getLiputuspaivat } from "../data/juhlapaivat";
 import nimipaivat from "../data/nimipaivat.json";
 import { hasNameDayPage, nameDaySlug } from "../data/nameDays";
 import SEO from "../components/SEO";
-import { calendarFaqs, canonicalFor, calendarMeta } from "../data/seo";
+import { calendarFaqs, calendarPdfPath, canonicalFor, calendarMeta } from "../data/seo";
 import {
   downloadCalendarCsv,
   printableCalendarFaqs,
@@ -213,6 +213,10 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
               Lataa Excel-CSV
             </button>
             {" "}
+            <a className="btn" href={calendarPdfPath(y)} download>
+              Lataa valmis PDF ({y})
+            </a>
+            {" "}
             <Link className="btn" to={"/kalenteri-" + y}>
               Avaa selattava kalenteri
             </Link>
@@ -287,6 +291,10 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
         <button className="btn" onClick={() => window.print()}>
           Tulosta / tallenna PDF
         </button>
+        {" "}
+        <a className="btn" href={calendarPdfPath(y)} download>
+          {half ? `Lataa koko vuoden PDF (${y})` : `Lataa valmis PDF (${y})`}
+        </a>
         {!half && (
           <>
             {" "}

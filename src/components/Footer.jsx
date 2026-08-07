@@ -52,6 +52,11 @@ function Footer() {
                 Mikä on viikkonumero?
               </Link>
             </li>
+            <li>
+              <Link to="/avoin-data" onClick={() => window.scrollTo(0, 0)}>
+                Avoin data
+              </Link>
+            </li>
           </ul>
         </div>
 

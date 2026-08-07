@@ -2,14 +2,29 @@
 // year — D-01.
 //
 // `official` distinguishes a statutory arkipyhä (a paid day off under
-// Finnish law, Act 272/1944 + Act 388/1937) from a day that's widely
-// observed but has no legal holiday status. Jouluaatto and juhannusaatto are
-// the two cases that trip people up: nearly everything closes and most
-// people don't work, but neither is actually in the legal list — verified
-// against https://en.wikipedia.org/wiki/Public_holidays_in_Finland and
+// Finnish law) from a day that's widely observed but has no legal holiday
+// status. Jouluaatto and juhannusaatto are the two cases that trip people
+// up: nearly everything closes and most people don't work, but neither is
+// actually in the legal list — verified against
+// https://en.wikipedia.org/wiki/Public_holidays_in_Finland and
 // https://fi.wikipedia.org/wiki/Pyh%C3%A4p%C3%A4iv%C3%A4 (checked
 // 2026-07-23). The 13 official ones below match that source's "13 statutory
 // public holidays" count exactly.
+//
+// CORRECTION (2026-08-07): this comment previously claimed "Act 272/1944 +
+// Act 388/1937" jointly cover all 13 official holidays. Checked directly
+// against Finlex (Finland's official statute database, Ministry of Justice)
+// and that's wrong — each act specifically establishes ONE named holiday:
+// 272/1944 ("Laki vapunpäivän järjestämisestä työntekijäin vapaapäiväksi")
+// is Vappu's own act, and 388/1937 ("Laki itsenäisyyspäivän viettämisestä
+// yleisenä juhla- ja vapaapäivänä") is Itsenäisyyspäivä's own act. The
+// Christian feast days (Loppiainen, pääsiäinen, Helatorstai, Helluntai,
+// Juhannuspäivä, Pyhäinpäivä, Joulupäivä, Tapaninpäivä) fall under a
+// different instrument (the Church Act, kirkkolaki) instead — not
+// independently re-verified per act number here, so HOLIDAY_LEGAL_BASIS
+// below only cites the two specific, confirmed acts and states the rest
+// generically ("established by Act of Parliament") rather than inventing
+// citations for them.
 //
 // Juhannuspäivä (Midsummer Day) and Pyhäinpäivä (All Saints' Day) are not
 // fixed dates: by law, Juhannuspäivä is the Saturday between 20–26 June
@@ -109,4 +124,53 @@ export function holidaysInWeek(isoYear, week) {
   return candidates
     .filter((h) => h.date >= monday && h.date <= sunday)
     .sort((x, y) => x.date - y.date);
+}
+
+// Legal basis for the two official holidays with an independently confirmed,
+// specific Finlex citation (checked 2026-08-07 — see the CORRECTION note
+// above). Deliberately doesn't cover the other 11 official holidays: most of
+// those fall under the Church Act rather than a dedicated act of their own,
+// and no citation is stated here for any holiday this wasn't independently
+// verified for, rather than reusing these two acts for holidays they don't
+// actually govern (the mistake the original code comment made).
+export const HOLIDAY_LEGAL_BASIS = {
+  "Vappu": {
+    act: "272/1944",
+    actName: "Laki vapunpäivän järjestämisestä työntekijäin vapaapäiväksi",
+    url: "https://www.finlex.fi/en/legislation/1944/272",
+  },
+  "Itsenäisyyspäivä": {
+    act: "388/1937",
+    actName: "Laki itsenäisyyspäivän viettämisestä yleisenä juhla- ja vapaapäivänä",
+    url: "https://www.finlex.fi/en/legislation/1937/388",
+  },
+};
+
+// Why a holiday's date moves (or doesn't) year to year — three groups, drawn
+// directly from how holidaysInYear() above actually computes each date, not
+// a second, hand-maintained classification that could drift from it.
+const EASTER_DERIVED = new Set([
+  "Pitkäperjantai",
+  "1. pääsiäispäivä",
+  "2. pääsiäispäivä",
+  "Helatorstai",
+  "Helluntai",
+]);
+const SATURDAY_WINDOW = new Set(["Juhannusaatto", "Juhannuspäivä", "Pyhäinpäivä"]);
+
+export function holidayDateRuleKey(name) {
+  if (EASTER_DERIVED.has(name)) return "easter";
+  if (SATURDAY_WINDOW.has(name)) return "saturday-window";
+  return "fixed";
+}
+
+export function holidayDateRuleExplanation(name) {
+  const key = holidayDateRuleKey(name);
+  if (key === "easter") {
+    return "Päivämäärä lasketaan pääsiäisestä, joten se vaihtelee vuosittain samalla tavalla kuin pääsiäinen.";
+  }
+  if (key === "saturday-window") {
+    return "Päivämäärä on lain mukaan aina tietylle viikolle osuva lauantai, joten se vaihtelee vuosittain.";
+  }
+  return "Päivämäärä on kiinteä kalenteripäivä, joka pysyy samana joka vuosi.";
 }

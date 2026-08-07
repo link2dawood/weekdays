@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import {
   isoWeek,
+  isoWeekDateLabel,
   isoYear,
   fmtFullFi,
   fmtShortFi,
@@ -265,6 +266,10 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       <QuickFacts
         facts={[
           { label: "Viikko", value: w },
+          {
+            label: "ISO 8601 -merkintä",
+            value: <code>{isoWeekDateLabel(w, y)}</code>,
+          },
           { label: "Alkaa", value: fmtShortFi(mo) },
           { label: "Päättyy", value: fmtShortFi(su) },
           {

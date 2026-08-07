@@ -17,6 +17,7 @@ import {
   monthStats,
 } from "../data/seo";
 import { holidayLinkPath } from "../data/holidayPages";
+import { HOLIDAY_LEGAL_BASIS } from "../data/holidays";
 
 // Working-day hub for a single calendar month (/tyopaivat-kesakuu-2026) —
 // targets "työpäivät kesäkuu 2026" / "montako työpäivää elokuussa 2026"
@@ -111,6 +112,20 @@ const MonthlyWorkingDays = ({ month: pMonth, year: pYear } = {}) => {
           { label: "Viimeinen päivä", value: fmtShortFi(stats.lastDay) },
         ]}
       />
+
+      {m === 6 && (
+        <p className="note-soft">
+          Juhannusaatto ei ole virallinen arkipyhä, vaikka se on monilla
+          työpaikoilla vapaa, joten se sisältyy yllä työpäiviin.
+        </p>
+      )}
+      {m === 12 && (
+        <p className="note-soft">
+          Jouluaatto (24.12.) ei ole virallinen arkipyhä eikä siis vähennä
+          työpäivien määrää, toisin kuin itsenäisyyspäivä (6.12.), josta on
+          erikseen säädetty lailla {HOLIDAY_LEGAL_BASIS["Itsenäisyyspäivä"].act}.
+        </p>
+      )}
 
       <div className="table-wrap">
         <table className="data-table">

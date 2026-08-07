@@ -5,7 +5,9 @@ import {
   M_GENITIVE,
   M_INESSIVE,
   M_SLUG,
+  daysInMonth,
   fmtShortFi,
+  isLeapYear,
   isoWeek,
   isoYear,
   validateMonth,
@@ -18,6 +20,7 @@ import QuickFacts from "../components/QuickFacts";
 import SEO from "../components/SEO";
 import { canonicalFor, monthFaqs, monthMeta, monthStats } from "../data/seo";
 import { flagDaysInYear } from "../data/flagDayPages";
+import { holidayLinkPath } from "../data/holidayPages";
 import { schoolHolidayPeriodsInWeek } from "../data/schoolHolidayPages";
 import NotFound from "./NotFound";
 
@@ -86,6 +89,23 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
   const faqs = monthFaqs(m, y);
   const stats = monthStats(y, m);
   const officialHolidayCount = stats.holidays.filter((h) => h.official).length;
+  const totalDays = daysInMonth(y, m);
+  // February is the only month whose length actually depends on the year —
+  // worth stating explicitly there and nowhere else, so this doesn't repeat
+  // an irrelevant fact on the other 11 month pages.
+  const isFebruary = m === 2;
+  // Month -> Holiday bidirectional link (the other half of
+  // namedHolidayNodes()'s Holiday -> Month mention in prerender.js): every
+  // holiday whose date falls in this month, official or not — same
+  // unfiltered set prerender.js's monthHolidayMentionsExtra() mentions in
+  // this page's schema, so the visible links and the JSON-LD can't disagree.
+  // holidayLinkPath() already declines to link a holiday it can't resolve to
+  // a real /pyhat-<year>/<slug> page, so this can't render a dead link.
+  const monthHolidays = stats.holidays;
+  const holidayLink = (h) => {
+    const path = holidayLinkPath(h.name, h.date);
+    return path ? <Link to={path}>{h.name}</Link> : h.name;
+  };
   const monthFlagDays = flagDaysInYear(y).filter((d) => d.month === m);
   // STEP 6: only ever surfaces CONFIRMED school-holiday periods —
   // schoolHolidayPeriodsInWeek() already filters out estimated/unknown ones.
@@ -133,6 +153,7 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
         facts={[
           { label: "Kuukausi", value: M_FULL[mi] },
           { label: "Vuosi", value: year },
+          { label: "Päiviä", value: totalDays },
           { label: "Viikkoja", value: stats.weekCount },
           { label: "Työpäiviä", value: stats.working },
           { label: "Arkipyhiä", value: officialHolidayCount },
@@ -140,6 +161,26 @@ const WeeksInEachMonth = ({ month: pMonth, year: pYear } = {}) => {
           { label: "Viimeinen päivä", value: fmtShortFi(stats.lastDay) },
         ]}
       />
+
+      {isFebruary && (
+        <p className="note-soft">
+          {year} {isLeapYear(y) ? "on karkausvuosi" : "ei ole karkausvuosi"},
+          joten helmikuussa {year} on {totalDays} päivää.
+        </p>
+      )}
+
+      {monthHolidays.length > 0 && (
+        <p className="note-soft">
+          Pyhäpäivät {M_INESSIVE[mi]} {year}:{" "}
+          {monthHolidays.map((h, i) => (
+            <span key={h.name}>
+              {i > 0 && ", "}
+              {holidayLink(h)}
+            </span>
+          ))}
+          .
+        </p>
+      )}
 
       {monthFlagDays.length > 0 && (
         <p className="note-soft">

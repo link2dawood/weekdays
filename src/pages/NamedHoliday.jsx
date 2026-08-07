@@ -12,6 +12,7 @@ import {
   holidayPageMeta,
   holidayWeekLinks,
 } from "../data/holidayPages";
+import { HOLIDAY_LEGAL_BASIS } from "../data/holidays";
 import { canonicalFor, CONTENT_UPDATED_FI } from "../data/seo";
 import NotFound from "./NotFound";
 
@@ -27,6 +28,11 @@ const NamedHoliday = () => {
   // Shared with prerender.js's structured-data `mentions` so the visible
   // links and the schema references point at exactly the same URLs.
   const links = holidayWeekLinks(page);
+  // Only stated for the 2 of 15 holidays with an independently confirmed,
+  // holiday-specific Finlex citation (see HOLIDAY_LEGAL_BASIS) — the other
+  // 13 fall under the Church Act or a different instrument not individually
+  // re-verified here, so nothing is stated for them rather than guessed.
+  const legalBasis = HOLIDAY_LEGAL_BASIS[page.displayName];
 
   return (
     <section className="app">
@@ -95,6 +101,16 @@ const NamedHoliday = () => {
 
         <h2>Miten {page.displayName.toLowerCase()} päivämäärä määräytyy?</h2>
         <p>{page.rule}</p>
+
+        {legalBasis && (
+          <p>
+            {page.displayName} on säädetty vapaapäiväksi lailla{" "}
+            <a href={legalBasis.url} target="_blank" rel="noopener noreferrer">
+              {legalBasis.act}
+            </a>{" "}
+            ({legalBasis.actName}).
+          </p>
+        )}
 
         <h2>Usein kysyttyä: {page.displayName.toLowerCase()}</h2>
         <div className="faq-list">

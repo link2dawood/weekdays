@@ -1,9 +1,10 @@
-import { Routes, Route, useParams } from "react-router-dom";
+import { Routes, Route, useParams, Navigate } from "react-router-dom";
 import { M_SLUG } from "./components/dateUtils";
 import Home from "./pages/Home";
 import YearCalendar from "./pages/YearCalendar";
 import Navbar from "./components/Navbar";
 import FAQPage from "./pages/FAQPage";
+import OpenData from "./pages/OpenData";
 import WeekDays from "./pages/WeekDays";
 import WeeksInEachMonth from "./pages/WeeksInEachMonth";
 import QuarterPage from "./pages/QuarterPage";
@@ -99,6 +100,7 @@ const AppRoutes = () => {
         <Route path="/mika-vuosi-nyt" element={<CurrentYear />} />
         <Route path="/viikonpaiva" element={<WeekdayCalculator />} />
         <Route path="/ukk" element={<FAQPage />} />
+        <Route path="/avoin-data" element={<OpenData />} />
         <Route path="/laskurit" element={<Calculators />} />
         <Route path="/paivamaara-viikoksi" element={<DateToWeek />} />
         <Route path="/viikko-paivamaaraksi" element={<WeekToDate />} />
@@ -112,6 +114,17 @@ const AppRoutes = () => {
         <Route path="/nimipaiva/:name" element={<NameDayName />} />
         <Route path="/nimipaivat/:monthDay" element={<NameDaysDate />} />
         <Route path="/:holidayYear/:holidaySlug" element={<NamedHoliday />} />
+        {/* No other page family has a bare, year-less route (/pyhapaivat,
+            /tyopaivat, /kalenteri, /vuosi all require an explicit year) —
+            this sends a visitor who lands on /liputuspaivat straight to the
+            current year's page rather than 404ing or inventing a second,
+            year-less content type. The prerendered HTML (prerender.js) does
+            the same redirect server-side via a 0-delay meta refresh, since
+            this client route never runs for a crawler or a fresh page load. */}
+        <Route
+          path="/liputuspaivat"
+          element={<Navigate to={`/liputuspaivat-${new Date().getFullYear()}`} replace />}
+        />
         <Route path="/:slug" element={<DynamicSlug />} />
         <Route path="*" element={<NotFound />} />
         </Routes>

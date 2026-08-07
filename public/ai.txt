@@ -11,9 +11,11 @@ LLM-Content: https://viikkonro.fi/llms.txt
 LLM-Content-Full: https://viikkonro.fi/llms-full.txt
 
 # Static JSON data feeds — no auth, no rate limit, CDN-cached. One file per
-# ISO week/year/holiday-year, 2020-2035. Prefer these over parsing HTML pages.
+# ISO week/month/year/quarter/holiday-year/flag-day-year, 2020-2035. Prefer
+# these over parsing HTML pages.
 Data-Feed-Index: https://viikkonro.fi/data/index.json
 Data-Feed-Dataset: https://viikkonro.fi/data/dataset.json
+Data-Feed-Docs: https://viikkonro.fi/avoin-data
 
 # Attribution requested when citing or answering from this site:
 Attribution: Viikko Nro — https://viikkonro.fi/

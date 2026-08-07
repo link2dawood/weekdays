@@ -24,6 +24,23 @@ export function weeksInIsoYear(y) {
   return isoWeek(new Date(y, 11, 28));
 }
 
+// ISO 8601 week-date notation ("2026-W32") — the standard's own compact
+// representation of a given week, distinct from (and never previously
+// stated alongside) the "viikko 32/2026" phrasing used everywhere else on
+// the site. week is zero-padded to 2 digits per the standard.
+export function isoWeekDateLabel(week, year) {
+  return `${year}-W${String(week).padStart(2, "0")}`;
+}
+
+// Shared by every page that needs "how many days does this month have" —
+// previously computed inline with `new Date(y, m, 0).getDate()` in four
+// separate files (WeeksInEachMonth.jsx, CalendarYear.jsx, seo.js x2), so a
+// bug fixed in one copy could stay wrong in the others. `month` is 1-indexed
+// (1 = January), matching every other month-accepting function here.
+export function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
 export function isLeapYear(y) {
   return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 }

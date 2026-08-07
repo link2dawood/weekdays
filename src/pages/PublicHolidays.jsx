@@ -10,7 +10,7 @@ import {
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import { canonicalFor, holidaysMeta } from "../data/seo";
-import { holidaysInYear } from "../data/holidays";
+import { holidayDateRuleKey, holidaysInYear } from "../data/holidays";
 import { holidaySlugForName } from "../data/holidayPages";
 
 // Finnish public-holidays hub for a year (/pyhapaivat-2026). Content-rich page
@@ -23,6 +23,16 @@ const PublicHolidays = ({ year: pYear } = {}) => {
   const y = Number(year);
   const holidays = holidaysInYear(y);
   const officialCount = holidays.filter((h) => h.official).length;
+  // Every holiday falls into exactly one of three date rules (see
+  // holidayDateRuleKey() in holidays.js, which derives this from the same
+  // computation holidaysInYear() itself uses — not a second, hand-maintained
+  // classification). Aggregated once here, rather than repeating the rule
+  // type per row: the "Miten päivämäärä määräytyy?" section on each
+  // individual holiday page already states its own precise rule in more
+  // detail than a one-word category would add.
+  const fixedCount = holidays.filter((h) => holidayDateRuleKey(h.name) === "fixed").length;
+  const easterCount = holidays.filter((h) => holidayDateRuleKey(h.name) === "easter").length;
+  const windowCount = holidays.filter((h) => holidayDateRuleKey(h.name) === "saturday-window").length;
 
   return (
     <section className="app">
@@ -41,6 +51,13 @@ const PublicHolidays = ({ year: pYear } = {}) => {
         </span>{" "}
         Lisäksi muutama laajasti vietetty vapaapäivä. Alla kaikki pyhäpäivät
         päivämäärineen, viikonpäivineen ja viikkonumeroineen.
+      </p>
+
+      <p className="note-soft">
+        Näistä {fixedCount} on kiinteitä kalenteripäiviä (esim. 1. tammikuuta),
+        {" "}{easterCount} lasketaan pääsiäisestä ja {windowCount} on lain
+        mukaan tietylle viikolle osuvia lauantaita — siksi vain osa
+        pyhäpäivistä siirtyy eri päivälle vuodesta toiseen.
       </p>
 
       <div className="table-wrap">
