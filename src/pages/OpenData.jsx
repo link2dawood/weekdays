@@ -12,6 +12,13 @@ const PATH = "/avoin-data";
 // read from the same DATA_FEED_FAMILIES/FEED_SCHEMA_VERSION prerender.js
 // itself uses to build the feeds and their Dataset schema, so this page and
 // the feeds it describes can't drift apart.
+//
+// Layout note: tables and code blocks are deliberately siblings of (not
+// nested inside) the .prose wrapper, same as WorkingDays.jsx — .prose caps
+// at 680px for readable paragraphs, but a 4-column table or a JSON example
+// needs the full .app container width (1000px) to avoid unnecessary
+// horizontal scrolling on desktop. Only narrative text/lists/FAQ go inside
+// .prose; wide elements sit directly under <section className="app">.
 const OpenData = () => {
   const meta = routeMeta[PATH];
 
@@ -46,33 +53,37 @@ const OpenData = () => {
           viikko/kuukausi/neljännes), sekä hakemistotiedosto (<code>index.json</code>)
           joka listaa kaikki kyseisen joukon tiedostot.
         </p>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Dataset</th>
-                <th>Kuvaus</th>
-                <th>URL-kaava</th>
-                <th>Esimerkki</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DATA_FEED_FAMILIES.map((family) => (
-                <tr key={family.id}>
-                  <td>{family.name}</td>
-                  <td>{family.description}</td>
-                  <td><code>{family.urlPattern}</code></td>
-                  <td>
-                    <a href={family.example}>{family.example}</a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      </div>
 
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Dataset</th>
+              <th>Kuvaus</th>
+              <th>URL-kaava</th>
+              <th>Esimerkki</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DATA_FEED_FAMILIES.map((family) => (
+              <tr key={family.id}>
+                <td>{family.name}</td>
+                <td>{family.description}</td>
+                <td><code>{family.urlPattern}</code></td>
+                <td>
+                  <a href={family.example}>{family.example}</a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="prose">
         <h2>Esimerkki: /data/week/2026/32.json</h2>
-        <pre className="code-block">
+      </div>
+      <pre className="code-block">
 {`{
   "schemaVersion": "1.0",
   "week": 32,
@@ -86,10 +97,12 @@ const OpenData = () => {
   "season": "summer",
   "url": "https://viikkonro.fi/viikko-32-2026"
 }`}
-        </pre>
+      </pre>
 
+      <div className="prose">
         <h2>Esimerkki: /data/year/2026.json</h2>
-        <pre className="code-block">
+      </div>
+      <pre className="code-block">
 {`{
   "schemaVersion": "1.0",
   "year": 2026,
@@ -110,8 +123,9 @@ const OpenData = () => {
   "lastWeek": { "week": 53, "year": 2026 },
   "url": "https://viikkonro.fi/vuosi-2026"
 }`}
-        </pre>
+      </pre>
 
+      <div className="prose">
         <h2>Kehittäjäystävällinen /api/-alias</h2>
         <p>
           Samat viikko-, kuukausi-, vuosi- ja pyhäpäivätiedostot ovat
@@ -127,35 +141,38 @@ const OpenData = () => {
           täsmälleen sama, eikä samasta datasta synny kahta kilpailevaa
           kanonista osoitetta.
         </p>
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>/api/-osoite</th>
-                <th>Ohjautuu osoitteeseen</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>/api/week/32/2026.json</code></td>
-                <td><a href="/data/week/2026/32.json">/data/week/2026/32.json</a></td>
-              </tr>
-              <tr>
-                <td><code>/api/month/8/2026.json</code></td>
-                <td><a href="/data/month/2026/8.json">/data/month/2026/8.json</a></td>
-              </tr>
-              <tr>
-                <td><code>/api/year/2026.json</code></td>
-                <td><a href="/data/year/2026.json">/data/year/2026.json</a></td>
-              </tr>
-              <tr>
-                <td><code>/api/holiday/itsenaisyyspaiva/2026.json</code></td>
-                <td><a href="/data/holiday/2026/itsenaisyyspaiva.json">/data/holiday/2026/itsenaisyyspaiva.json</a></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      </div>
 
+      <div className="table-wrap">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>/api/-osoite</th>
+              <th>Ohjautuu osoitteeseen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/api/week/32/2026.json</code></td>
+              <td><a href="/data/week/2026/32.json">/data/week/2026/32.json</a></td>
+            </tr>
+            <tr>
+              <td><code>/api/month/8/2026.json</code></td>
+              <td><a href="/data/month/2026/8.json">/data/month/2026/8.json</a></td>
+            </tr>
+            <tr>
+              <td><code>/api/year/2026.json</code></td>
+              <td><a href="/data/year/2026.json">/data/year/2026.json</a></td>
+            </tr>
+            <tr>
+              <td><code>/api/holiday/itsenaisyyspaiva/2026.json</code></td>
+              <td><a href="/data/holiday/2026/itsenaisyyspaiva.json">/data/holiday/2026/itsenaisyyspaiva.json</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="prose">
         <h2>Versiointi</h2>
         <p>
           Jokaisessa tiedostossa on <code>schemaVersion</code>-kenttä (nyt{" "}
