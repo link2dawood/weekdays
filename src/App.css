@@ -24,10 +24,12 @@
   box-sizing: border-box;
 }
 html {
+  height: 100%;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
 body {
+  min-height: 100%;
   margin: 0;
   background:
     radial-gradient(
@@ -41,6 +43,21 @@ body {
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+/* Sticky footer: on pages shorter than the viewport (e.g. /ota-yhteytta),
+   the footer should sit at the bottom of the viewport, not float directly
+   under short content with a gap below it. #root becomes a full-height flex
+   column and <main> (every routed page's wrapper, AppRoutes.jsx) absorbs the
+   extra space, pushing <footer> down — normal document flow on tall pages,
+   pinned-to-bottom on short ones. Not position:fixed/sticky, which would
+   overlay content instead of making room for it. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+#root > main {
+  flex: 1 0 auto;
 }
 a {
   color: inherit;
