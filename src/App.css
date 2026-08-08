@@ -142,14 +142,6 @@ img {
   background: rgba(21, 33, 31, 0.05);
 }
 
-.nav .nav-links a.nav-language {
-  font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-deep);
-  border: 1px solid rgba(31, 122, 92, 0.28);
-}
-
 .nav .badge {
   font-family: "IBM Plex Mono", "IBM Plex Mono Fallback", monospace;
   font-size: 12.5px;
