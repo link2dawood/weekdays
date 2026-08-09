@@ -27,7 +27,7 @@ Keskeiset faktat viikkonumeroista Suomessa:
 - [Koululomat 2027](https://viikkonro.fi/koululomat-2027): talvilomaviikot 8–10 ja vahvistetut aluekohtaiset ajat
 - [Tietoa meistä](https://viikkonro.fi/tietoa-meista): palvelun esittely
 - [Ota yhteyttä](https://viikkonro.fi/ota-yhteytta): yhteydenottolomake
-- [Week number today – English](https://viikkonro.fi/en): current ISO week number and the dates of week 27 in 2023
+- [Week number today – English](https://viikkonro.fi/en): current ISO week number and dates, computed live
 
 ## Koneluettava data (JSON)
 

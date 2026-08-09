@@ -116,6 +116,15 @@ const serverDir = path.resolve(__dirname, "dist-server");
 // home shell and treated ~200 URLs as duplicates of the homepage. Rendering
 // them gives each unique, indexable HTML that matches its sitemap entry.
 const currentYear = new Date().getFullYear();
+// The actual build date, YYYY-MM-DD — distinct from CONTENT_UPDATED (a
+// hand-bumped editorial constant in seo.js, deliberately NOT build-time, so
+// a content page's visible "Päivitetty" line and its schema dateModified
+// never disagree). FEED_BUILD_DATE is for the machine-readable /data/ layer
+// instead: those files regenerate on every build (avoin-data's own FAQ says
+// so), so their dateModified should reflect that, not lag behind whenever
+// someone last hand-edited unrelated page copy.
+const FEED_BUILD_DATE_RAW = new Date();
+const FEED_BUILD_DATE = `${FEED_BUILD_DATE_RAW.getFullYear()}-${String(FEED_BUILD_DATE_RAW.getMonth() + 1).padStart(2, "0")}-${String(FEED_BUILD_DATE_RAW.getDate()).padStart(2, "0")}`;
 const sitemapRoutes = sitemapEntries(currentYear).map((e) => e.path);
 // Keep the honest noindex fallback available even while today's date is not
 // covered by the partial seed. It joins the sitemap automatically once the
@@ -907,7 +916,7 @@ function datasetSchema({ id, name, description, distributionUrl, temporalCoverag
 function datasetNodes() {
   const temporalCoverage = `2020-01-01/${currentYear + 9}-12-31`;
   const license = `${SITE_URL}/kayttoehdot`;
-  const common = { temporalCoverage, license, dateModified: CONTENT_UPDATED };
+  const common = { temporalCoverage, license, dateModified: FEED_BUILD_DATE };
 
   const weekDataset = datasetSchema({
     ...common,
@@ -2365,7 +2374,19 @@ for (const url of routes) {
       html = html.replace("</head>", pdfLink + "</head>");
     }
     if (url === "/en") {
-      html = html.replace('<html lang="fi">', '<html lang="en">');
+      // The base template (index.html) is Finnish-first: <html lang>,
+      // og:locale and <meta name="keywords"> are all baked in as Finnish
+      // defaults with no per-page override mechanism elsewhere, so /en (the
+      // one English page) ships them unpatched otherwise — a real bug, not
+      // a styling nit: og:locale: fi_FI on an English page actively
+      // misdescribes it to anything reading Open Graph tags.
+      html = html
+        .replace('<html lang="fi">', '<html lang="en">')
+        .replace('<meta property="og:locale" content="fi_FI" />', '<meta property="og:locale" content="en_US" />')
+        .replace(
+          /<meta\s+name="keywords"\s+content="[^"]*"\s*\/>/,
+          '<meta name="keywords" content="week number, ISO 8601 week, current week number, ISO week calculator" />',
+        );
     }
 
     // Prune the index to the high-intent window: out-of-window year pages stay
@@ -2918,7 +2939,13 @@ writeJson(path.join(dataDir, "index.json"), {
   name: "Viikko Nro machine-readable data feeds",
   schemaVersion: FEED_SCHEMA_VERSION,
   license: `${SITE_URL}/kayttoehdot`,
-  dateModified: CONTENT_UPDATED,
+  dateModified: FEED_BUILD_DATE,
+  // These two are single static files, not per-year families like the
+  // `datasets` array below, but llms.txt/ai.txt both advertise them — they
+  // belong here too, so a consumer that only fetches this one index file
+  // can still discover them (previously they couldn't: a real gap).
+  datasetSchemaUrl: `${SITE_URL}/data/dataset.json`,
+  knowledgeGraphUrl: `${SITE_URL}/data/knowledge-graph.json`,
   datasets: [
     {
       name: "week",
@@ -2996,7 +3023,7 @@ writeJson(path.join(dataDir, "knowledge-graph.json"), {
   name: "Viikko Nro knowledge graph",
   description:
     "Entity map, relationship map, internal linking map and graph structure for viikkonro.fi, for AI retrieval and knowledge-graph systems. Every entity is a real page or resource on the site; every relationship listed is actually present in that page's schema.org JSON-LD.",
-  dateModified: CONTENT_UPDATED,
+  dateModified: FEED_BUILD_DATE,
   schemaVersion: FEED_SCHEMA_VERSION,
 
   namingConventions: {

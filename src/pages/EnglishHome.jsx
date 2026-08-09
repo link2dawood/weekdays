@@ -6,7 +6,6 @@ import { canonicalFor, CONTENT_UPDATED } from "../data/seo";
 const EnglishHome = () => {
   const fact = englishWeekFacts();
   const meta = englishMeta();
-  const example = englishWeekFacts(new Date(2023, 6, 5));
   return (
     <section className="app">
       <SEO
@@ -34,11 +33,6 @@ const EnglishHome = () => {
           {formatEnglishDate(fact.sunday)}. Open the{" "}
           <Link to={"/viikko-" + fact.week + "-" + fact.year}>detailed week {fact.week} calendar</Link>{" "}
           (in Finnish) for individual dates and Finnish holidays.
-        </p>
-        <h2>Week 27 of 2023</h2>
-        <p>
-          Week 27 of 2023 ran from <strong>{formatEnglishDate(example.monday)}</strong> through{" "}
-          <strong>{formatEnglishDate(example.sunday)}</strong>. It followed the same Monday-to-Sunday ISO 8601 convention used for the live answer.
         </p>
         <h2>How ISO week numbers work</h2>
         <p>
