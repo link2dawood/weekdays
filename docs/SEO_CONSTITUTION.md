@@ -275,47 +275,73 @@ equity, which is sufficient on its own and must stay in place.
 ### 13. Preserve AI optimization files
 
 **Rule**: `public/ai.txt`, `public/llms.txt`, and the generated
-`llms-full.txt`/`ai-manifest.txt`/`data/knowledge-graph.json` must all
-keep pointing at each other and at every resource family they currently
-reference, and must stay updated whenever a new resource family is added
-(dataset, PDF type, page type).
+`llms-full.txt`/`llms-api.txt`/`llms-data.txt`/`llms-glossary.txt`/
+`ai-manifest.txt`/`data/knowledge-graph.json` must all keep pointing at
+each other and at every resource family they currently reference, and
+must stay updated whenever a new resource family is added (dataset, PDF
+type, page type).
 
 **Lives in**: `public/ai.txt` and `public/llms.txt` (static, hand-edited)
-plus the generators in `prerender.js` for the three dynamic files. See
-also #14 and #15.
+plus the generators in `prerender.js` for the six dynamic files. See also
+#14 and #15.
 
 **Never**: add a new discoverable resource (a dataset, an API alias, a
-PDF family, a page type) without a corresponding line in **all four**
-files where relevant — this repo's established habit (see how the
-`/api/holiday/` alias was added everywhere at once: `ai.txt`, `llms.txt`,
-`ai-manifest.txt`'s dataset loop, `knowledge-graph.json`'s API Endpoint
-entity, `/avoin-data`'s table) is the bar to match, not the exception.
+PDF family, a page type) without a corresponding line in **every relevant
+file of the eight** (`ai.txt`, `llms.txt`, `llms-full.txt`, `llms-api.txt`,
+`llms-data.txt`, `llms-glossary.txt`, `ai-manifest.txt`,
+`knowledge-graph.json`) — this repo's established habit (see how the
+`/api/holiday/` alias was added everywhere at once) is the bar to match,
+not the exception. **Never grow this set casually** either — it grew from
+4 files to 8 in one deliberate restructuring (splitting `llms-full.txt`'s
+content into topic-focused companions, not adding files on top of it),
+specifically to avoid the drift risk an unchecked file count creates (see
+the `/en` stale-content bug this constitution's own principle #4 exists
+to prevent — hand-typed content escaping a generator, not too few files).
+Any future addition should be sized the same way: does this genuinely not
+fit an existing file, or is it scope creep with a new filename.
 
-### 14. Preserve `llms-full.txt`
+### 14. Preserve `llms-full.txt` and its 3 companion files
 
-**Rule**: the comprehensive English-language site-structure reference at
-`/llms-full.txt` — covering what the site is, ISO 8601 rules,
-Finland-specific calendar rules, every page type and URL pattern, API
-endpoints, PDF resources, all datasets, semantic relationships, and the
-full Finnish FAQ dump — must keep being generated fresh on every build
-from real, computed data (current week/month/quarter/year, real holiday/
-flag-day lists, real dataset family list), never from hardcoded example
-values that can go stale.
+**Rule**: `/llms-full.txt` is a short **index** (what the site is, page
+types/URL patterns, canonical examples, pointers to every other
+machine-readable file, attribution, and the full Finnish FAQ dump) —
+**not** the comprehensive reference by itself. Three companion files
+carry the detail that used to live inside it, and must stay in sync with
+what they document:
 
-**Lives in**: the `llmsFull` template-literal generator in `prerender.js`
-(search `Generate llms-full.txt`), which itself pulls from
-`HOLIDAY_DEFINITIONS`, `flagDaysInYear()`, `DATA_FEED_FAMILIES`,
-`faqCategories`/`faqs`, and the `seo.js` path builders — the same
-single-source-of-truth modules every visible page reads.
+- `/llms-api.txt` — API endpoints (`/api/` aliases), PDF resources,
+  OG/Discover images: everything meant to be *fetched*.
+- `/llms-data.txt` — the (currently 8) `/data/` JSON dataset families:
+  what's *inside* them.
+- `/llms-glossary.txt` — ISO 8601 rules, the full Finnish holiday/flag-day
+  definitions, working-day/quarter definitions, and the entity
+  relationship model: what the *terms mean*.
 
-**Never**: hand-edit generated content directly into this file (it's
-regenerated on every build — a manual edit is silently lost) or let it
-regress to a narrower FAQ-only dump the way an earlier version of it once
-was.
+All four must keep being generated fresh on every build from real,
+computed data (current week/month/quarter/year, real holiday/flag-day
+lists, real dataset family list), never from hardcoded example values
+that can go stale.
 
-*(Note on naming: the file is `llms-full.txt`, plural "llms" — matching
+**Lives in**: the `llmsFull`/`llmsApi`/`llmsData`/`llmsGlossary`
+template-literal generators in `prerender.js` (search `Split into 4
+files`), which share their computed inputs (`llHolidayLines`,
+`llFlagDayLines`, `llDatasetLines`, `HOLIDAY_DEFINITIONS`,
+`DATA_FEED_FAMILIES`, `faqCategories`/`faqs`, the `seo.js` path builders)
+so the same fact is never independently recomputed — and can't drift —
+across the four files.
+
+**Never**: hand-edit generated content directly into any of the four
+files (regenerated on every build — a manual edit is silently lost); put
+API/dataset/definitional detail back into `llms-full.txt` "for
+convenience" (that's exactly the un-split state this section replaced);
+or let a fact (e.g. the holiday list, the API alias patterns) be
+hand-typed into more than one of the four files instead of computed once
+and shared.
+
+*(Note on naming: files are `llms-*.txt`, plural "llms" — matching
 `llms.txt` and the llmstxt.org convention. If a future request says
-"llm-full.txt" singular, that almost always means this same file.)*
+"llm-full.txt"/"llm-api.txt" etc. singular, that almost always means
+these same files.)*
 
 ### 15. Preserve `ai-manifest.txt`
 

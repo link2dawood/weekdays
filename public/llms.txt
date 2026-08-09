@@ -47,7 +47,10 @@ Jokaiselle viikolle, kuukaudelle, vuodelle, vuosineljännekselle, pyhäpäivävu
 
 ## Optional
 
-- [Täysi sisältö LLM:ille](https://viikkonro.fi/llms-full.txt): kaikki usein kysytyt kysymykset vastauksineen
+- [Täysi sisältö LLM:ille](https://viikkonro.fi/llms-full.txt): sivustohakemisto, sivutyypit ja kaikki usein kysytyt kysymykset vastauksineen
+- [API-viite LLM:ille](https://viikkonro.fi/llms-api.txt): /api/-rajapinta, PDF-tiedostot, kuvat
+- [Datasetviite LLM:ille](https://viikkonro.fi/llms-data.txt): kaikki 8 /data/-datasettiperhettä
+- [Sanasto LLM:ille](https://viikkonro.fi/llms-glossary.txt): ISO 8601 -säännöt, pyhäpäivä- ja liputuspäivämääritelmät, entiteettisuhteet
 - [AI-manifesti](https://viikkonro.fi/ai-manifest.txt): tärkeysjärjestykseen laitettu lista tärkeimmistä osoitteista tekoälyjärjestelmille (kuluva viikko, kuukausi, vuosineljännes ja vuosi, juhlapäivä-, työpäivä- ja liputuspäiväkeskukset, data- ja API-rajapinnat, PDF:t)
 - [Käyttöehdot](https://viikkonro.fi/kayttoehdot)
 - [Tietosuojaseloste](https://viikkonro.fi/tietosuoja)

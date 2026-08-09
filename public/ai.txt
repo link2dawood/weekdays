@@ -8,7 +8,10 @@ Allow: /
 
 # Preferred machine-readable content for LLMs (curated, concise):
 LLM-Content: https://viikkonro.fi/llms.txt
-LLM-Content-Full: https://viikkonro.fi/llms-full.txt
+LLM-Content-Full: https://viikkonro.fi/llms-full.txt (index — points to the 3 files below for detail)
+LLM-Content-API: https://viikkonro.fi/llms-api.txt (API endpoints, PDF resources, images)
+LLM-Content-Data: https://viikkonro.fi/llms-data.txt (the 8 /data/ JSON dataset families)
+LLM-Content-Glossary: https://viikkonro.fi/llms-glossary.txt (ISO 8601 rules, holiday/flag-day definitions, entity relationships)
 
 # Priority-ordered "fetch these first" manifest — homepage, current week/
 # month/quarter/year (computed fresh on every build), then holiday/working-
