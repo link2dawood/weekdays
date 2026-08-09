@@ -895,7 +895,13 @@ function datasetSchema({ id, name, description, distributionUrl, temporalCoverag
     version: FEED_SCHEMA_VERSION,
     inLanguage: "fi-FI",
     temporalCoverage,
-    spatialCoverage: { "@type": "Country", name: "Suomi" },
+    // Google's Dataset structured-data validator flags "@type": "Country"
+    // as an invalid spatialCoverage object type (Search Console report,
+    // 9/9 dataset items, Aug 2026) even though Country is a valid Place
+    // subtype in the raw schema.org ontology — Google's own Dataset docs
+    // examples use "Place" literally, so matching that is the targeted fix
+    // rather than arguing the stricter-than-spec validator is wrong.
+    spatialCoverage: { "@type": "Place", name: "Suomi" },
     distribution: urls.map((contentUrl) => ({
       "@type": "DataDownload",
       contentUrl,
