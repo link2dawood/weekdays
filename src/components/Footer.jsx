@@ -57,6 +57,16 @@ function Footer() {
                 Avoin data
               </Link>
             </li>
+            <li>
+              <Link to="/menetelma" onClick={() => window.scrollTo(0, 0)}>
+                Menetelmä
+              </Link>
+            </li>
+            <li>
+              <Link to="/tietolahteet" onClick={() => window.scrollTo(0, 0)}>
+                Tietolähteet
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -67,6 +77,11 @@ function Footer() {
             <li>
               <Link to="/tietoa-meista" onClick={() => window.scrollTo(0, 0)}>
                 Tietoa meistä
+              </Link>
+            </li>
+            <li>
+              <Link to="/toimitusperiaatteet" onClick={() => window.scrollTo(0, 0)}>
+                Toimitusperiaatteet
               </Link>
             </li>
             <li>

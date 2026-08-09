@@ -34,6 +34,12 @@ const OpenData = () => {
 
       <h1>Avoin data ja JSON-rajapinta</h1>
 
+      <p>
+        <Link className="btn" to="/api-playground">
+          Kokeile API:a selaimessa →
+        </Link>
+      </p>
+
       <div className="prose">
         <p className="lead">
           <span className="answer-sentence">
@@ -78,6 +84,23 @@ const OpenData = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="prose">
+        <h2>CSV ja XML</h2>
+        <p>
+          Viikko-, kuukausi-, vuosi-, pyhäpäivä- ja työpäivädata on
+          saatavilla myös CSV- ja XML-muodossa, koko vuoden kerralla yhdessä
+          tiedostossa (ei per tietue kuten JSON). Jokaisella datasetilla on
+          oma sivunsa, jolla on lataus vuosittain sekä kenttäselitykset:
+        </p>
+        <ul>
+          <li><Link to="/data/week">Viikkodata (CSV/XML)</Link></li>
+          <li><Link to="/data/month">Kuukausidata (CSV/XML)</Link></li>
+          <li><Link to="/data/year">Vuosidata (CSV/XML, kaikki vuodet yhdessä tiedostossa)</Link></li>
+          <li><Link to="/data/holiday">Pyhäpäivädata (CSV/XML)</Link></li>
+          <li><Link to="/data/working-days">Työpäivädata (CSV/XML)</Link></li>
+        </ul>
       </div>
 
       <div className="prose">

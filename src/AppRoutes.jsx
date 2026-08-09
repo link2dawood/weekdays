@@ -5,6 +5,12 @@ import YearCalendar from "./pages/YearCalendar";
 import Navbar from "./components/Navbar";
 import FAQPage from "./pages/FAQPage";
 import OpenData from "./pages/OpenData";
+import ApiPlayground from "./pages/ApiPlayground";
+import DatasetPage from "./pages/DatasetPage";
+import TimeManagement from "./pages/TimeManagement";
+import DataSources from "./pages/DataSources";
+import Methodology from "./pages/Methodology";
+import EditorialPolicy from "./pages/EditorialPolicy";
 import WeekDays from "./pages/WeekDays";
 import WeeksInEachMonth from "./pages/WeeksInEachMonth";
 import QuarterPage from "./pages/QuarterPage";
@@ -101,6 +107,19 @@ const AppRoutes = () => {
         <Route path="/viikonpaiva" element={<WeekdayCalculator />} />
         <Route path="/ukk" element={<FAQPage />} />
         <Route path="/avoin-data" element={<OpenData />} />
+        <Route path="/api-playground" element={<ApiPlayground />} />
+        <Route path="/data/week" element={<DatasetPage family="week" />} />
+        <Route path="/data/month" element={<DatasetPage family="month" />} />
+        <Route path="/data/year" element={<DatasetPage family="year" />} />
+        <Route path="/data/holiday" element={<DatasetPage family="holiday" />} />
+        <Route
+          path="/data/working-days"
+          element={<DatasetPage family="working-days" />}
+        />
+        <Route path="/ajanhallinta" element={<TimeManagement />} />
+        <Route path="/tietolahteet" element={<DataSources />} />
+        <Route path="/menetelma" element={<Methodology />} />
+        <Route path="/toimitusperiaatteet" element={<EditorialPolicy />} />
         <Route path="/laskurit" element={<Calculators />} />
         <Route path="/paivamaara-viikoksi" element={<DateToWeek />} />
         <Route path="/viikko-paivamaaraksi" element={<WeekToDate />} />

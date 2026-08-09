@@ -41,6 +41,8 @@ import {
   yearStats,
 } from "./src/data/seo.js";
 import { openDataFaqs, DATA_FEED_FAMILIES } from "./src/data/openDataContent.js";
+import { dataSourcesFaqs, methodologyFaqs, editorialPolicyFaqs } from "./src/data/trustPages.js";
+import { datasetPageFaqs } from "./src/data/datasetPages.js";
 import { faqs, faqCategories, featuredFaqs } from "./src/data/faqs.js";
 import {
   fmtShortFi,
@@ -965,7 +967,16 @@ function discoverImageNodes(url) {
 // or an array, since one dataset (workingDay) legitimately has no feed
 // family of its own and distributes via two existing ones instead of
 // inventing a URL that isn't real.
-function datasetSchema({ id, name, description, distributionUrl, temporalCoverage, license, dateModified }) {
+function datasetSchema({
+  id,
+  name,
+  description,
+  distributionUrl,
+  extraDistribution = [],
+  temporalCoverage,
+  license,
+  dateModified,
+}) {
   const urls = Array.isArray(distributionUrl) ? distributionUrl : [distributionUrl];
   return {
     "@type": "Dataset",
@@ -986,11 +997,22 @@ function datasetSchema({ id, name, description, distributionUrl, temporalCoverag
     // examples use "Place" literally, so matching that is the targeted fix
     // rather than arguing the stricter-than-spec validator is wrong.
     spatialCoverage: { "@type": "Place", name: "Suomi" },
-    distribution: urls.map((contentUrl) => ({
-      "@type": "DataDownload",
-      contentUrl,
-      encodingFormat: "application/json",
-    })),
+    distribution: [
+      ...urls.map((contentUrl) => ({
+        "@type": "DataDownload",
+        contentUrl,
+        encodingFormat: "application/json",
+      })),
+      // CSV/XML bulk exports (docs/downloadable-datasets.md) — a distinct
+      // encodingFormat per entry, unlike the JSON urls above which are all
+      // application/json; extraDistribution lets a caller pass the real
+      // format per URL instead of this function guessing one.
+      ...extraDistribution.map(({ contentUrl, encodingFormat }) => ({
+        "@type": "DataDownload",
+        contentUrl,
+        encodingFormat,
+      })),
+    ],
   };
 }
 
@@ -1013,24 +1035,39 @@ function datasetNodes() {
     id: "week",
     name: "Suomen ISO 8601 -viikkonumerodata",
     description:
-      "Koneluettava JSON-data jokaiselle ISO 8601 -viikolle Suomessa: alkamis- ja päättymispäivä, työpäivien määrä, juhlapyhät, vuosineljännes ja vuodenaika. Päivittyy kerran vuorokaudessa.",
+      "Koneluettava JSON-data jokaiselle ISO 8601 -viikolle Suomessa: alkamis- ja päättymispäivä, työpäivien määrä, juhlapyhät, vuosineljännes ja vuodenaika. Saatavilla myös CSV- ja XML-muodossa. Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/week/index.json`,
+    extraDistribution: [
+      { contentUrl: `${SITE_URL}/data/week`, encodingFormat: "text/html" },
+      { contentUrl: `${SITE_URL}/data/week/${currentYear}.csv`, encodingFormat: "text/csv" },
+      { contentUrl: `${SITE_URL}/data/week/${currentYear}.xml`, encodingFormat: "application/xml" },
+    ],
   });
   const monthDataset = datasetSchema({
     ...common,
     id: "month",
     name: "Suomen kuukausittainen viikkodata",
     description:
-      "Koneluettava JSON-data jokaiselle kalenterikuukaudelle Suomessa: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä sekä arkipyhät. Päivittyy kerran vuorokaudessa.",
+      "Koneluettava JSON-data jokaiselle kalenterikuukaudelle Suomessa: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä sekä arkipyhät. Saatavilla myös CSV- ja XML-muodossa. Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/month/index.json`,
+    extraDistribution: [
+      { contentUrl: `${SITE_URL}/data/month`, encodingFormat: "text/html" },
+      { contentUrl: `${SITE_URL}/data/month/${currentYear}.csv`, encodingFormat: "text/csv" },
+      { contentUrl: `${SITE_URL}/data/month/${currentYear}.xml`, encodingFormat: "application/xml" },
+    ],
   });
   const yearDataset = datasetSchema({
     ...common,
     id: "year",
     name: "Suomen vuosittainen viikko- ja työpäivädata",
     description:
-      "Koneluettava JSON-data jokaiselle vuodelle Suomessa: viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, arkipyhät sekä vuoden ensimmäinen ja viimeinen ISO-viikko. Päivittyy kerran vuorokaudessa.",
+      "Koneluettava JSON-data jokaiselle vuodelle Suomessa: viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, arkipyhät sekä vuoden ensimmäinen ja viimeinen ISO-viikko. Saatavilla myös CSV- ja XML-muodossa (kaikki vuodet yhdessä tiedostossa). Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/year/index.json`,
+    extraDistribution: [
+      { contentUrl: `${SITE_URL}/data/year`, encodingFormat: "text/html" },
+      { contentUrl: `${SITE_URL}/data/year.csv`, encodingFormat: "text/csv" },
+      { contentUrl: `${SITE_URL}/data/year.xml`, encodingFormat: "application/xml" },
+    ],
   });
   const quarterDataset = datasetSchema({
     ...common,
@@ -1045,8 +1082,13 @@ function datasetNodes() {
     id: "holidays",
     name: "Suomen pyhäpäivädata",
     description:
-      "Koneluettava JSON-data Suomen virallisista pyhäpäivistä ja laajasti vietetyistä vapaapäivistä: nimi, päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema jokaiselle vuodelle. Päivittyy kerran vuorokaudessa.",
+      "Koneluettava JSON-data Suomen virallisista pyhäpäivistä ja laajasti vietetyistä vapaapäivistä: nimi, päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema jokaiselle vuodelle. Saatavilla myös CSV- ja XML-muodossa. Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/holidays/index.json`,
+    extraDistribution: [
+      { contentUrl: `${SITE_URL}/data/holiday`, encodingFormat: "text/html" },
+      { contentUrl: `${SITE_URL}/data/holiday/${currentYear}.csv`, encodingFormat: "text/csv" },
+      { contentUrl: `${SITE_URL}/data/holiday/${currentYear}.xml`, encodingFormat: "application/xml" },
+    ],
   });
   const holidayDetailDataset = datasetSchema({
     ...common,
@@ -1082,8 +1124,13 @@ function datasetNodes() {
     id: "monthly-workingdays",
     name: "Suomen kuukausittainen työpäivädata",
     description:
-      "Koneluettava JSON-data työpäivien ja viikonloppupäivien määrästä kuukausitasolla Suomessa, arkipyhät huomioiden. Päivittyy kerran vuorokaudessa.",
+      "Koneluettava JSON-data työpäivien ja viikonloppupäivien määrästä kuukausitasolla Suomessa, arkipyhät huomioiden. Julkinen nimi /data/working-days; saatavilla myös CSV- ja XML-muodossa. Päivittyy kerran vuorokaudessa.",
     distributionUrl: `${SITE_URL}/data/monthly-working-days/index.json`,
+    extraDistribution: [
+      { contentUrl: `${SITE_URL}/data/working-days`, encodingFormat: "text/html" },
+      { contentUrl: `${SITE_URL}/data/working-days/${currentYear}.csv`, encodingFormat: "text/csv" },
+      { contentUrl: `${SITE_URL}/data/working-days/${currentYear}.xml`, encodingFormat: "application/xml" },
+    ],
   });
 
   return [
@@ -1153,6 +1200,162 @@ function openDataFaqNodes() {
     inLanguage: "fi-FI",
     dateModified: CONTENT_UPDATED,
     mainEntity: openDataFaqs().map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// FAQPage structured data for the 3 authority/trust pages
+// (/tietolahteet, /menetelma, /toimitusperiaatteet) — same discipline as
+// openDataFaqNodes() above: sourced from src/data/trustPages.js, the same
+// functions the visible <details> lists on those pages render from, so
+// neither can drift from the other.
+function dataSourcesFaqNodes() {
+  return [{
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/tietolahteet#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: dataSourcesFaqs().map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// Methodology also gets a HowTo node (the ISO week rule genuinely is a
+// step-by-step procedure) — same shape as CALCULATOR_SCHEMA's HowTo nodes
+// elsewhere in this file, applied here since this page states the same
+// kind of ordered, followable rule.
+function methodologyFaqNodes() {
+  return [
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/menetelma#faq`,
+      inLanguage: "fi-FI",
+      dateModified: CONTENT_UPDATED,
+      mainEntity: methodologyFaqs().map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      })),
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${SITE_URL}/menetelma#howto`,
+      name: "Näin viikkonumero lasketaan",
+      step: [
+        { "@type": "HowToStep", text: "Aloita viikko aina maanantaista." },
+        { "@type": "HowToStep", text: "Etsi vuoden ensimmäinen torstai — se kertoo, mikä viikko on viikko 1." },
+        { "@type": "HowToStep", text: "Viikko, joka sisältää 4. tammikuuta, on aina viikko 1." },
+        { "@type": "HowToStep", text: "Jos 1. tammikuuta on torstai (tai karkausvuonna keskiviikko), vuodessa on 53 viikkoa 52:n sijaan." },
+      ],
+    },
+  ];
+}
+
+function editorialPolicyFaqNodes() {
+  return [{
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}/toimitusperiaatteet#faq`,
+    inLanguage: "fi-FI",
+    dateModified: CONTENT_UPDATED,
+    mainEntity: editorialPolicyFaqs().map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }];
+}
+
+// /api-playground: WebAPI (schema.org's actual type for describing an API,
+// unused elsewhere on the site) — one node per real endpoint from
+// docs/api.md — plus the page's own TechArticle node with mainEntity
+// pointing at all four, and a small FAQ. English (inLanguage "en"), same
+// deliberate exception as englishPageNodes() below.
+function apiPlaygroundNodes() {
+  const path = "/api-playground";
+  const url = canonicalFor(path);
+  const apiNode = (id, name, description, endpointUrl) => ({
+    "@type": "WebAPI",
+    "@id": `${url}#api-${id}`,
+    name,
+    description,
+    documentation: `${SITE_URL}/avoin-data`,
+    termsOfService: `${SITE_URL}/kayttoehdot`,
+    endpointUrl,
+  });
+  const apis = [
+    apiNode(
+      "week",
+      "Viikko Nro Week API",
+      "Free ISO 8601 week-number data for any week/year, 2020-2035. No auth, no rate limit.",
+      `${SITE_URL}/api/week/{week}/{year}.json`,
+    ),
+    apiNode(
+      "month",
+      "Viikko Nro Month API",
+      "Free calendar-month data (ISO weeks, working days) for any month/year, 2020-2035. No auth, no rate limit.",
+      `${SITE_URL}/api/month/{month}/{year}.json`,
+    ),
+    apiNode(
+      "year",
+      "Viikko Nro Year API",
+      "Free full-year data (week count, holidays, flag days) for any year, 2020-2035. No auth, no rate limit.",
+      `${SITE_URL}/api/year/{year}.json`,
+    ),
+    apiNode(
+      "holiday",
+      "Viikko Nro Holiday API",
+      "Free per-holiday data (date, weekday, legal basis where confirmed) for any of Finland's 15 named holidays, 2020-2035. No auth, no rate limit.",
+      `${SITE_URL}/api/holiday/{slug}/{year}.json`,
+    ),
+  ];
+  return [
+    pageNode(path, "TechArticle", {
+      description: metaFor(path).description,
+      inLanguage: "en",
+      dateModified: FEED_BUILD_DATE,
+      mainEntity: apis.map((a) => ({ "@id": a["@id"] })),
+    }),
+    ...apis,
+    {
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      inLanguage: "en",
+      dateModified: FEED_BUILD_DATE,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "Is there a rate limit?",
+          acceptedAnswer: { "@type": "Answer", text: "No — these are static files served from a CDN, not a rate-limited API." },
+        },
+        {
+          "@type": "Question",
+          name: "Do I need an API key?",
+          acceptedAnswer: { "@type": "Answer", text: "No authentication is required for any endpoint." },
+        },
+      ],
+    },
+  ];
+}
+
+// The 5 dataset landing pages (/data/week, /data/month, /data/year,
+// /data/holiday, /data/working-days) — FAQPage only, sourced from
+// datasetPageFaqs() (src/data/datasetPages.js), the same function the
+// visible <details> list renders from. WebPage node comes from the
+// generic fallback, same as every other unadorned static page.
+function datasetPageNodes(family) {
+  const url = `${SITE_URL}/data/${family}`;
+  return [{
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    inLanguage: "fi-FI",
+    dateModified: FEED_BUILD_DATE,
+    mainEntity: datasetPageFaqs(family).map((item) => ({
       "@type": "Question",
       name: item.q,
       acceptedAnswer: { "@type": "Answer", text: item.a },
@@ -2463,19 +2666,29 @@ for (const url of routes) {
     if (pdfLink) {
       html = html.replace("</head>", pdfLink + "</head>");
     }
-    if (url === "/en") {
+    if (url === "/en" || url === "/api-playground") {
       // The base template (index.html) is Finnish-first: <html lang>,
       // og:locale and <meta name="keywords"> are all baked in as Finnish
-      // defaults with no per-page override mechanism elsewhere, so /en (the
-      // one English page) ships them unpatched otherwise — a real bug, not
-      // a styling nit: og:locale: fi_FI on an English page actively
-      // misdescribes it to anything reading Open Graph tags.
+      // defaults with no per-page override mechanism elsewhere, so any
+      // deliberately-English page ships them unpatched otherwise — a real
+      // bug, not a styling nit: og:locale: fi_FI on an English page
+      // actively misdescribes it to anything reading Open Graph tags. The
+      // <SEO lang="en"> prop these pages set doesn't reach this prerendered
+      // HTML at all (react-helmet-async's output is stripped and replaced
+      // by this file — see stripInlineMeta), so the fix has to live here,
+      // not just in the component (the exact gap found and fixed for /en
+      // earlier — api-playground is the same deliberate-English exception,
+      // so it needs the same patch, not a second one).
+      const keywords =
+        url === "/api-playground"
+          ? "week number API, ISO 8601 API, free calendar API, ISO week calculator API"
+          : "week number, ISO 8601 week, current week number, ISO week calculator";
       html = html
         .replace('<html lang="fi">', '<html lang="en">')
         .replace('<meta property="og:locale" content="fi_FI" />', '<meta property="og:locale" content="en_US" />')
         .replace(
           /<meta\s+name="keywords"\s+content="[^"]*"\s*\/>/,
-          '<meta name="keywords" content="week number, ISO 8601 week, current week number, ISO week calculator" />',
+          `<meta name="keywords" content="${keywords}" />`,
         );
     }
 
@@ -2532,6 +2745,12 @@ for (const url of routes) {
       // only the homepage, and this task's brief explicitly asked for
       // Dataset schema on the new documentation page.
       if (url === "/avoin-data") nodes.push(...openDataFaqNodes(), ...datasetNodes());
+      if (url === "/tietolahteet") nodes.push(...dataSourcesFaqNodes());
+      if (url === "/menetelma") nodes.push(...methodologyFaqNodes());
+      if (url === "/toimitusperiaatteet") nodes.push(...editorialPolicyFaqNodes());
+      if (url === "/api-playground") nodes.push(...apiPlaygroundNodes());
+      const datasetPageMatch = url.match(/^\/data\/(week|month|year|holiday|working-days)$/);
+      if (datasetPageMatch) nodes.push(...datasetPageNodes(datasetPageMatch[1]));
       if (url === "/en") nodes.push(...englishPageNodes());
 
       if (["/mika-kuukausi-nyt", "/mika-vuosi-nyt", "/viikonpaiva"].includes(url)) {
@@ -2717,6 +2936,35 @@ function writeJson(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
 }
 
+// CSV/XML writers for the bulk (one-file-per-year, not one-per-record)
+// exports — see docs/downloadable-datasets.md for why bulk: CSV/XML are
+// consumed as whole datasets, not one row at a time, unlike the JSON API.
+function writeCsv(filePath, header, rows) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const esc = (v) => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [header.join(","), ...rows.map((r) => r.map(esc).join(","))];
+  fs.writeFileSync(filePath, lines.join("\n") + "\n");
+}
+function xmlEscape(v) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+function writeXml(filePath, xmlBody) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, `<?xml version="1.0" encoding="UTF-8"?>\n${xmlBody}\n`);
+}
+// Semicolon-joined name list for a CSV cell (holidays/flagDays columns) —
+// matches the shape already documented in downloadable-datasets.md.
+function nameList(items) {
+  return items.map((i) => i.name).join("; ");
+}
+
 // Working days in a single ISO week (Mon–Fri minus official holidays) — the
 // one genuinely new calculation this feature needs, since nothing before now
 // exposed a per-week count as a plain function (WeekDays.jsx computes its own
@@ -2743,6 +2991,7 @@ const holidayDetailManifest = []; // { year, indexUrl }
 const quarterManifest = []; // { year, quarter, url }
 const monthlyWorkingDaysManifest = []; // { year, month, url }
 const monthManifest = []; // { year, month, url }
+const allYearsRows = []; // accumulated across every iteration, for the single bulk /data/year.csv|.xml (see below the loop)
 let feedFileCount = 0;
 
 for (let y = 2020; y <= currentYear + 9; y += 1) {
@@ -2772,23 +3021,62 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   });
   yearManifest.push({ year: y, url: `${SITE_URL}/data/year/${y}.json` });
   feedFileCount += 1;
+  // Accumulated for the single bulk /data/year.csv|.xml written after the
+  // loop closes — reuses the exact same yStats already computed above,
+  // not a second pass.
+  allYearsRows.push({
+    year: y,
+    weekCount: yStats.weekCount,
+    workingDays: yStats.working,
+    weekendDays: yStats.weekend,
+    firstWeek: yStats.firstWeek,
+    firstWeekYear: yStats.firstWeekYear,
+    lastWeek: yStats.lastWeek,
+    lastWeekYear: yStats.lastWeekYear,
+  });
 
   // /data/holidays/<year>.json — reuses holidaysInYear() (data/holidays.js),
   // the same source PublicHolidays.jsx renders as its data table.
+  const yearHolidayRecords = holidaysInYear(y).map((h) => ({
+    name: h.name,
+    date: ymd(h.date),
+    weekday: getWeekdayName(h.date),
+    week: isoWeek(h.date),
+    official: h.official,
+  }));
   writeJson(path.join(dataDir, "holidays", `${y}.json`), {
     schemaVersion: FEED_SCHEMA_VERSION,
     year: y,
-    holidays: holidaysInYear(y).map((h) => ({
-      name: h.name,
-      date: ymd(h.date),
-      weekday: getWeekdayName(h.date),
-      week: isoWeek(h.date),
-      official: h.official,
-    })),
+    holidays: yearHolidayRecords,
     url: canonicalFor(`/pyhapaivat-${y}`),
   });
   holidaysManifest.push({ year: y, url: `${SITE_URL}/data/holidays/${y}.json` });
   feedFileCount += 1;
+
+  // Bulk /data/holiday/<year>.csv|.xml — the per-year-list shape (15 rows),
+  // reusing yearHolidayRecords computed immediately above, not recomputed.
+  writeCsv(
+    path.join(dataDir, "holiday", `${y}.csv`),
+    ["name", "date", "weekday", "week", "official"],
+    yearHolidayRecords.map((h) => [h.name, h.date, h.weekday, h.week, h.official]),
+  );
+  writeXml(
+    path.join(dataDir, "holiday", `${y}.xml`),
+    `<holidays year="${y}" schemaVersion="${FEED_SCHEMA_VERSION}">\n` +
+      yearHolidayRecords
+        .map(
+          (h) =>
+            `  <holiday official="${h.official}">\n` +
+            `    <name>${xmlEscape(h.name)}</name>\n` +
+            `    <date>${h.date}</date>\n` +
+            `    <weekday>${xmlEscape(h.weekday)}</weekday>\n` +
+            `    <week>${h.week}</week>\n` +
+            `  </holiday>`,
+        )
+        .join("\n") +
+      `\n</holidays>`,
+  );
+  feedFileCount += 2;
 
   // /data/flag-days/<year>.json — reuses flagDaysInYear() (data/flagDayPages.js),
   // the same source FlagDays.jsx renders as its data table, so this can't
@@ -2861,6 +3149,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   // file, already used by weekFaqNodes) and mondayOf/quarterOf/seasonIndexOf.
   const totalWeeks = weeksInIsoYear(y);
   const yearWeekManifest = [];
+  const yearWeekRows = []; // for the bulk /data/week/<year>.csv|.xml below
   for (let w = 1; w <= totalWeeks; w += 1) {
     const monday = mondayOf(w, y);
     const sunday = addDays(monday, 6);
@@ -2868,24 +3157,37 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
     const weekHolidays = holidaysInWeekForPrerender(y, w);
     const officialWeekHolidays = weekHolidays.filter((h) => h.official);
     const weekFlagDays = flagDaysInWeekForPrerender(y, w);
+    const workingDays = weekWorkingDaysCount(monday, officialWeekHolidays);
+    const quarter = quarterOf(monday);
+    const season = SEASON_KEYS_EN[seasonIndexOf(thursday.getMonth())];
     writeJson(path.join(dataDir, "week", String(y), `${w}.json`), {
       schemaVersion: FEED_SCHEMA_VERSION,
       week: w,
       year: y,
       startDate: ymd(monday),
       endDate: ymd(sunday),
-      workingDays: weekWorkingDaysCount(monday, officialWeekHolidays),
+      workingDays,
       holidays: weekHolidays.map((h) => ({
         name: h.name,
         date: ymd(h.date),
         official: h.official,
       })),
       flagDays: weekFlagDays.map((f) => ({ name: f.name, date: ymd(f.date) })),
-      quarter: quarterOf(monday),
-      season: SEASON_KEYS_EN[seasonIndexOf(thursday.getMonth())],
+      quarter,
+      season,
       url: canonicalFor(`/viikko-${w}-${y}`),
     });
     yearWeekManifest.push({ week: w, url: `${SITE_URL}/data/week/${y}/${w}.json` });
+    yearWeekRows.push({
+      week: w,
+      startDate: ymd(monday),
+      endDate: ymd(sunday),
+      workingDays,
+      quarter,
+      season,
+      holidays: weekHolidays,
+      flagDays: weekFlagDays,
+    });
     feedFileCount += 1;
   }
   writeJson(path.join(dataDir, "week", String(y), "index.json"), {
@@ -2898,6 +3200,38 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
     indexUrl: `${SITE_URL}/data/week/${y}/index.json`,
   });
   feedFileCount += 1; // the per-year week index itself
+
+  // Bulk /data/week/<year>.csv|.xml — one row per week, reusing yearWeekRows
+  // accumulated in the loop just above (same computed data, not a second pass).
+  writeCsv(
+    path.join(dataDir, "week", `${y}.csv`),
+    ["week", "startDate", "endDate", "workingDays", "quarter", "season", "holidays", "flagDays"],
+    yearWeekRows.map((r) => [r.week, r.startDate, r.endDate, r.workingDays, r.quarter, r.season, nameList(r.holidays), nameList(r.flagDays)]),
+  );
+  writeXml(
+    path.join(dataDir, "week", `${y}.xml`),
+    `<weeks year="${y}" schemaVersion="${FEED_SCHEMA_VERSION}">\n` +
+      yearWeekRows
+        .map(
+          (r) =>
+            `  <week number="${r.week}">\n` +
+            `    <startDate>${r.startDate}</startDate>\n` +
+            `    <endDate>${r.endDate}</endDate>\n` +
+            `    <workingDays>${r.workingDays}</workingDays>\n` +
+            `    <quarter>${r.quarter}</quarter>\n` +
+            `    <season>${r.season}</season>\n` +
+            (r.holidays.length
+              ? `    <holidays>\n${r.holidays.map((h) => `      <holiday>${xmlEscape(h.name)}</holiday>`).join("\n")}\n    </holidays>\n`
+              : `    <holidays/>\n`) +
+            (r.flagDays.length
+              ? `    <flagDays>\n${r.flagDays.map((f) => `      <flagDay>${xmlEscape(f.name)}</flagDay>`).join("\n")}\n    </flagDays>\n`
+              : `    <flagDays/>\n`) +
+            `  </week>`,
+        )
+        .join("\n") +
+      `\n</weeks>`,
+  );
+  feedFileCount += 2;
 
   // /data/quarter/<year>/<quarter>.json — reuses quarterStats() (seo.js,
   // itself built from monthStats()), the same function QuarterPage.jsx and
@@ -2945,6 +3279,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   // the page route's Finnish slug (M_SLUG), matching quarter's convention
   // above (page /q1-<year>, feed /data/quarter/<year>/1.json) — feed URLs
   // stay slug-free throughout /data/.
+  const yearWorkingDaysRows = []; // for the bulk /data/working-days/<year>.csv|.xml below
   for (let mm = 1; mm <= 12; mm += 1) {
     const mStats = monthStats(y, mm);
     const officialHolidays = mStats.holidays.filter((h) => h.official);
@@ -2968,8 +3303,49 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
       month: mm,
       url: `${SITE_URL}/data/monthly-working-days/${y}/${mm}.json`,
     });
+    yearWorkingDaysRows.push({
+      month: mm,
+      monthName: M_FULL[mm - 1],
+      workingDays: mStats.working,
+      weekendDays: mStats.weekend,
+      officialHolidaysInMonth: officialHolidays.length,
+    });
     feedFileCount += 1;
   }
+
+  // Bulk /data/working-days/<year>.csv|.xml — the new public name for the
+  // monthly-working-days family (see docs/downloadable-datasets.md decision
+  // #2: JSON URLs above are unchanged, this is additive). 12 monthly rows +
+  // one TOTAL row using yStats (already computed earlier this iteration),
+  // so the whole-year figure and the monthly breakdown can't disagree.
+  writeCsv(
+    path.join(dataDir, "working-days", `${y}.csv`),
+    ["month", "monthName", "workingDays", "weekendDays", "officialHolidaysInMonth"],
+    [
+      ...yearWorkingDaysRows.map((r) => [r.month, r.monthName, r.workingDays, r.weekendDays, r.officialHolidaysInMonth]),
+      ["TOTAL", "", yStats.working, yStats.weekend, yearHolidayRecords.filter((h) => h.official).length],
+    ],
+  );
+  writeXml(
+    path.join(dataDir, "working-days", `${y}.xml`),
+    `<workingDays year="${y}" schemaVersion="${FEED_SCHEMA_VERSION}">\n` +
+      yearWorkingDaysRows
+        .map(
+          (r) =>
+            `  <month number="${r.month}">\n` +
+            `    <name>${xmlEscape(r.monthName)}</name>\n` +
+            `    <workingDays>${r.workingDays}</workingDays>\n` +
+            `    <weekendDays>${r.weekendDays}</weekendDays>\n` +
+            `    <officialHolidaysInMonth>${r.officialHolidaysInMonth}</officialHolidaysInMonth>\n` +
+            `  </month>`,
+        )
+        .join("\n") +
+      `\n  <total>\n` +
+      `    <workingDays>${yStats.working}</workingDays>\n` +
+      `    <weekendDays>${yStats.weekend}</weekendDays>\n` +
+      `  </total>\n</workingDays>`,
+  );
+  feedFileCount += 2;
 
   // /data/month/<year>/<month>.json — the Month dataset (audit finding: no
   // feed or Dataset schema existed for /kuukausi-<m>-<y> before this pass,
@@ -2977,9 +3353,11 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
   // this describes which ISO weeks fall in the month, not its working-day
   // count. Reuses the same monthStats() call already made for the
   // monthly-working-days feed two lines up — no second day-counting pass.
+  const yearMonthRows = []; // for the bulk /data/month/<year>.csv|.xml below
   for (let mm = 1; mm <= 12; mm += 1) {
     const mStats = monthStats(y, mm);
     const monthFlagDays = flagDaysInYear(y).filter((f) => f.month === mm);
+    const monthOfficialHolidays = mStats.holidays.filter((h) => h.official);
     writeJson(path.join(dataDir, "month", String(y), `${mm}.json`), {
       schemaVersion: FEED_SCHEMA_VERSION,
       month: mm,
@@ -2990,9 +3368,7 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
       weeks: mStats.weeks,
       workingDays: mStats.working,
       weekendDays: mStats.weekend,
-      holidays: mStats.holidays
-        .filter((h) => h.official)
-        .map((h) => ({ name: h.name, date: ymd(h.date), official: h.official })),
+      holidays: monthOfficialHolidays.map((h) => ({ name: h.name, date: ymd(h.date), official: h.official })),
       flagDays: monthFlagDays.map((f) => ({ name: f.name, date: ymd(f.date) })),
       quarter: Math.ceil(mm / 3),
       url: canonicalFor(`/kuukausi-${mm}-${y}`),
@@ -3002,9 +3378,81 @@ for (let y = 2020; y <= currentYear + 9; y += 1) {
       month: mm,
       url: `${SITE_URL}/data/month/${y}/${mm}.json`,
     });
+    yearMonthRows.push({
+      month: mm,
+      monthName: M_FULL[mm - 1],
+      startDate: ymd(mStats.firstDay),
+      endDate: ymd(mStats.lastDay),
+      weekCount: mStats.weekCount,
+      workingDays: mStats.working,
+      weekendDays: mStats.weekend,
+      quarter: Math.ceil(mm / 3),
+      holidays: monthOfficialHolidays,
+      flagDays: monthFlagDays,
+    });
     feedFileCount += 1;
   }
+
+  // Bulk /data/month/<year>.csv|.xml — one row per calendar month.
+  writeCsv(
+    path.join(dataDir, "month", `${y}.csv`),
+    ["month", "monthName", "startDate", "endDate", "weekCount", "workingDays", "weekendDays", "quarter", "holidays", "flagDays"],
+    yearMonthRows.map((r) => [r.month, r.monthName, r.startDate, r.endDate, r.weekCount, r.workingDays, r.weekendDays, r.quarter, nameList(r.holidays), nameList(r.flagDays)]),
+  );
+  writeXml(
+    path.join(dataDir, "month", `${y}.xml`),
+    `<months year="${y}" schemaVersion="${FEED_SCHEMA_VERSION}">\n` +
+      yearMonthRows
+        .map(
+          (r) =>
+            `  <month number="${r.month}">\n` +
+            `    <name>${xmlEscape(r.monthName)}</name>\n` +
+            `    <startDate>${r.startDate}</startDate>\n` +
+            `    <endDate>${r.endDate}</endDate>\n` +
+            `    <weekCount>${r.weekCount}</weekCount>\n` +
+            `    <workingDays>${r.workingDays}</workingDays>\n` +
+            `    <weekendDays>${r.weekendDays}</weekendDays>\n` +
+            `    <quarter>${r.quarter}</quarter>\n` +
+            (r.holidays.length
+              ? `    <holidays>\n${r.holidays.map((h) => `      <holiday>${xmlEscape(h.name)}</holiday>`).join("\n")}\n    </holidays>\n`
+              : `    <holidays/>\n`) +
+            (r.flagDays.length
+              ? `    <flagDays>\n${r.flagDays.map((f) => `      <flagDay>${xmlEscape(f.name)}</flagDay>`).join("\n")}\n    </flagDays>\n`
+              : `    <flagDays/>\n`) +
+            `  </month>`,
+        )
+        .join("\n") +
+      `\n</months>`,
+  );
+  feedFileCount += 2;
 }
+
+// Bulk /data/year.csv|.xml — ALL years in one file (unlike the other
+// families, the JSON here is already one record per year, so "bulk" means
+// every year, not per-year — see docs/downloadable-datasets.md decision).
+writeCsv(
+  path.join(dataDir, "year.csv"),
+  ["year", "weekCount", "workingDays", "weekendDays", "firstWeek", "firstWeekYear", "lastWeek", "lastWeekYear"],
+  allYearsRows.map((r) => [r.year, r.weekCount, r.workingDays, r.weekendDays, r.firstWeek, r.firstWeekYear, r.lastWeek, r.lastWeekYear]),
+);
+writeXml(
+  path.join(dataDir, "year.xml"),
+  `<years schemaVersion="${FEED_SCHEMA_VERSION}">\n` +
+    allYearsRows
+      .map(
+        (r) =>
+          `  <year number="${r.year}">\n` +
+          `    <weekCount>${r.weekCount}</weekCount>\n` +
+          `    <workingDays>${r.workingDays}</workingDays>\n` +
+          `    <weekendDays>${r.weekendDays}</weekendDays>\n` +
+          `    <firstWeek week="${r.firstWeek}" year="${r.firstWeekYear}"/>\n` +
+          `    <lastWeek week="${r.lastWeek}" year="${r.lastWeekYear}"/>\n` +
+          `  </year>`,
+      )
+      .join("\n") +
+    `\n</years>`,
+);
+feedFileCount += 2;
 
 // Per-family manifests — the actual contentUrl each Dataset node's
 // distribution points at (STEP 4), and the one URL an agent needs to
@@ -3335,7 +3783,15 @@ const lastmodFor = (p) => {
   if (m && Number(m[1]) < currentYear) return `${m[1]}-12-31`;
   return today;
 };
-const indexableEntries = sitemapEntries(currentYear).filter((e) => isIndexable(e.path));
+// isIndexable(e.path) alone matched the year-window gate but not a
+// per-route meta.robots noindex override — the actual noindex-flip logic
+// below (search "!isIndexable(url) || meta.robots") checks both. No route
+// sets meta.robots to noindex today (audited), so this was previously a
+// latent gap, not an active leak — closing it here so it can't become one
+// silently if a future route ever does.
+const indexableEntries = sitemapEntries(currentYear).filter(
+  (e) => isIndexable(e.path) && !metaFor(e.path)?.robots?.startsWith("noindex"),
+);
 const urlset = indexableEntries
   .map((e) => {
     const loc = e.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${e.path}`;

@@ -58,6 +58,7 @@ import {
   weekdayMeta,
 } from "./currentDateContent.js";
 import { englishMeta } from "./englishContent.js";
+import { DATASET_PAGES, datasetPageMeta } from "./datasetPages.js";
 
 // Fixed date the FAQ/explainer/calculator page COPY (not just computed data)
 // was last substantively edited. Bump both by hand when that prose actually
@@ -752,6 +753,36 @@ export const routeMeta = {
       "Ota yhteyttä Viikko Nro -tiimiin verkkolomakkeella. Vastaamme palautteeseen, kysymyksiin ja kehitysehdotuksiin niin nopeasti kuin mahdollista.",
     breadcrumb: "Ota yhteyttä",
   },
+  "/api-playground": {
+    title: "API Playground — Test the Free ISO Week Number API | Viikko Nro",
+    description:
+      "Test Viikko Nro's free ISO 8601 week number API live in your browser. No auth, no rate limit. cURL, JavaScript, PHP and Python examples for week, month, year and Finnish holiday endpoints.",
+    breadcrumb: "API Playground",
+  },
+  "/ajanhallinta": {
+    title: "Ajanhallinta viikkonumeroiden avulla | Viikko Nro",
+    description:
+      "Viikko-, työpäivä-, lukukausi- ja sprinttisuunnittelu ISO 8601 -viikkonumeroiden avulla — kaikki Viikko Nron aikataulutyökalut yhdellä sivulla.",
+    breadcrumb: "Ajanhallinta",
+  },
+  "/tietolahteet": {
+    title: "Tietolähteet | Viikko Nro",
+    description:
+      "Mihin Viikko Nron viikkonumerot ja pyhäpäivätiedot perustuvat: ISO 8601 -standardi, Finlex-lakiviittaukset ja kuntien viralliset tiedotteet.",
+    breadcrumb: "Tietolähteet",
+  },
+  "/menetelma": {
+    title: "Menetelmä | Viikko Nro",
+    description:
+      "Miten viikkonumerot lasketaan: ISO 8601 -säännöt, vuodenvaihteen reunatapaukset, karkausvuodet, viikko 53 ja liikkuvien pyhäpäivien laskenta.",
+    breadcrumb: "Menetelmä",
+  },
+  "/toimitusperiaatteet": {
+    title: "Toimitusperiaatteet | Viikko Nro",
+    description:
+      "Miten Viikko Nro varmistaa sisällön oikeellisuuden, päivittää dataa ja korjaa virheitä.",
+    breadcrumb: "Toimitusperiaatteet",
+  },
   "/tietosuoja": {
     title: "Tietosuojaseloste | Viikko Nro",
     description:
@@ -821,6 +852,16 @@ export function sitemapEntries(year) {
     { path: "/viikonpaiva", changefreq: "monthly", priority: "0.7" },
     { path: "/ukk", changefreq: "monthly", priority: "0.8" },
     { path: "/avoin-data", changefreq: "monthly", priority: "0.6" },
+    { path: "/api-playground", changefreq: "monthly", priority: "0.6" },
+    { path: "/data/week", changefreq: "monthly", priority: "0.5" },
+    { path: "/data/month", changefreq: "monthly", priority: "0.5" },
+    { path: "/data/year", changefreq: "monthly", priority: "0.5" },
+    { path: "/data/holiday", changefreq: "monthly", priority: "0.5" },
+    { path: "/data/working-days", changefreq: "monthly", priority: "0.5" },
+    { path: "/ajanhallinta", changefreq: "weekly", priority: "0.6" },
+    { path: "/tietolahteet", changefreq: "monthly", priority: "0.6" },
+    { path: "/menetelma", changefreq: "monthly", priority: "0.7" },
+    { path: "/toimitusperiaatteet", changefreq: "monthly", priority: "0.5" },
     { path: "/laskurit", changefreq: "monthly", priority: "0.7" },
     { path: "/paivamaara-viikoksi", changefreq: "monthly", priority: "0.7" },
     { path: "/viikko-paivamaaraksi", changefreq: "monthly", priority: "0.7" },
@@ -963,6 +1004,8 @@ export function metaFor(url) {
   if (url === "/mika-vuosi-nyt") return { ...routeMeta[url], ...currentYearMeta() };
   if (routeMeta[url]) return routeMeta[url];
   let m;
+  if ((m = url.match(/^\/data\/(week|month|year|holiday|working-days)$/)))
+    return datasetPageMeta(m[1]);
   if (url === "/nimipaivat/tanaan") return todayNameDayMeta();
   if ((m = url.match(/^\/nimipaiva\/([a-z0-9-]+)$/))) return nameDayNameMeta(m[1]);
   if ((m = url.match(/^\/nimipaivat\/(\d{2}-\d{2})$/))) return nameDayDateMeta(m[1]);
@@ -1001,6 +1044,14 @@ export function breadcrumbTrail(url) {
       : [home, { name: routeMeta[url].breadcrumb, path: url }];
   }
   let m;
+  if ((m = url.match(/^\/data\/(week|month|year|holiday|working-days)$/))) {
+    const p = DATASET_PAGES[m[1]];
+    return [
+      home,
+      { name: "Avoin data", path: "/avoin-data" },
+      { name: p.title, path: url },
+    ];
+  }
   if (url === "/nimipaivat/tanaan") {
     return [home, { name: "Nimipäivä tänään", path: url }];
   }
