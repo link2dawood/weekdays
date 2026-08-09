@@ -643,15 +643,18 @@ function ogCard(h, { big, accent, tagline }) {
 // /og/), so there is zero chance of a filename colliding with the OG family.
 // ============================================================================
 
+// Light blue / white — deliberately not the OG family's green/amber (see the
+// file-header note: two independent palettes on purpose). Two blue tiers do
+// the job amber/accentSoft did before: `accentSoft` (pale wash) marks "this
+// row/period", `accent` (bold) marks "this exact day" — same visual-hierarchy
+// role, no non-blue color needed anywhere in this image family now.
 const DISCOVER_COLORS = {
-  ink: "#15211f",
-  inkSoft: "#56655f",
+  ink: "#10233d",
+  inkSoft: "#5b7089",
   paper: "#ffffff",
-  line: "#e3e8e6",
-  accent: "#1f7a5c",
-  accentSoft: "#e3f0ea",
-  amber: "#e0a23b",
-  amberSoft: "#faf1e0",
+  line: "#dbe7f3",
+  accent: "#2f6fed",
+  accentSoft: "#e3edfc",
 };
 
 // Monday-first week rows for one calendar month — independent from (not
@@ -743,7 +746,7 @@ function discoverMonthGrid(h, { year, monthIndex, cellSize, highlightWeek, highl
                       width: Math.round(cellSize * 0.78),
                       height: Math.round(cellSize * 0.78),
                       borderRadius: "50%",
-                      background: isHighlightDay ? DISCOVER_COLORS.amber : "transparent",
+                      background: isHighlightDay ? DISCOVER_COLORS.accent : "transparent",
                       color: isHighlightDay
                         ? "#ffffff"
                         : isSunday
@@ -763,24 +766,105 @@ function discoverMonthGrid(h, { year, monthIndex, cellSize, highlightWeek, highl
   );
 }
 
+// A single week's 7 days as one row — the supporting-context element for
+// the week image's redesign (see the generation loop below): the WEEK
+// NUMBER itself is now the dominant visual (a large numeral), so this only
+// needs to show which 7 dates that number covers, not a whole month.
+// Independent from discoverMonthGrid() by design (same "parallel system,
+// no shared code" discipline as the rest of this file), even though both
+// render date cells.
+function discoverWeekStrip(h, { monday, cellSize }) {
+  const WD_LETTER = ["Ma", "Ti", "Ke", "To", "Pe", "La", "Su"];
+  const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  return h(
+    "div",
+    {
+      style: {
+        display: "flex",
+        flexDirection: "row",
+        background: DISCOVER_COLORS.accentSoft,
+        borderRadius: Math.round(cellSize * 0.22),
+        padding: Math.round(cellSize * 0.14),
+      },
+    },
+    ...days.map((d, i) =>
+      h(
+        "div",
+        {
+          key: String(i),
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: cellSize,
+            margin: Math.round(cellSize * 0.05),
+          },
+        },
+        h(
+          "span",
+          {
+            style: {
+              display: "flex",
+              fontSize: Math.round(cellSize * 0.2),
+              color: DISCOVER_COLORS.inkSoft,
+              marginBottom: Math.round(cellSize * 0.08),
+            },
+          },
+          WD_LETTER[i],
+        ),
+        h(
+          "span",
+          {
+            style: {
+              display: "flex",
+              fontSize: Math.round(cellSize * 0.36),
+              fontWeight: 700,
+              color: DISCOVER_COLORS.ink,
+            },
+          },
+          String(d.getDate()),
+        ),
+      ),
+    ),
+  );
+}
+
 // Subtle corner brand mark — small, muted, never the dominant element (the
 // opposite emphasis from ogCard()'s large colored "VIIKKONRO.FI" kicker),
-// matching requirement 5 ("keep branding subtle").
+// matching requirement 5 ("keep branding subtle"). The icon is the same
+// 5-bar silhouette as the real logo (public/logo-horizontal-cropped.svg),
+// redrawn as native SVG (satori renders <svg>/<rect> directly — no <img>/
+// data-URI needed) and recoloured into this family's blue palette. Text is
+// "Viikko Nro" — the site's real current brand name — not the "Viikko nyt"
+// wordmark literally baked into that SVG file's <text> glyphs, which is a
+// stale pre-rebrand artifact in that one static asset, not the actual brand.
 function discoverBrandMark(h) {
   return h(
     "div",
     {
       style: {
         display: "flex",
+        alignItems: "center",
         position: "absolute",
         bottom: 36,
         right: 44,
-        fontSize: 22,
-        color: DISCOVER_COLORS.inkSoft,
-        letterSpacing: 1,
+        gap: 10,
       },
     },
-    "viikkonro.fi",
+    h(
+      "svg",
+      { width: 26, height: 26, viewBox: "0 0 100 100" },
+      h("rect", { x: 4, y: 46, width: 14, height: 50, rx: 7, fill: DISCOVER_COLORS.accent }),
+      h("rect", { x: 24, y: 30, width: 14, height: 66, rx: 7, fill: DISCOVER_COLORS.ink }),
+      h("rect", { x: 44, y: 8, width: 14, height: 88, rx: 7, fill: DISCOVER_COLORS.accent }),
+      h("rect", { x: 64, y: 40, width: 14, height: 56, rx: 7, fill: DISCOVER_COLORS.inkSoft }),
+      h("rect", { x: 84, y: 50, width: 14, height: 46, rx: 7, fill: DISCOVER_COLORS.line }),
+    ),
+    h(
+      "span",
+      { style: { display: "flex", fontSize: 22, color: DISCOVER_COLORS.inkSoft, letterSpacing: 0.5 } },
+      "Viikko Nro",
+    ),
   );
 }
 
@@ -4155,26 +4239,44 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
       discoverCount += 1;
     }
 
-    // /discover/viikko-<week>-<year>.png — that week's month, its own row
-    // highlighted by color (no "Viikko 32" giant text — the highlighted row
-    // *is* the answer).
+    // /discover/viikko-<week>-<year>.png — week-number visual focus: the
+    // number itself is the large, dominant element (not buried in a caption
+    // above a full month grid, which read as "a month" more than "a week").
+    // A compact 7-day strip for just that week supplies the supporting
+    // context (which dates), via discoverWeekStrip() above.
     const totalWeeks = weeksInIsoYear(y);
     for (let w = 1; w <= totalWeeks; w += 1) {
       const monday = mondayOf(w, y);
-      const monthIndex = monday.getMonth();
-      const monthYear = monday.getFullYear();
+      const sunday = addDays(monday, 6);
       const card = discoverCanvas(h, [
         h(
           "div",
-          { style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" } },
-          captionLine(h, `Viikko ${w} / ${y}`),
-          discoverMonthGrid(h, {
-            year: monthYear,
-            monthIndex,
-            cellSize: HERO_CELL,
-            showMonthLabel: true,
-            highlightWeek: { week: w, weekYear: y },
-          }),
+          { style: { display: "flex", flexDirection: "row", alignItems: "center", height: "100%", gap: 56 } },
+          h(
+            "div",
+            { style: { display: "flex", flexDirection: "column" } },
+            h(
+              "span",
+              { style: { display: "flex", fontSize: 32, fontWeight: 700, color: DISCOVER_COLORS.accent, letterSpacing: 4 } },
+              "VIIKKO",
+            ),
+            h(
+              "span",
+              { style: { display: "flex", fontSize: 240, fontWeight: 800, color: DISCOVER_COLORS.ink, lineHeight: 1 } },
+              String(w),
+            ),
+            h(
+              "span",
+              { style: { display: "flex", fontSize: 32, fontWeight: 600, color: DISCOVER_COLORS.inkSoft } },
+              String(y),
+            ),
+          ),
+          h(
+            "div",
+            { style: { display: "flex", flexDirection: "column" } },
+            captionLine(h, `${fmtShortFi(monday)} – ${fmtShortFi(sunday)}`),
+            discoverWeekStrip(h, { monday, cellSize: HERO_CELL }),
+          ),
         ),
         discoverBrandMark(h),
       ]);
