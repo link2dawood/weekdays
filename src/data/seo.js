@@ -754,7 +754,7 @@ export const routeMeta = {
     breadcrumb: "Ota yhteyttä",
   },
   "/api-playground": {
-    title: "API Playground — Test the Free ISO Week Number API | Viikko Nro",
+    title: "API Playground — Free ISO Week Number API | Viikko Nro",
     description:
       "Test Viikko Nro's free ISO 8601 week number API live in your browser. No auth, no rate limit. cURL, JavaScript, PHP and Python examples for week, month, year and Finnish holiday endpoints.",
     breadcrumb: "API Playground",
