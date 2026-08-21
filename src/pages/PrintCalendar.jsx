@@ -9,6 +9,7 @@ import {
   PRERENDER_MAX_YEAR as YEAR_MAX,
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
+import AdSlot from "../components/AdSlot";
 import { canonicalFor, printMeta } from "../data/seo";
 import {
   downloadCalendarCsv,
@@ -87,6 +88,7 @@ const PrintCalendar = ({ year: pYear } = {}) => {
           </button>
         </p>
       </div>
+      <AdSlot placement="print-list-before-preview" />
       <table className="ptable">
         <thead>
           <tr>

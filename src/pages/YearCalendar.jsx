@@ -13,6 +13,7 @@ import {
 } from "../components/dateUtils";
 import SEO from "../components/SEO";
 import QuickFacts from "../components/QuickFacts";
+import AdSlot from "../components/AdSlot";
 import { calendarPdfPath, canonicalFor, yearFaqs, yearMeta, yearStats } from "../data/seo";
 import { CONFIDENCE, pageConfidenceTier } from "../data/schoolHolidayPages";
 import NotFound from "./NotFound";
@@ -107,6 +108,8 @@ const YearCalendar = ({ year: pYear } = {}) => {
           { label: "Arkipyhiä", value: stats.officialHolidayCount },
         ]}
       />
+
+      <AdSlot placement="year-summary-after-facts" />
 
       <div className="pills">
         {years.map((y) => (

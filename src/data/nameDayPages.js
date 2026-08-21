@@ -114,7 +114,7 @@ export function todayNameDayMeta(now = new Date()) {
     title: `Nimipäivä tänään – ${fmtShortFi(page.date)} | Viikko Nro`,
     description: page.available
       ? fitDescription(`Katso nimipäivä tänään ${fmtFullFi(page.date)}: ${names}. Tänään on ${page.weekdayEssive} ja viikko ${page.week}. Avaa päivän tiedot sekä nimien omat nimipäiväsivut.`)
-      : `Tarkista nimipäivä tänään ${fmtFullFi(page.date)}. Palvelun varmennettu nimipäiväaineisto ei vielä kata tätä päivää; katso saatavilla olevat päivät ja nimet.`,
+      : `Päivälle ${fmtFullFi(page.date)} ei ole julkaistu nimipäivätietoa Viikko Nron varmennetussa aineistossa. Tarkista päivän viikonpäivä ja viikkonumero.`,
     robots: page.available ? "index, follow" : "noindex, follow",
   };
 }
@@ -132,7 +132,7 @@ export function nameDayFaqs(page, type) {
   if (type === "today") {
     const answer = page.available
       ? `Tänään ${fmtFullFi(page.date)} nimipäivää ${page.names.length === 1 ? "viettää" : "viettävät"} ${page.names.join(", ")}.`
-      : `Päivän ${fmtFullFi(page.date)} nimipäivät eivät vielä sisälly palvelun varmennettuun aineistoon.`;
+      : `Päivälle ${fmtFullFi(page.date)} ei ole julkaistu nimipäivätietoa Viikko Nron varmennetussa aineistossa.`;
     return [
       { q: "Nimipäivä tänään yhdellä lauseella?", a: answer },
       { q: "Mikä päivä tänään on?", a: `Tänään on ${page.weekdayEssive} ${fmtFullFi(page.date)}.` },

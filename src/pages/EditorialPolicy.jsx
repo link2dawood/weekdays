@@ -81,8 +81,11 @@ const EditorialPolicy = () => {
 
         <h2>Riippumattomuus</h2>
         <p>
-          Palvelu on ilmainen eikä sisällä mainoksia tai maksettuja
-          sijoitteluja.
+          Palvelu on käyttäjälle ilmainen. Mahdollinen mainonta ei vaikuta
+          laskentatuloksiin, lähdevalintoihin tai toimitukselliseen sisältöön,
+          emmekä julkaise maksettuja sijoitteluja toimituksellisena aineistona.
+          Mainosevästeistä ja suostumuksesta kerrotaan{" "}
+          <Link to="/tietosuoja">tietosuojaselosteessa</Link>.
         </p>
 
         <h2>Usein kysyttyä</h2>

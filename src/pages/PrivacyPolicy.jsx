@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
-import { routeMeta } from "../data/seo";
+import { CONTENT_UPDATED_FI, routeMeta } from "../data/seo";
 
 const PrivacyPolicy = () => {
   const meta = routeMeta["/tietosuoja"];
@@ -14,9 +14,18 @@ const PrivacyPolicy = () => {
         </div>
         <h1>Tietosuojaseloste</h1>
         <div className="prose">
-          <p>Päivitetty viimeksi: 23. kesäkuuta 2026</p>
+          <p>Päivitetty viimeksi: {CONTENT_UPDATED_FI}</p>
         </div>
-        <h2>1. Keräämämme tiedot</h2>
+        <h2>1. Rekisterinpitäjä ja yhteydenotto</h2>
+        <div className="prose">
+          <p>
+            Rekisterinpitäjä on Viikko Nro. Tietosuojaa koskevissa kysymyksissä
+            voit ottaa yhteyttä sivun{" "}
+            <Link to="/ota-yhteytta">yhteydenottolomakkeella</Link>.
+          </p>
+        </div>
+
+        <h2>2. Keräämämme tiedot</h2>
         <div className="prose">
           <p>
             <strong>Lokitiedostot:</strong> Kuten useimmat tavanomaiset
@@ -27,13 +36,19 @@ const PrivacyPolicy = () => {
             aikaleiman sekä viittaavat/poistumissivut.
           </p>
           <p>
-            <strong>Evästeet ja verkkojäljitteet:</strong> Käytämme
-            perusevästeitä käyttäjän asetusten (kuten valitseman teeman tai
-            tumman tilan) tallentamiseen ja käyttökokemuksesi optimoimiseen.
+            <strong>Paikallinen tallennus:</strong> Yhteydenottolomakkeen
+            väärinkäytön estävä lähetysrajoitus tallentaa selaimen{" "}
+            <code>localStorage</code>-muistiin vain lähetysaikoja. Laskureiden
+            käyttämiseen ei tarvita mainos- tai analytiikkaevästeitä.
+          </p>
+          <p>
+            <strong>Yhteydenottolomake:</strong> Jos lähetät viestin, nimi,
+            sähköpostiosoite ja viestin sisältö välitetään Web3Forms-palvelulle
+            viestin toimittamista varten.
           </p>
         </div>
 
-        <h2>2. Miten käytämme tietojasi</h2>
+        <h2>3. Miten käytämme tietojasi</h2>
         <div className="prose">
           <p>Käytämme keräämiämme tietoja seuraaviin tarkoituksiin:</p>
           <ul>
@@ -44,22 +59,73 @@ const PrivacyPolicy = () => {
           </ul>
         </div>
 
-        <h2>3. Tietosuoja (GDPR & CCPA)</h2>
+        <h2>4. Google AdSense, mainosevästeet ja DART</h2>
         <div className="prose">
           <p>
-            Emme myy, vuokraa tai jaa henkilötietojasi kolmansille osapuolille.
-            Selaimesi tiedot pysyvät laitteellasi paikallisina aina kun se on
-            mahdollista. Sinulla on oikeus pyytää pääsyä IP-osoitteeseesi
-            liittyviin vähäisiin lokitietoihin, niiden korjaamista tai
-            poistamista.
+            Sivustolla voidaan näyttää Google AdSense -mainoksia. Google on
+            kolmannen osapuolen mainostoimittaja, joka voi käyttäjän valinnan
+            mukaisesti käyttää evästeitä tai muuta paikallista tallennusta
+            mainosten näyttämiseen, rajoittamiseen, mittaamiseen ja
+            personointiin. Google käytti mainosevästeestään aiemmin nimeä
+            <strong> DART-eväste</strong>; mainosevästeiden avulla mainoksia
+            voidaan näyttää tällä ja muilla verkkosivustoilla tehtyjen
+            vierailujen perusteella.
+          </p>
+          <p>
+            EU:ssa, ETA-alueella, Isossa-Britanniassa ja Sveitsissä
+            valinnaiset mainosevästeet ja personoitu mainonta pidetään pois
+            käytöstä, kunnes kävijä tekee valinnan Google-sertifioidussa
+            suostumuksenhallintapalvelussa (CMP). Valinnan hylkääminen ei estä
+            kalenterien tai laskureiden käyttöä. Kun mainospalvelut ovat
+            käytössä, suostumuksen voi myöhemmin perua tai muuttaa bannerin
+            evästeasetuksista.
+          </p>
+          <p>
+            Lisätietoja:{" "}
+            <a href="https://policies.google.com/technologies/ads" rel="external noopener">
+              Googlen mainosevästeet
+            </a>
+            ,{" "}
+            <a href="https://policies.google.com/technologies/partner-sites" rel="external noopener">
+              miten Google käyttää kumppanisivustoilta saatuja tietoja
+            </a>{" "}
+            ja{" "}
+            <a href="https://myadcenter.google.com/" rel="external noopener">
+              Googlen mainosasetukset
+            </a>.
           </p>
         </div>
 
-        <h2>4. Suostumus</h2>
+        <h2>5. Tietojen vastaanottajat ja säilytys</h2>
         <div className="prose">
           <p>
-            Käyttämällä verkkosivustoamme annat suostumuksesi
-            tietosuojaselosteellemme ja hyväksyt sen ehdot.
+            Palvelun tekniseen toimittamiseen osallistuvat Vercel ja Cloudflare.
+            Yhteydenottoviestit käsittelee Web3Forms. Jos AdSense-mainonta on
+            käytössä ja siihen on annettu tarvittava suostumus, Google ja
+            CMP:ssä luetellut mainosteknologian tarjoajat voivat käsitellä
+            tietoja omien tietosuojakäytäntöjensä mukaisesti. Emme myy
+            henkilötietoja.
+          </p>
+          <p>
+            Palvelinlokeja säilytetään palveluntarjoajien omien
+            säilytysaikojen mukaisesti. Yhteydenottoviestejä säilytetään vain
+            niin kauan kuin asian käsittely sitä edellyttää. Paikallisia
+            lähetysaikoja käytetään vain tunnin mittaisen lähetysrajan
+            laskentaan; sitä vanhemmat merkinnät poistetaan seuraavan
+            lomakekäytön yhteydessä. Tiedot voi poistaa myös tyhjentämällä
+            selaimen sivustotiedot.
+          </p>
+        </div>
+
+        <h2>6. Oikeutesi ja suostumuksen peruuttaminen</h2>
+        <div className="prose">
+          <p>
+            Sinulla on soveltuvan tietosuojalainsäädännön mukaisesti oikeus
+            pyytää pääsyä henkilötietoihisi, niiden oikaisua tai poistamista,
+            käsittelyn rajoittamista sekä vastustaa käsittelyä. Suostumukseen
+            perustuvan käsittelyn voi perua milloin tahansa vaikuttamatta ennen
+            peruuttamista tehdyn käsittelyn lainmukaisuuteen. Pyynnön voi tehdä{" "}
+            <Link to="/ota-yhteytta">yhteydenottolomakkeella</Link>.
           </p>
         </div>
       </section>

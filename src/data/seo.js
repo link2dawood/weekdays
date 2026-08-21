@@ -66,8 +66,8 @@ import { DATASET_PAGES, datasetPageMeta } from "./datasetPages.js";
 // "Päivitetty" line on each page and its dateModified in structured data
 // always agree, and so a date claiming freshness doesn't roll every day just
 // because the site auto-rebuilds while the words on the page haven't changed.
-export const CONTENT_UPDATED = "2026-08-05";
-export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 5));
+export const CONTENT_UPDATED = "2026-08-21";
+export const CONTENT_UPDATED_FI = fmtFullFi(new Date(2026, 7, 21));
 
 // The /data/* JSON feeds' schemaVersion field and the real schema.org
 // Dataset.version property (see prerender.js's datasetSchema()) — bumped only
@@ -713,7 +713,7 @@ export const routeMeta = {
   "/suomi-vs-usa-viikkonumerot": {
     title: "Suomi vs. USA: miksi viikkonumero eroaa? | Viikko Nro",
     description:
-      "Suomen ISO 8601 -viikko ja Yhdysvaltain sunnuntaista alkava viikko voivat näyttää eri numeron samalle päivälle. Vertaile oikeilla päivämäärillä, miten ja miksi.",
+      "Suomen ISO 8601 -viikko ja Yhdysvaltain sunnuntaista alkava viikko voivat antaa samalle päivälle eri numeron. Vertaile eroja oikeilla päivämäärillä.",
     breadcrumb: "Suomi vs. USA",
   },
   "/mika-kuukausi-nyt": {
@@ -756,7 +756,7 @@ export const routeMeta = {
   "/api-playground": {
     title: "API Playground — Free ISO Week Number API | Viikko Nro",
     description:
-      "Test Viikko Nro's free ISO 8601 week number API live in your browser. No auth, no rate limit. cURL, JavaScript, PHP and Python examples for week, month, year and Finnish holiday endpoints.",
+      "Test Viikko Nro's free ISO 8601 API in your browser. No auth or rate limit. Includes cURL, JavaScript, PHP and Python examples.",
     breadcrumb: "API Playground",
   },
   "/ajanhallinta": {

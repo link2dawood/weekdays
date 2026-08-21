@@ -33,7 +33,7 @@ const { render } = await import(
 // Asset hints (<link rel="preload" href="...svg">, favicons, etc.) also use
 // href= but aren't page links — exclude by extension so they don't pollute
 // the crawl or the redirect-only heuristic below.
-const ASSET_EXT = /\.(svg|png|jpg|jpeg|ico|xml|txt|css|js)$/i;
+const ASSET_EXT = /\.(svg|png|jpg|jpeg|ico|xml|txt|css|js|pdf|json|csv)$/i;
 
 function extractLinks(html) {
   const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
@@ -87,10 +87,15 @@ while (queue.length) {
 }
 
 const sitemap = fs.readFileSync(path.join(root, "dist/sitemap.xml"), "utf-8");
-const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => {
-  const u = new URL(m[1]);
-  return u.pathname === "/" ? "/" : u.pathname;
-});
+const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
+  .map((m) => {
+    const u = new URL(m[1]);
+    return u.pathname === "/" ? "/" : u.pathname;
+  })
+  // The sitemap deliberately includes downloadable PDFs alongside HTML
+  // pages. Reachability for those assets is covered by the page-level link
+  // checks; this BFS compares only routes the React application can render.
+  .filter((pathname) => !ASSET_EXT.test(pathname));
 
 const unreachable = sitemapUrls.filter((u) => !visited.has(u));
 const tooDeep = sitemapUrls.filter((u) => visited.has(u) && visited.get(u) > MAX_DEPTH);

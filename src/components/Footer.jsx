@@ -58,6 +58,16 @@ function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/ajanhallinta" onClick={() => window.scrollTo(0, 0)}>
+                Ajanhallinta
+              </Link>
+            </li>
+            <li>
+              <Link to="/en" lang="en" onClick={() => window.scrollTo(0, 0)}>
+                English
+              </Link>
+            </li>
+            <li>
               <Link to="/menetelma" onClick={() => window.scrollTo(0, 0)}>
                 Menetelmä
               </Link>
@@ -86,7 +96,7 @@ function Footer() {
             </li>
             <li>
               <Link to="/ota-yhteytta" onClick={() => window.scrollTo(0, 0)}>
-                Ota yhteyttä
+                Yhteystiedot
               </Link>
             </li>
             <li>

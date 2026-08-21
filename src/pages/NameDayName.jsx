@@ -6,6 +6,7 @@ import {
   nameDayNameMeta,
   nameDayNamePage,
 } from "../data/nameDayPages";
+import { CALENDAR_META } from "../data/nameDays";
 import { canonicalFor, CONTENT_UPDATED_FI } from "../data/seo";
 import NotFound from "./NotFound";
 
@@ -24,7 +25,7 @@ const NameDayName = () => {
       <SEO {...meta} canonical={canonicalFor(page.path)} />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> /{" "}
-        <Link to="/nimipaivat/tanaan">Nimipäivät</Link> / {page.name}
+        {CALENDAR_META.complete ? <Link to="/nimipaivat/tanaan">Nimipäivät</Link> : "Nimipäivät"} / {page.name}
       </div>
       <h1>{page.genitive} nimipäivä</h1>
       <div className="prose">
@@ -69,7 +70,8 @@ const NameDayName = () => {
         </div>
 
         <p>
-          Katso myös <Link to="/nimipaivat/tanaan">nimipäivä tänään</Link>,{" "}
+          Katso myös{" "}
+          {CALENDAR_META.complete && <><Link to="/nimipaivat/tanaan">nimipäivä tänään</Link>,{" "}</>}
           <Link to={`/kalenteri-${page.year}`}>kalenteri {page.year}</Link> ja{" "}
           <Link to={`/vuosi-${page.year}`}>vuoden {page.year} viikkonumerot</Link>.
         </p>

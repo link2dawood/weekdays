@@ -121,6 +121,18 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
       label
     );
 
+  // ISO week 1 can begin in the previous calendar year. Keep the quarter
+  // fact accurate, but don't link it when that calendar year falls outside
+  // the prerendered horizon (for example Q4 2019 from week 1 of 2020).
+  const quarterYear = mo.getFullYear();
+  const quarterLabel = `Q${quarterOf(mo)} ${quarterYear}`;
+  const quarterFact =
+    quarterYear >= YEAR_MIN && quarterYear <= YEAR_MAX ? (
+      <Link to={`/q${quarterOf(mo)}-${quarterYear}`}>{quarterLabel}</Link>
+    ) : (
+      quarterLabel
+    );
+
   // Link a holiday mention to its dedicated /pyhat-{year}/{slug} page — falls
   // back to plain text for the rare case holidayLinkPath declines to link
   // (unmapped name, or its date falls outside the prerendered horizon), same
@@ -274,11 +286,7 @@ const WeekDays = ({ week: pWeek, year: pYear } = {}) => {
           { label: "Päättyy", value: fmtShortFi(su) },
           {
             label: "Vuosineljännes",
-            value: (
-              <Link to={`/q${quarterOf(mo)}-${mo.getFullYear()}`}>
-                Q{quarterOf(mo)} {mo.getFullYear()}
-              </Link>
-            ),
+            value: quarterFact,
           },
           { label: "Vuodenaika", value: seasonNominative(thursday.getMonth()) },
           { label: "Työpäiviä", value: workingDaysCount },

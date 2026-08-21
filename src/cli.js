@@ -111,7 +111,89 @@ async function inspect() {
   }
 }
 
-const commands = { check, inspect, "submit-sitemap": submitSitemap };
+function isoDateDaysAgo(days) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+async function traffic() {
+  const client = await getClient();
+  const impressionsMin = Number(process.env.GSC_IMPRESSIONS_MIN || 3500);
+  const impressionsMax = Number(process.env.GSC_IMPRESSIONS_MAX || 5500);
+  const clicksMin = Number(process.env.GSC_CLICKS_MIN || 30);
+  const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(SITE_PROPERTY)}/searchAnalytics/query`;
+
+  // Search Console normally finalizes data after 2–3 days. Query a wider
+  // finalized window, then evaluate the latest seven rows actually returned
+  // instead of treating a still-processing recent date as a traffic collapse.
+  const res = await client.request({
+    url,
+    method: "POST",
+    data: {
+      startDate: isoDateDaysAgo(14),
+      endDate: isoDateDaysAgo(3),
+      dimensions: ["date"],
+      type: "web",
+      aggregationType: "byProperty",
+      dataState: "final",
+      rowLimit: 20,
+    },
+  });
+
+  const rows = (res.data.rows || []).slice(-7);
+  if (rows.length < 7) {
+    throw new Error(
+      `Search Console returned only ${rows.length} finalized daily row(s); need 7 before evaluating stability.`,
+    );
+  }
+
+  console.log(
+    `Target: ${impressionsMin}–${impressionsMax} impressions/day; at least ${clicksMin} clicks/day`,
+  );
+  console.log("Date        Clicks  Impressions  CTR     Position  Status");
+
+  const failures = [];
+  for (const row of rows) {
+    const date = row.keys[0];
+    const impressionOk =
+      row.impressions >= impressionsMin && row.impressions <= impressionsMax;
+    const clickOk = row.clicks >= clicksMin;
+    const status = impressionOk && clickOk ? "OK" : "OUTSIDE TARGET";
+    console.log(
+      `${date}  ${String(Math.round(row.clicks)).padStart(6)}  ${String(Math.round(row.impressions)).padStart(11)}  ${(row.ctr * 100).toFixed(2).padStart(5)}%  ${row.position.toFixed(1).padStart(8)}  ${status}`,
+    );
+    if (!impressionOk) {
+      failures.push(
+        `${date}: ${Math.round(row.impressions)} impressions (target ${impressionsMin}–${impressionsMax})`,
+      );
+    }
+    if (!clickOk) {
+      failures.push(
+        `${date}: ${Math.round(row.clicks)} clicks (minimum ${clicksMin})`,
+      );
+    }
+  }
+
+  const totals = rows.reduce(
+    (sum, row) => ({
+      clicks: sum.clicks + row.clicks,
+      impressions: sum.impressions + row.impressions,
+    }),
+    { clicks: 0, impressions: 0 },
+  );
+  console.log(
+    `\n7-day average: ${(totals.clicks / rows.length).toFixed(1)} clicks, ${(totals.impressions / rows.length).toFixed(0)} impressions`,
+  );
+
+  if (failures.length) {
+    for (const failure of failures) console.error(`FAIL: ${failure}`);
+    process.exit(1);
+  }
+  console.log("\nOK — the latest seven finalized days meet the traffic gate.");
+}
+
+const commands = { check, inspect, traffic, "submit-sitemap": submitSitemap };
 const [, , commandName] = process.argv;
 const run = commands[commandName];
 

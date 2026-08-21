@@ -11,6 +11,7 @@ import { getJuhlapaivat, getLiputuspaivat } from "../data/juhlapaivat";
 import nimipaivat from "../data/nimipaivat.json";
 import { hasNameDayPage, nameDaySlug } from "../data/nameDays";
 import SEO from "../components/SEO";
+import AdSlot from "../components/AdSlot";
 import { calendarFaqs, calendarPdfPath, canonicalFor, calendarMeta } from "../data/seo";
 import {
   downloadCalendarCsv,
@@ -267,6 +268,8 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
         </Link>
       </div>
 
+      {!print && <AdSlot placement="calendar-before-preview" />}
+
       <div className={`cal-grid${half ? " cal-grid-half" : ""}`}>
         {months.map(buildMonth)}
       </div>
@@ -312,7 +315,7 @@ const CalendarYear = ({ year, half = null, print = false } = {}) => {
             <li>Etsi kuukausi ja päivämäärä koko vuoden viikkonäkymästä.</li>
             <li>
               Avaa viikkonumerosta viikon tarkat päivämäärät, juhlapäivät ja
-              nimipäivät. Esimerkiksi{" "}
+              saatavilla olevat varmennetut nimipäivät. Esimerkiksi{" "}
               <Link to={`/viikko-1-${y}`}>viikko 1/{y}</Link>.
             </li>
             <li>

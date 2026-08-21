@@ -2,13 +2,12 @@ import { Link } from "react-router-dom";
 import SEO from "../components/SEO";
 import { fmtFullFi } from "../components/dateUtils";
 import { nameDayFaqs, todayNameDayMeta, todayNameDayPage } from "../data/nameDayPages";
-import { nameDaySlug, nameDayNames } from "../data/nameDays";
+import { nameDaySlug } from "../data/nameDays";
 import { canonicalFor } from "../data/seo";
 
 const NameDaysToday = () => {
   const page = todayNameDayPage();
   const meta = todayNameDayMeta();
-  const availableNames = nameDayNames();
   const faqs = nameDayFaqs(page, "today");
 
   return (
@@ -25,10 +24,11 @@ const NameDaysToday = () => {
               Tänään {fmtFullFi(page.date)} nimipäivää {page.names.length === 1 ? "viettää" : "viettävät"}{" "}
               {page.names.join(", ")}.
             </strong>
-          ) : (
-            <strong>
-              Päivän {fmtFullFi(page.date)} nimipäivät eivät vielä sisälly palvelun varmennettuun aineistoon.
-            </strong>
+         ) : (
+           <strong>
+              Tänään on {page.weekdayEssive} {fmtFullFi(page.date)} ja päivä
+              kuuluu viikkoon {page.week}.
+           </strong>
           )}
         </p>
 
@@ -45,21 +45,16 @@ const NameDaysToday = () => {
               <Link to={`/viikko-${page.week}-${page.weekYear}`}>viikkoon {page.week}</Link>.
             </p>
           </>
-        ) : (
-          <>
-            <h2>Miksi tämän päivän nimipäiviä ei näytetä?</h2>
-            <p>
-              Julkaisemme vain varmennettua nimipäivätietoa. Aineisto on tällä hetkellä
-              rajattu, joten puuttuvia nimiä ei korvata arvauksilla tai paikkamerkeillä.
-            </p>
-            <h2>Mitkä nimipäivät ovat jo saatavilla?</h2>
-            <ul>
-              {availableNames.map((item) => (
-                <li key={item.slug}><Link to={`/nimipaiva/${item.slug}`}>{item.name}</Link></li>
-              ))}
-            </ul>
-          </>
-        )}
+       ) : (
+          <details>
+            <summary>Tietoa nimipäiväaineistosta</summary>
+           <p>
+              Tälle päivälle ei ole julkaistu nimipäivätietoa Viikko Nron
+              varmennetussa aineistossa. Tyhjiä nimipäiväkortteja tai
+              paikkamerkkejä ei näytetä.
+           </p>
+          </details>
+       )}
 
         <h2>Usein kysyttyä tämän päivän nimipäivistä</h2>
         <div className="faq-list">

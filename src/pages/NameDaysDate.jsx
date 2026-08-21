@@ -6,7 +6,7 @@ import {
   nameDayDatePage,
   nameDayFaqs,
 } from "../data/nameDayPages";
-import { nameDaySlug } from "../data/nameDays";
+import { CALENDAR_META, nameDaySlug } from "../data/nameDays";
 import { canonicalFor, CONTENT_UPDATED_FI } from "../data/seo";
 import NotFound from "./NotFound";
 
@@ -22,7 +22,7 @@ const NameDaysDate = () => {
       <SEO {...meta} canonical={canonicalFor(page.path)} />
       <div className="breadcrumb">
         <Link to="/">Etusivu</Link> /{" "}
-        <Link to="/nimipaivat/tanaan">Nimipäivät</Link> / {fmtFullFi(page.date)}
+        {CALENDAR_META.complete ? <Link to="/nimipaivat/tanaan">Nimipäivät</Link> : "Nimipäivät"} / {fmtFullFi(page.date)}
       </div>
       <h1>Nimipäivät {fmtFullFi(page.date)}</h1>
       <div className="prose">
@@ -73,7 +73,8 @@ const NameDaysDate = () => {
         </div>
 
         <p>
-          Katso myös <Link to="/nimipaivat/tanaan">nimipäivä tänään</Link>,{" "}
+          Katso myös{" "}
+          {CALENDAR_META.complete && <><Link to="/nimipaivat/tanaan">nimipäivä tänään</Link>,{" "}</>}
           <Link to={`/kalenteri-${page.year}`}>kalenteri {page.year}</Link> ja{" "}
           <Link to={`/vuosi-${page.year}`}>vuoden {page.year} viikkonumerot</Link>.
         </p>

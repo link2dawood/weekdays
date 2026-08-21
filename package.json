@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "npm@10.9.2",
   "scripts": {
@@ -16,16 +16,18 @@
     "check": "node src/cli.js check",
     "check:index": "node src/cli.js inspect",
     "check:crawl": "node scripts/check-crawl.js",
+    "check:ad-crawlers": "node scripts/check-ad-crawlers.js",
+    "check:traffic": "node src/cli.js traffic",
     "sync:name-days": "node scripts/sync-name-days.js",
     "test": "vitest run"
   },
   "dependencies": {
-    "@vercel/og": "^0.11.1",
+    "@vercel/og": "^1.0.1",
     "pdfkit": "^0.19.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.18.0",
+    "react-router-dom": "^7.18.2",
     "suncalc": "^2.0.1"
   },
   "devDependencies": {

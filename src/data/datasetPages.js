@@ -33,6 +33,8 @@ export const DATASET_PAGES = {
   month: {
     slug: "month",
     title: "Kuukausidata",
+    description:
+      "Kuukausidata vuosille 2020–2035: ISO-viikot, työ- ja viikonloppupäivät, arkipyhät, liputuspäivät ja vuosineljännes. JSON-, CSV- ja XML-lataukset.",
     intro:
       "Kalenterikuukausidata jokaiselle kuukaudelle 2020–2035: kuukauden sisältämät ISO-viikot, työpäivien ja viikonloppupäivien määrä, arkipyhät, liputuspäivät ja vuosineljännes.",
     formats: [
@@ -57,6 +59,8 @@ export const DATASET_PAGES = {
   year: {
     slug: "year",
     title: "Vuosidata",
+    description:
+      "Vuositason data vuosille 2020–2035: ISO-viikkojen määrä sekä työ- ja viikonloppupäivät. Lataa tiedot JSON-, CSV- tai XML-muodossa.",
     intro:
       "Vuositason data jokaiselle vuodelle 2020–2035: ISO-viikkojen määrä (52 tai 53), työpäivien ja viikonloppupäivien määrä, vuoden ensimmäinen ja viimeinen ISO-viikko.",
     formats: [
@@ -78,6 +82,8 @@ export const DATASET_PAGES = {
   holiday: {
     slug: "holiday",
     title: "Pyhäpäivädata",
+    description:
+      "Suomen 15 nimetyn pyhäpäivän data vuosille 2020–2035: päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema. JSON-, CSV- ja XML-lataukset.",
     intro:
       "Suomen 15 nimetyn pyhäpäivän data jokaiselle vuodelle 2020–2035: päivämäärä, viikonpäivä, ISO-viikko ja virallinen asema. Katso myös pyhäpäiväkohtainen JSON-data (yksi tiedosto per pyhäpäivä), joka sisältää myös lainsäädäntöperusteen ja määräytymissäännön.",
     formats: [
@@ -98,6 +104,8 @@ export const DATASET_PAGES = {
   "working-days": {
     slug: "working-days",
     title: "Työpäivädata",
+    description:
+      "Kuukausittaiset työ- ja viikonloppupäivien määrät vuosille 2020–2035 sekä vuosikohtaiset yhteissummat. Saatavilla JSON-, CSV- ja XML-muodossa.",
     intro:
       "Kuukausikohtainen työpäivädata jokaiselle vuodelle 2020–2035: työpäivien ja viikonloppupäivien määrä kuukausittain, sekä koko vuoden yhteissumma. Julkinen nimi tälle sivulle — taustalla oleva JSON-data on osoitteessa /data/monthly-working-days/, joka pysyy muuttumattomana.",
     formats: [
@@ -125,7 +133,7 @@ export function datasetPageMeta(family) {
   if (!p) return null;
   return {
     title: `${p.title} — avoin data | Viikko Nro`,
-    description: p.intro,
+    description: p.description ?? p.intro,
   };
 }
 

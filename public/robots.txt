@@ -28,6 +28,18 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+# Google uses these crawlers for AdSense contextual matching, site review,
+# and ad landing-page quality checks. Keep their access explicit so a future
+# change to the catch-all group cannot accidentally block monetization.
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
 User-agent: *
 Allow: /
 

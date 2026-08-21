@@ -80,6 +80,7 @@ import {
   todayNameDayMeta,
   todayNameDayPage,
 } from "./src/data/nameDayPages.js";
+import { nameDayDateKeys, nameDayNames } from "./src/data/nameDays.js";
 import { weeksInYearFaqs } from "./src/data/weeksInYearContent.js";
 import {
   whatWeekFaqs,
@@ -4148,7 +4149,7 @@ const llmsGlossary =
     llFlagDayLines,
     "A flag day can coincide with a public holiday (e.g. Itsenäisyyspäivä / Independence Day, 6 December, is both a statutory holiday and a flag day).",
     "",
-    "Name days (nimipäivät): the Finnish almanac assigns one or more personal first names to almost every calendar date. Exposed via /nimipaivat/tanaan (today's name days), /nimipaiva/{name} (lookup by name, e.g. /nimipaiva/matti) and /nimipaivat/{month}-{day} (lookup by date, e.g. /nimipaivat/8-8).",
+    `Name days (nimipäivät): the current verified dataset publishes ${nameDayNames().length} personal-name pages across ${nameDayDateKeys().length} calendar dates. Verified entries are exposed via /nimipaiva/{name} and /nimipaivat/{month}-{day}; dates without verified data render no empty name-day rows and are excluded from the sitemap. /nimipaivat/tanaan is indexable only when today's date has verified data.`,
     "",
     "School holidays (koululomat): Finnish school holiday weeks — chiefly the February/March ski holiday (hiihtoloma, week varies by municipality) and the autumn holiday (syysloma) — are documented per year at /koululomat-{year}, sourced from official municipal/regional announcements and broken down by city.",
     "",
@@ -5110,7 +5111,6 @@ console.log(`patched robots.txt Sitemap: line -> ${SITE_URL}/sitemap.xml`);
           y,
           { width: PDF_CONTENT_W - 4 },
         );
-        y += 11;
       }
     }
 

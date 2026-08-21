@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
 import QuickFacts from "../components/QuickFacts";
+import AdSlot from "../components/AdSlot";
 import { canonicalFor, workingDaysFaqs, workingDaysMeta } from "../data/seo";
 import { HOLIDAY_LEGAL_BASIS, holidaysInYear } from "../data/holidays";
 import {
@@ -99,6 +100,8 @@ const WorkingDays = ({ year: pYear } = {}) => {
           { label: "Arkipyhää (ma–pe)", value: totalHoliday },
         ]}
       />
+
+      <AdSlot placement="working-days-after-result" format="rectangle" />
 
       <div className="table-wrap">
         <table className="data-table">

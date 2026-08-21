@@ -1,0 +1,24 @@
+name: Ad crawler reachability monitor
+
+on:
+  schedule:
+    # Runs after the nightly rebuild and the existing week-correctness check.
+    - cron: "20 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify Google ad crawler access
+        env:
+          SITE_URL: ${{ vars.SITE_ORIGIN || 'https://viikkonro.fi' }}
+        run: node scripts/check-ad-crawlers.js

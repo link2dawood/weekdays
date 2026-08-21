@@ -27,7 +27,7 @@ const CurrentMonth = () => {
         <h2>Monesko kuukausi nyt on?</h2>
         <p>{fact.name} on vuoden <strong>{fact.month}. kuukausi</strong>. Vuodessa on 12 kuukautta, joten tämän jälkeen jäljellä on {12 - fact.month} kuukautta.</p>
         <h2>Kuinka monta päivää nykyisessä kuukaudessa on?</h2>
-        <p>{fact.nameLower}ssa {fact.year} on <strong>{fact.days} päivää</strong>. Kuukauden kalenterista näet jokaisen päivän viikonpäivän, viikkonumeron, pyhäpäivät ja nimipäivät.</p>
+        <p>{fact.nameLower}ssa {fact.year} on <strong>{fact.days} päivää</strong>. Kuukauden kalenterista näet jokaisen päivän viikonpäivän, viikkonumeron, pyhäpäivät ja saatavilla olevat varmennetut nimipäivät.</p>
         <h2>Mitkä viikot kuuluvat tähän kuukauteen?</h2>
         <p>
           Nyt on viikko {fact.currentWeek}. Katso{" "}
