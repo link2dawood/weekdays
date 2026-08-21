@@ -42,6 +42,13 @@ const PrivacyPolicy = () => {
             käyttämiseen ei tarvita mainos- tai analytiikkaevästeitä.
           </p>
           <p>
+            <strong>Käyttöanalytiikka:</strong> Microsoft Clarity voi käsitellä
+            sivulatauksiin, laitteeseen, selaimeen sekä sivulla tehtyihin
+            napsautuksiin, vierityksiin ja hiiren liikkeisiin liittyviä tietoja
+            lämpökarttojen, käyttötietojen ja istuntotallenteiden tuottamiseksi.
+            Lomakekenttien sisältö peitetään Clarity-tallenteissa.
+          </p>
+          <p>
             <strong>Yhteydenottolomake:</strong> Jos lähetät viestin, nimi,
             sähköpostiosoite ja viestin sisältö välitetään Web3Forms-palvelulle
             viestin toimittamista varten.
@@ -96,15 +103,48 @@ const PrivacyPolicy = () => {
           </p>
         </div>
 
-        <h2>5. Tietojen vastaanottajat ja säilytys</h2>
+        <h2>5. Microsoft Clarity -käyttöanalytiikka</h2>
+        <div className="prose">
+          <p>
+            Käytämme Microsoft Clarity -palvelua sivuston käytettävyyden,
+            teknisten ongelmien ja käyttäjien vuorovaikutuksen ymmärtämiseen.
+            Clarity tuottaa muun muassa koottuja käyttömittareita,
+            lämpökarttoja ja istuntotallenteita. Tietoja ei käytetä
+            laskureiden tulosten muuttamiseen eikä Clarity estä sivuston
+            toimintoja.
+          </p>
+          <p>
+            Claritylle välitetään ennen käyttäjän valintaa Consent API V2
+            -signaalit <code>analytics_Storage: denied</code> ja{" "}
+            <code>ad_Storage: denied</code>. Tällöin Clarity ei aseta
+            analytiikka- tai mainosevästeitä ja toimii rajoitetussa
+            evästeettömässä tilassa, jossa yksittäisiä sivulatauksia ja
+            perusvuorovaikutuksia voidaan käsitellä ilman sivujen välille
+            jatkuvaa evästeistuntoa. Jos käyttäjä antaa suostumuksen
+            analytiikkaan tai mainontaan, CMP välittää valinnan Claritylle.
+            Suostumuksen voi myöhemmin perua CMP:n evästeasetuksista.
+          </p>
+          <p>
+            Lisätietoja siitä, miten Microsoft käsittelee ja suojaa tietoja, on{" "}
+            <a
+              href="https://privacy.microsoft.com/privacystatement"
+              rel="external noopener"
+            >
+              Microsoftin tietosuojaselosteessa
+            </a>
+            .
+          </p>
+        </div>
+
+        <h2>6. Tietojen vastaanottajat ja säilytys</h2>
         <div className="prose">
           <p>
             Palvelun tekniseen toimittamiseen osallistuvat Vercel ja Cloudflare.
-            Yhteydenottoviestit käsittelee Web3Forms. Jos AdSense-mainonta on
-            käytössä ja siihen on annettu tarvittava suostumus, Google ja
-            CMP:ssä luetellut mainosteknologian tarjoajat voivat käsitellä
-            tietoja omien tietosuojakäytäntöjensä mukaisesti. Emme myy
-            henkilötietoja.
+            Yhteydenottoviestit käsittelee Web3Forms ja käyttöanalytiikkaa
+            Microsoft Clarity. Jos AdSense-mainonta on käytössä ja siihen on
+            annettu tarvittava suostumus, Google ja CMP:ssä luetellut
+            mainosteknologian tarjoajat voivat käsitellä tietoja omien
+            tietosuojakäytäntöjensä mukaisesti. Emme myy henkilötietoja.
           </p>
           <p>
             Palvelinlokeja säilytetään palveluntarjoajien omien
@@ -113,11 +153,14 @@ const PrivacyPolicy = () => {
             lähetysaikoja käytetään vain tunnin mittaisen lähetysrajan
             laskentaan; sitä vanhemmat merkinnät poistetaan seuraavan
             lomakekäytön yhteydessä. Tiedot voi poistaa myös tyhjentämällä
-            selaimen sivustotiedot.
+            selaimen sivustotiedot. Microsoftin ilmoituksen mukaan Clarityn
+            istuntotallenteita säilytetään tavallisesti 30 päivää. Koottuja
+            napsautus- ja lämpökarttatietoja sekä merkittyjä tai otantaan
+            valittuja tallenteita voidaan säilyttää enintään yhdeksän kuukautta.
           </p>
         </div>
 
-        <h2>6. Oikeutesi ja suostumuksen peruuttaminen</h2>
+        <h2>7. Oikeutesi ja suostumuksen peruuttaminen</h2>
         <div className="prose">
           <p>
             Sinulla on soveltuvan tietosuojalainsäädännön mukaisesti oikeus
